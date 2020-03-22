@@ -2,7 +2,7 @@
 
 namespace theatrel.TLBot.Interfaces
 {
-    public interface ITLBotProcessor : IDIRegistrableService
+    public interface ITLBotProcessor : IDISingleton
     {
         void Start(ITLBotService botService);
     }

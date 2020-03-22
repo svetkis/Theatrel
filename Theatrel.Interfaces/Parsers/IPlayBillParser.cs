@@ -2,7 +2,7 @@
 
 namespace theatrel.Interfaces.Parsers
 {
-    public interface IPlayBillParser : IDIRegistrableService
+    public interface IPlayBillParser : IDIRegistrable
     {
         Task<IPerformanceData[]> Parse(string playbill);
     }

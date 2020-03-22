@@ -7,26 +7,33 @@ namespace theatrel.TLBot
 {
     public class FilterHelper : IFilterHelper
     {
-        private IPerformanceFilter _filter;
-
-        public FilterHelper(IPerformanceFilter filter)
+        private class PerformanceFilter : IPerformanceFilter
         {
-            _filter = filter;
+            public DayOfWeek[] DaysOfWeek { get; set; }
+            public string[] PerfomanceTypes { get; set; }
+            public string[] Locations { get; set; }
+
+            public bool Filter(IPerformanceData perfomance)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public IPerformanceFilter GetFilter(IChatDataInfo dataInfo)
         {
+            var filter = new PerformanceFilter();
+
             if (dataInfo.Days != null && dataInfo.Days.Any())
             {
                 var days = dataInfo.Days.Distinct();
                 if (days.Count() < 7)
-                    _filter.DaysOfWeek = days.ToArray();
+                    filter.DaysOfWeek = days.ToArray();
             }
 
             if (dataInfo.Types != null && dataInfo.Types.Any())
-                _filter.PerfomanceTypes = dataInfo.Types;
+                filter.PerfomanceTypes = dataInfo.Types;
 
-            return _filter;
+            return filter;
         }
     }
 }

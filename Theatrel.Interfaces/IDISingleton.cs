@@ -1,6 +1,6 @@
 ﻿namespace theatrel.Interfaces
 {
-    public interface IDIRegistrableService
+    public interface IDISingleton
     {
     }
 }

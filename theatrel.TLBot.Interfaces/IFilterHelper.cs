@@ -2,7 +2,7 @@
 
 namespace theatrel.TLBot.Interfaces
 {
-    public interface IFilterHelper : IDIRegistrableService
+    public interface IFilterHelper : IDISingleton
     {
         IPerformanceFilter GetFilter(IChatDataInfo dataInfo);
     }

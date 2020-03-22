@@ -6,8 +6,8 @@
 /theatrel.Interfaces/bin/
 /theatrel.Lib/bin/
 /theatrel.Lib/obj/
-/theatrel.Tests/bin/
-/theatrel.Tests/obj/
+/theatrel.Lib.Tests/bin/
+/theatrel.Lib.Tests/obj/
 /theatrel.Worker/bin/
 /theatrel.Worker/obj/
 /theatrel.TLBot.Interfaces/obj/
@@ -17,3 +17,4 @@
 /theatrel.TLBot/obj/
 /theatrel.TLBot.Tests/bin/
 /theatrel.TLBot.Tests/obj/
+/theatrel.Tests/obj

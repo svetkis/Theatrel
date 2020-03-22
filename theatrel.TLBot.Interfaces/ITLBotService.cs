@@ -3,7 +3,7 @@ using theatrel.Interfaces;
 
 namespace theatrel.TLBot.Interfaces
 {
-    public interface ITLBotService : IDIRegistrableService
+    public interface ITLBotService : IDISingleton
     {
         event EventHandler<ITLMessage> OnMessage;
 

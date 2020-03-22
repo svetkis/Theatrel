@@ -2,7 +2,7 @@
 
 namespace theatrel.Interfaces.Parsers
 {
-    public interface ITicketParser : IDIRegistrableService
+    public interface ITicketParser : IDIRegistrable
     {
         ITicket Parse(IElement ticket);
     }

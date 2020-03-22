@@ -13,11 +13,13 @@ namespace theatrel.Lib
     {
         private IPlayBillParser _playBillParser;
         private ITicketsParser _ticketParser;
+        private IFilterChecker _filterChecker;
 
-        public PlayBillResolver(IPlayBillParser playBillParser, ITicketsParser ticketParser)
+        public PlayBillResolver(IPlayBillParser playBillParser, ITicketsParser ticketParser, IFilterChecker filterChecker)
         {
             _playBillParser = playBillParser;
             _ticketParser = ticketParser;
+            _filterChecker = filterChecker;
         }
 
         public async Task<IPerformanceData[]> RequestProcess(DateTime startDate, DateTime endDate, IPerformanceFilter filter)
@@ -28,7 +30,7 @@ namespace theatrel.Lib
 
             IList<Task> tasks = new List<Task>();
 
-            var filtredList = perfomances.Where(item => filter.Filter(item));
+            var filtredList = perfomances.Where(item => _filterChecker.IsDataSuitable(item, filter));
 
             foreach (var item in filtredList)
                 tasks.Add(Task.Run(async () => item.Tickets = await _ticketParser.ParseFromUrl(item.Url)));

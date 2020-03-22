@@ -3,7 +3,7 @@ using System.Net;
 
 namespace theatrel.Interfaces
 {
-    public interface IPerformanceData
+    public interface IPerformanceData : IDIRegistrable
     {
         string Location { get; set; }
         string Name { get; set; }
