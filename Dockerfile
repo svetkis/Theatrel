@@ -4,7 +4,7 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["theatrel.Console/theatrel.Console.csproj", "theatrel.Console/"]
-COPY ["Theatrel.Interfaces/theatrel.Interfaces.csproj", "Theatrel.Interfaces/"]
+COPY ["theatrel.Interfaces/theatrel.Interfaces.csproj", "theatrel.Interfaces/"]
 COPY ["theatrel.Lib/theatrel.Lib.csproj", "theatrel.Lib/"]
 COPY ["theatrel.Lib.Tests/theatrel.Lib.Tests.csproj", "theatrel.Lib.Tests/"]
 COPY ["theatrel.TLBot/theatrel.TLBot.csproj", "theatrel.TLBot/"]
