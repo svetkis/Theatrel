@@ -23,8 +23,6 @@ namespace theatrel.TLBot.Commands
         {
             Trace.TraceInformation($"reset chat {chatInfo}");
             chatInfo.Clear();
-
-            chatInfo.ChatStep = 0;
         }
 
         public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo) => "Вас привествует экономный театрал.";

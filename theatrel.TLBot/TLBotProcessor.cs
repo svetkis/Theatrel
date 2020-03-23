@@ -56,6 +56,13 @@ namespace theatrel.TLBot
             IChatDataInfo chatInfo = GetChatInfo(chatId);
             chatInfo.LastMessage = DateTime.Now;
 
+            var startCmd = _commands.First();
+            if (startCmd.CanExecute(message))
+            {
+                startCmd.ApplyResult(chatInfo, message);
+                ++chatInfo.ChatStep;
+            }
+
             IDialogCommand command = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
 
             if (!command.CanExecute(message))
@@ -72,10 +79,12 @@ namespace theatrel.TLBot
             {
                 string botResponse = nextCommand.ExecuteAsync(chatInfo).GetAwaiter().GetResult();
                 Task.Run(() => _botService.SendMessageAsync(chatId, botResponse));
+
+                if (_commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep + 1) == null)
+                    chatInfo.ChatStep = (int)DialogStep.Start;
+
                 return;
             }
-
-            chatInfo.ChatStep = (int) DialogStep.Start;
         }
 
         private void SendWrongCommandMessage(long chatId, string message, int chatLevel)
