@@ -64,7 +64,7 @@ namespace theatrel.TLBot
 
         public async void SendMessageAsync(long chatId, string message)
         {
-            Trace.TraceInformation($"SendMessage id:{chatId} msg_start:{message.Take(100)}");
+            Trace.TraceInformation($"SendMessage id:{chatId} msg_start:{message.Take(100).ToString()}");
             try
             {
                 await Policy
