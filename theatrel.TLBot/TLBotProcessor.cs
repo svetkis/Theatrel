@@ -49,6 +49,7 @@ namespace theatrel.TLBot
 
         private void OnMessage(object sender, ITLMessage tLMessage)
         {
+            Trace.TraceInformation($"{tLMessage.ChatId} {tLMessage.Message}");
             string message = tLMessage.Message;
             long chatId = tLMessage.ChatId;
 

@@ -1,6 +1,7 @@
 ﻿using Polly;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Telegram.Bot;
@@ -63,7 +64,7 @@ namespace theatrel.TLBot
 
         public async void SendMessageAsync(long chatId, string message)
         {
-            Trace.TraceInformation($"SendMessage: {chatId} {message}");
+            Trace.TraceInformation($"SendMessage id:{chatId} msg_start:{message.Take(100)}");
             try
             {
                 await Policy
