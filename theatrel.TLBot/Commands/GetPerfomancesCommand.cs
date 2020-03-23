@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,28 +28,41 @@ namespace theatrel.TLBot.Commands
 
         public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo)
         {
-            var filter = _filterhelper.GetFilter(chatInfo);
+            IPerformanceFilter filter = _filterhelper.GetFilter(chatInfo);
 
             IPerformanceData[] data = await _playBillResolver.RequestProcess(chatInfo.When, new DateTime(), filter);
 
-            return await PerfomancesMessage(data);
+            return await PerfomancesMessage(data, filter, chatInfo.When);
         }
 
-        private async Task<string> PerfomancesMessage(IPerformanceData[] perfomances)
+        private async Task<string> PerfomancesMessage(IPerformanceData[] perfomances, IPerformanceFilter filter, DateTime when)
         {
+            var cultureRu = CultureInfo.CreateSpecificCulture("ru");
+
             var stringBuilder = new StringBuilder();
+
+            string days = filter.DaysOfWeek != null
+                ? string.Join(" ", filter.DaysOfWeek.Select(d => cultureRu.DateTimeFormat.GetDayName(d)))
+                : string.Empty;
+
+            string types = filter.PerfomanceTypes == null
+                ? "все представления"
+                : string.Join(", ", filter.PerfomanceTypes);
+
+            stringBuilder.AppendLine($"Мы искали билеты {when:MMM YY} дни недели: {days} на {types}");
             foreach (var item in perfomances.OrderBy(item => item.DateTime))
             {
-                if (item.Tickets.GetMinPrice() == 0)
-                    continue;
-
                 string minPrice = item.Tickets.GetMinPrice().ToString() ?? item.Tickets.Description;
-                stringBuilder.AppendLine($"[{item.DateTime:ddMMM HH:mm} {item.Location} {item.Type} \"{item.Name}\" от {minPrice}]({item.Url})");
+                if (string.IsNullOrWhiteSpace(item.Url))
+                    stringBuilder.AppendLine($"{item.DateTime:ddMMM HH:mm} {item.Location} {item.Type} \"{item.Name}\" {minPrice}");
+                else
+                    stringBuilder.AppendLine($"[{item.DateTime:ddMMM HH:mm} {item.Location} {item.Type} \"{item.Name}\" от {minPrice}]({item.Url})");
+
                 stringBuilder.AppendLine("");
             }
 
             if (string.IsNullOrWhiteSpace(stringBuilder.ToString()))
-                return "Увы, я не нашел билетов на интересующие вас даты.";
+                return "Увы, я не нашел событий на интересующие вас даты.";
 
             return stringBuilder.ToString();
         }
