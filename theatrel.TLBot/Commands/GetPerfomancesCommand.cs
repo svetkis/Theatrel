@@ -42,14 +42,16 @@ namespace theatrel.TLBot.Commands
             var stringBuilder = new StringBuilder();
 
             string days = filter.DaysOfWeek != null
-                ? string.Join(" ", filter.DaysOfWeek.Select(d => cultureRu.DateTimeFormat.GetDayName(d)))
+                ? filter.DaysOfWeek.Length == 1 
+                    ? $"день недели: {cultureRu.DateTimeFormat.GetDayName(filter.DaysOfWeek.First())}"
+                    : "дни недели: " + string.Join(" или ", filter.DaysOfWeek.Select(d => cultureRu.DateTimeFormat.GetDayName(d)))
                 : string.Empty;
 
             string types = filter.PerfomanceTypes == null
                 ? "все представления"
                 : string.Join(", ", filter.PerfomanceTypes);
 
-            stringBuilder.AppendLine($"Мы искали билеты {when:MMM YY} дни недели: {days} на {types}");
+            stringBuilder.AppendLine($"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}.");
             foreach (var item in perfomances.OrderBy(item => item.DateTime))
             {
                 string minPrice = item.Tickets.GetMinPrice().ToString() ?? item.Tickets.Description;
@@ -61,8 +63,8 @@ namespace theatrel.TLBot.Commands
                 stringBuilder.AppendLine("");
             }
 
-            if (string.IsNullOrWhiteSpace(stringBuilder.ToString()))
-                return "Увы, я не нашел событий на интересующие вас даты.";
+            if (!perfomances.Any())
+                return "Увы, я ничего не нашел. Попробуем поискать еще?";
 
             return stringBuilder.ToString();
         }

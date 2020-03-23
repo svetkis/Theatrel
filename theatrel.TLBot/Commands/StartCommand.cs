@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using theatrel.TLBot.Interfaces;
 
@@ -20,7 +21,10 @@ namespace theatrel.TLBot.Commands
 
         public override void ApplyResult(IChatDataInfo chatInfo, string message)
         {
+            Trace.TraceInformation($"reset chat {chatInfo}");
             chatInfo.Clear();
+
+            chatInfo.ChatStep = 0;
         }
 
         public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo) => "Вас привествует экономный театрал.";
