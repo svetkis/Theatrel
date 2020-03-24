@@ -6,7 +6,7 @@ namespace theatrel.Tests
     public class TicketsParserTests
     {
         [Theory]
-        [InlineData(@"..\..\..\TestData\p_theatre.html", 2100)]
+        [InlineData(@"..\..\..\TestData\p_theatre", 2100)]
         public void CheckMinPrice(string file, int expected)
         {
             string text = System.IO.File.ReadAllText(file);
