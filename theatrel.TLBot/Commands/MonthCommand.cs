@@ -21,10 +21,7 @@ namespace theatrel.TLBot.Commands
             _monthNamesAbbreviated = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetAbbreviatedMonthName(num)).ToArray();
         }
 
-        public override bool CanExecute(string message)
-        {
-            return 0 != GetMonth(message.Trim().ToLower());
-        }
+        public override bool IsMessageClear(string message) => 0 != GetMonth(message.Trim().ToLower());
 
         private int GetMonth(string msg)
         {
@@ -48,13 +45,16 @@ namespace theatrel.TLBot.Commands
             return 0;
         }
 
-        public override void ApplyResult(IChatDataInfo chatInfo, string message)
+        public override string ApplyResult(IChatDataInfo chatInfo, string message)
         {
             int month = GetMonth(message.Trim().ToLower());
 
             int year = DateTime.Now.Month > month ? DateTime.Now.Year + 1 : DateTime.Now.Year;
 
             chatInfo.When = new DateTime(year, month, 1);
+
+            var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
+            return $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. Для того что бы выбрать другое напишите Нет.";
         }
 
         public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo)

@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot
@@ -23,7 +25,9 @@ namespace theatrel.TLBot
                     ? null
                     : new WebProxy(ThSettings.Config.BotProxy, ThSettings.Config.BotProxyPort) { UseDefaultCredentials = true };
 
-                _botClient = Proxy != null ? new TelegramBotClient(ThSettings.Config.BotToken, Proxy) : new TelegramBotClient(ThSettings.Config.BotToken);
+                _botClient = Proxy != null 
+                    ? new TelegramBotClient(ThSettings.Config.BotToken, Proxy)
+                    : new TelegramBotClient(ThSettings.Config.BotToken);
             }
             catch (Exception ex)
             {
@@ -31,7 +35,7 @@ namespace theatrel.TLBot
             }
         }
 
-        public void Start()
+        public void Start(CancellationToken cancellationToken)
         {
             Trace.TraceInformation("Start TLBotService");
 
@@ -42,7 +46,7 @@ namespace theatrel.TLBot
                 return;
 
             Trace.TraceInformation("TLBot StartReceiving");
-            _botClient.StartReceiving();
+            _botClient.StartReceiving(new[] { UpdateType.Message },cancellationToken);
         }
 
         public void Stop()

@@ -14,10 +14,10 @@ namespace theatrel.TLBot.Commands
 
         protected readonly char[] WordSplitters = new char[] { ' ', ',', '.' };
 
-        public abstract bool CanExecute(string message);
+        public abstract bool IsMessageClear(string message);
 
         public abstract Task<string> ExecuteAsync(IChatDataInfo chatInfo);
 
-        public abstract void ApplyResult(IChatDataInfo chatInfo, string message);
+        public abstract string ApplyResult(IChatDataInfo chatInfo, string message);
     }
 }

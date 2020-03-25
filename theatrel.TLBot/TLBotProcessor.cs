@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces;
 using theatrel.TLBot.Commands;
@@ -25,12 +26,14 @@ namespace theatrel.TLBot
             _commands.Add(new GetPerfomancesCommand(playBillResolver, filterhelper));
         }
 
-        public void Start(ITLBotService botService)
+        public void Start(ITLBotService botService, CancellationToken cancellationToken)
         {
             _botService = botService;
             _botService.OnMessage += OnMessage;
-            _botService.Start();
+            _botService.Start(cancellationToken);
         }
+
+        public void Stop() => _botService?.Stop();
 
         ~TLBotProcessor()
         {
@@ -40,7 +43,7 @@ namespace theatrel.TLBot
         private IChatDataInfo GetChatInfo(long chatId)
         {
             if (!_chatsInfo.ContainsKey(chatId))
-                _chatsInfo[chatId] = new ChatDataInfo();
+                _chatsInfo[chatId] = new ChatDataInfo() { ChatId = chatId, Culture = "ru"};
 
             return _chatsInfo[chatId];
         }
@@ -56,35 +59,50 @@ namespace theatrel.TLBot
             IChatDataInfo chatInfo = GetChatInfo(chatId);
             chatInfo.LastMessage = DateTime.Now;
 
+            //check if user wants to return at first
             var startCmd = _commands.First();
-            if (startCmd.CanExecute(message))
-            {
-                startCmd.ApplyResult(chatInfo, message);
-                ++chatInfo.ChatStep;
-            }
+            if (startCmd.IsMessageClear(message))
+                chatInfo.ChatStep = 0;
 
             IDialogCommand command = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
 
-            if (!command.CanExecute(message))
+            if (message.ToLower().StartsWith("нет"))
+            {
+                if (chatInfo.ChatStep > 0)
+                    --chatInfo.ChatStep;
+
+                CommandAskQuestion(command, chatInfo, null);
+                return;
+            }
+
+            if (!command.IsMessageClear(message))
             {
                 SendWrongCommandMessage(chatId, message, chatInfo.ChatStep);
                 return;
             }
 
-            command.ApplyResult(chatInfo, message);
+            string acknowledgement = command.ApplyResult(chatInfo, message);
+
             ++chatInfo.ChatStep;
 
             var nextCommand = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
-            if (nextCommand != null)
-            {
-                string botResponse = nextCommand.ExecuteAsync(chatInfo).GetAwaiter().GetResult();
-                Task.Run(() => _botService.SendMessageAsync(chatId, botResponse));
+            CommandAskQuestion(nextCommand, chatInfo, acknowledgement);
+        }
 
-                if (_commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep + 1) == null)
-                    chatInfo.ChatStep = (int)DialogStep.Start;
-
+        private void CommandAskQuestion(IDialogCommand cmd, IChatDataInfo chatInfo, string previousCmdAcknowledgement)
+        {
+            if (cmd == null)
                 return;
-            }
+
+            string nextDlgQuestion = cmd.ExecuteAsync(chatInfo).GetAwaiter().GetResult();
+            string botResponse = string.IsNullOrWhiteSpace(previousCmdAcknowledgement)
+                ? nextDlgQuestion
+                : $"{previousCmdAcknowledgement}{Environment.NewLine}{nextDlgQuestion}";
+
+            Task.Run(() => _botService.SendMessageAsync(chatInfo.ChatId, botResponse));
+
+            if (_commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep + 1) == null)
+                chatInfo.ChatStep = (int)DialogStep.Start;
         }
 
         private void SendWrongCommandMessage(long chatId, string message, int chatLevel)

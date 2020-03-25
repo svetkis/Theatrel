@@ -14,15 +14,14 @@ namespace theatrel.TLBot.Commands
         {
         }
 
-        public override bool CanExecute(string message)
-        {
-            return _startCommandVariants.Any(variant => message.ToLower().StartsWith(variant));
-        }
+        public override bool IsMessageClear(string message) => _startCommandVariants.Any(variant => message.ToLower().StartsWith(variant));
 
-        public override void ApplyResult(IChatDataInfo chatInfo, string message)
+        public override string ApplyResult(IChatDataInfo chatInfo, string message)
         {
             Trace.TraceInformation($"reset chat {chatInfo}");
             chatInfo.Clear();
+
+            return null;
         }
 
         public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo) => "Вас привествует экономный театрал.";

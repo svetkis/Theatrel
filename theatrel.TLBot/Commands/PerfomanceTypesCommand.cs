@@ -13,12 +13,14 @@ namespace theatrel.TLBot.Commands
         public PerfomanceTypesCommand() : base((int)DialogStep.SelectType)
         { }
 
-        public override void ApplyResult(IChatDataInfo chatInfo, string message)
+        public override string ApplyResult(IChatDataInfo chatInfo, string message)
         {
             chatInfo.Types = ParseMessage(message);
+
+            return null;
         }
 
-        public override bool CanExecute(string message) => SplitMessage(message).Any();
+        public override bool IsMessageClear(string message) => SplitMessage(message).Any();
 
         public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo)
         {

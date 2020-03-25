@@ -14,8 +14,8 @@ namespace theatrel.TLBot.Interfaces
     public interface IDialogCommand
     {
         int Label { get; }
-        void ApplyResult(IChatDataInfo chatInfo, string message);
-        bool CanExecute(string message);
+        string ApplyResult(IChatDataInfo chatInfo, string message);
+        bool IsMessageClear(string message);
         Task<string> ExecuteAsync(IChatDataInfo chatInfo);
     }
 }

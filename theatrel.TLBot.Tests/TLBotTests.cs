@@ -3,6 +3,7 @@ using Moq;
 using NSubstitute;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces;
 using theatrel.TLBot.Interfaces;
@@ -21,8 +22,9 @@ namespace theatrel.TLBot.Tests
         }
 
         [Theory]
-        [InlineData(4, new[]{DayOfWeek.Saturday}, "концерт", "пр»вет", "апрель", "—уббота", "кќнцерт")]
-        [InlineData(6, new[]{ DayOfWeek.Sunday }, "опера"  , "Hi",     "июнь",   "вс", "опера")]
+        [InlineData(5, new[] { DayOfWeek.Monday }, "концерт", "пр»вет", "апрель", "Ќет!", "май", "—уббота", "нет", "понедельник", "кќнцерт")]
+        [InlineData(4, new[] { DayOfWeek.Saturday}, "концерт", "пр»вет", "апрель", "—уббота", "кќнцерт")]
+        [InlineData(6, new[] { DayOfWeek.Sunday }, "опера"  , "Hi",     "июнь",   "вс", "опера")]
         [InlineData(7, new[] { DayOfWeek.Friday }, "балет", "ƒобрый деЌь!", "июль", "5", "Ѕалет")]
         [InlineData(5, new[] { DayOfWeek.Friday }, "балет", "ƒобрый деЌь!", "июль", "привет!", "май", "5", "Ѕалет")]
         public void DialogTest(int month, DayOfWeek[] dayOfWeeks, string perfomanceType, params string[] commands)
@@ -41,10 +43,10 @@ namespace theatrel.TLBot.Tests
                 var tlProcessor = scope.Resolve<ITLBotProcessor>();
 
                 var tlBotServiceMock = new Mock<ITLBotService>(MockBehavior.Strict);
-                tlBotServiceMock.Setup(x => x.Start()).Verifiable();
+                tlBotServiceMock.Setup(x => x.Start(CancellationToken.None)).Verifiable();
                 tlBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<string>())).Verifiable();
 
-                tlProcessor.Start(tlBotServiceMock.Object);
+                tlProcessor.Start(tlBotServiceMock.Object, CancellationToken.None);
 
                 foreach (var cmd in commands)
                     tlBotServiceMock.Raise(x => x.OnMessage += null, null, GetMessageEventArgs(cmd));

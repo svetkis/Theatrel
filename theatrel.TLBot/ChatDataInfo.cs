@@ -5,6 +5,9 @@ namespace theatrel.TLBot
 {
     public class ChatDataInfo : IChatDataInfo
     {
+        public long ChatId { get; set; }
+
+        public string Culture { get; set; }
         public int ChatStep { get; set; }
 
         public DateTime When { get; set; }

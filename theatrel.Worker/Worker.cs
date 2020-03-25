@@ -24,17 +24,21 @@ namespace theatrel.Worker
 
             Trace.Listeners.Add(new Trace2StdoutLogger());
 
-            Trace.TraceInformation("Resolving ITLBotProcessor");
+            Trace.TraceInformation("Worker.StartAsync");
+
             _tLBotProcessor = Bootstrapper.Resolve<ITLBotProcessor>();
-            _tLBotProcessor.Start(Bootstrapper.Resolve<ITLBotService>());
+            _tLBotProcessor.Start(Bootstrapper.Resolve<ITLBotService>(), cancellationToken);
 
             return;
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            //tl stop
+            Trace.TraceInformation("Worker.StopAsync");
+
+            _tLBotProcessor.Stop();
             Bootstrapper.Stop();
+
             await base.StopAsync(cancellationToken);
             return;
         }

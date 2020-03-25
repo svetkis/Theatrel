@@ -46,13 +46,16 @@ namespace theatrel.TLBot.Commands
                 _daysDictionary.Add(item.name, new[] { _idxToDays[item.i] });
         }
 
-        public override void ApplyResult(IChatDataInfo chatInfo, string message)
+        public override string ApplyResult(IChatDataInfo chatInfo, string message)
         {
             var days = ParseMessage(message);
             chatInfo.Days = days;
+
+            var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
+            return $"Вы выбрали {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. Для того что бы выбрать другое напишите Нет.";
         }
 
-        public override bool CanExecute(string message)
+        public override bool IsMessageClear(string message)
         {
             var days = ParseMessage(message);
             return days.Any();

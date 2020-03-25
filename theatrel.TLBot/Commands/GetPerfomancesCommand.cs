@@ -20,11 +20,9 @@ namespace theatrel.TLBot.Commands
             _filterhelper = filterhelper;
         }
 
-        public override void ApplyResult(IChatDataInfo chatInfo, string message)
-        {
-        }
+        public override string ApplyResult(IChatDataInfo chatInfo, string message) => null;
 
-        public override bool CanExecute(string message) => true;
+        public override bool IsMessageClear(string message) => true;
 
         public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo)
         {

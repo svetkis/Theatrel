@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using theatrel.Interfaces;
 
 namespace theatrel.TLBot.Interfaces
@@ -8,7 +9,7 @@ namespace theatrel.TLBot.Interfaces
         event EventHandler<ITLMessage> OnMessage;
 
         void SendMessageAsync(long chatId, string message);
-        void Start();
+        void Start(CancellationToken cancellationToken);
         void Stop();
     }
 }
