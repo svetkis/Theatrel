@@ -5,6 +5,8 @@ namespace theatrel.TLBot.Commands
 {
     public abstract class DialogCommandBase : IDialogCommand
     {
+        protected const string ReturnMsg = "Для того что бы выбрать другой вариант напишите Нет.";
+
         public int Label { get; }
 
         protected DialogCommandBase(int label)

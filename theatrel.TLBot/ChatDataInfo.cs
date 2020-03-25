@@ -15,12 +15,14 @@ namespace theatrel.TLBot
         public string[] Types { get; set; }
 
         public DateTime LastMessage { get; set; }
+        public DialogStateEnum DialogState { get; set; }
 
         public void Clear()
         {
             ChatStep = 0;
             Days = null;
             Types = null;
+            DialogState = DialogStateEnum.DialogStarted;
 
             LastMessage = new DateTime();
         }

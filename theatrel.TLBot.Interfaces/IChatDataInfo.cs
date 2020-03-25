@@ -2,6 +2,12 @@
 
 namespace theatrel.TLBot.Interfaces
 {
+    public enum DialogStateEnum
+    {
+        DialogStarted,
+        DialogReturned
+    }
+
     public interface IChatDataInfo
     {
         long ChatId { get; set; }
@@ -10,8 +16,8 @@ namespace theatrel.TLBot.Interfaces
         DateTime When { get; set; }
         DayOfWeek[] Days { get; set; }
         string[] Types { get; set; }
-
         DateTime LastMessage {get; set;}
+        DialogStateEnum DialogState { get; set; }
 
         void Clear();
     }

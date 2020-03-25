@@ -52,7 +52,7 @@ namespace theatrel.TLBot.Commands
             chatInfo.Days = days;
 
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
-            return $"Вы выбрали {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. Для того что бы выбрать другое напишите Нет.";
+            return $"Вы выбрали {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. {ReturnMsg}";
         }
 
         public override bool IsMessageClear(string message)

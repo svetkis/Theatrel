@@ -62,19 +62,21 @@ namespace theatrel.TLBot
             //check if user wants to return at first
             var startCmd = _commands.First();
             if (startCmd.IsMessageClear(message))
-                chatInfo.ChatStep = 0;
-
-            IDialogCommand command = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
+                chatInfo.Clear();
 
             if (message.ToLower().StartsWith("нет"))
             {
                 if (chatInfo.ChatStep > 0)
                     --chatInfo.ChatStep;
 
-                CommandAskQuestion(command, chatInfo, null);
+                chatInfo.DialogState = DialogStateEnum.DialogReturned;
+
+                var prevCommand = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
+                CommandAskQuestion(prevCommand, chatInfo, null);
                 return;
             }
 
+            IDialogCommand command = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
             if (!command.IsMessageClear(message))
             {
                 SendWrongCommandMessage(chatId, message, chatInfo.ChatStep);

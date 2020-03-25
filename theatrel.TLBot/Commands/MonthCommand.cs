@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using theatrel.TLBot.Interfaces;
 
@@ -9,6 +8,9 @@ namespace theatrel.TLBot.Commands
 {
     internal class MonthCommand : DialogCommandBase
     {
+        private string GoodDay = "Добрый день! ";
+        private string IWillHelpYou = "Я помогу вам подобрать билеты в Мариинский театр. ";
+        private string Msg = "Какой месяц вас интересует?";
 
         private string[] _monthNames;
         private string[] _monthNamesAbbreviated;
@@ -54,14 +56,20 @@ namespace theatrel.TLBot.Commands
             chatInfo.When = new DateTime(year, month, 1);
 
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
-            return $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. Для того что бы выбрать другое напишите Нет.";
+            return $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}";
         }
 
         public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo)
         {
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine("Добрый день! Я помогу вам подобрать билеты в Мариинский театр. Какой месяц вас интересует?");
-            return stringBuilder.ToString();
+            switch (chatInfo.DialogState)
+            {
+                case DialogStateEnum.DialogReturned:
+                    return Msg;
+                case DialogStateEnum.DialogStarted:
+                    return $"{GoodDay}{IWillHelpYou}{Msg}";
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         private int CheckEnumarable(string[] checkedData, string msg)
