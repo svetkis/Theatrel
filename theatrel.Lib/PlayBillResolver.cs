@@ -26,21 +26,20 @@ namespace theatrel.Lib
         {
             string content = await Request(startDate);
 
-            IPerformanceData[] perfomances = _playBillParser.Parse(content).GetAwaiter().GetResult();
+            IPerformanceData[] performances = await _playBillParser.Parse(content);
 
             IList<Task> tasks = new List<Task>();
 
-            var filtredList = perfomances.Where(item => _filterChecker.IsDataSuitable(item, filter));
+            IEnumerable<IPerformanceData> filtered = performances.Where(item => _filterChecker.IsDataSuitable(item, filter)).ToArray();
 
-            foreach (var item in filtredList)
+            foreach (var item in filtered)
                 tasks.Add(Task.Run(async () => item.Tickets = await _ticketParser.ParseFromUrl(item.Url)));
 
-            Task.WaitAll(tasks.ToArray());
+            await Task.WhenAll(tasks.ToArray());
 
             Trace.TraceInformation("Parsing finished");
-            Trace.TraceInformation("");
 
-            return filtredList.ToArray();
+            return filtered.ToArray();
         }
 
         private async Task<string> Request(DateTime date)

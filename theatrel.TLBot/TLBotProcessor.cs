@@ -48,9 +48,9 @@ namespace theatrel.TLBot
             return _chatsInfo[chatId];
         }
 
-        private List<IDialogCommand> _commands = new List<IDialogCommand>();
+        private readonly List<IDialogCommand> _commands = new List<IDialogCommand>();
 
-        private void OnMessage(object sender, ITLMessage tLMessage)
+        private async void OnMessage(object sender, ITLMessage tLMessage)
         {
             Trace.TraceInformation($"{tLMessage.ChatId} {tLMessage.Message}");
             string message = tLMessage.Message;
@@ -72,7 +72,7 @@ namespace theatrel.TLBot
                 chatInfo.DialogState = DialogStateEnum.DialogReturned;
 
                 var prevCommand = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
-                CommandAskQuestion(prevCommand, chatInfo, null);
+                await CommandAskQuestion(prevCommand, chatInfo, null);
                 return;
             }
 
@@ -88,20 +88,20 @@ namespace theatrel.TLBot
             ++chatInfo.ChatStep;
 
             var nextCommand = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
-            CommandAskQuestion(nextCommand, chatInfo, acknowledgement);
+            await CommandAskQuestion(nextCommand, chatInfo, acknowledgement);
         }
 
-        private void CommandAskQuestion(IDialogCommand cmd, IChatDataInfo chatInfo, string previousCmdAcknowledgement)
+        private async Task CommandAskQuestion(IDialogCommand cmd, IChatDataInfo chatInfo, string previousCmdAcknowledgement)
         {
             if (cmd == null)
                 return;
 
-            string nextDlgQuestion = cmd.ExecuteAsync(chatInfo).GetAwaiter().GetResult();
+            string nextDlgQuestion = await cmd.ExecuteAsync(chatInfo);
             string botResponse = string.IsNullOrWhiteSpace(previousCmdAcknowledgement)
                 ? nextDlgQuestion
                 : $"{previousCmdAcknowledgement}{Environment.NewLine}{nextDlgQuestion}";
 
-            Task.Run(() => _botService.SendMessageAsync(chatInfo.ChatId, botResponse));
+            await Task.Run(() => _botService.SendMessageAsync(chatInfo.ChatId, botResponse));
 
             if (_commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep + 1) == null)
                 chatInfo.ChatStep = (int)DialogStep.Start;

@@ -1,0 +1,20 @@
+﻿using System;
+using System.Diagnostics;
+
+namespace theatrel.Worker
+{
+    internal class Trace2StdoutLogger : TraceListener
+    {
+        public override void Write(string message)
+        {
+            Console.WriteLine();
+            Console.Write($"{DateTime.Now:MM/dd hh:mm:ss} ");
+        }
+
+        public override void WriteLine(string message)
+        {
+            Console.Write(message);
+            Console.Write(" ");
+        }
+    }
+}

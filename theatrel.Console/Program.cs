@@ -28,16 +28,6 @@ namespace TheatrelConsole
             var tsk = Task.Run(() => { while (true) { } });
             Task.WaitAll(tsk);
 
-           /* IPerformanceData[] perfomances = _playBillResolver.RequestProcess(DateTime.Now, new DateTime(), GetFilter()).GetAwaiter().GetResult();
-
-            foreach (var item in perfomances.OrderBy(item => item.DateTime))
-            {
-                string minPrice = item.Tickets.GetMinPrice().ToString() ?? item.Tickets.Description;
-                Trace.TraceInformation($"{item.DateTime:ddMMM HH:mm} {item.Location} {item.Type} \"{item.Name}\" от {minPrice}");
-                Trace.TraceInformation($"{item.Url}");
-                Trace.TraceInformation("");
-            }*/
-
             Bootstrapper.Stop();
         }
 

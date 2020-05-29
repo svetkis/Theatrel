@@ -1,11 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
-
+<Project Sdk="Microsoft.NET.Sdk.Worker" ToolsVersion="Current">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>dotnet-theatrel.Worker-E9C10440-F5A4-41F3-A6AB-AEA1FD4FFFC1</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Autofac" Version="5.1.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.1" />
@@ -13,7 +16,6 @@
     <PackageReference Include="Telegram.Bot" Version="15.4.0" />
     <PackageReference Include="TLSharp.Core" Version="1.1.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\theatrel.Lib\theatrel.Lib.csproj" />
     <ProjectReference Include="..\theatrel.TLBot\theatrel.TLBot.csproj" />
