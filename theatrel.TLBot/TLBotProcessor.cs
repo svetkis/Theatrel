@@ -17,7 +17,7 @@ namespace theatrel.TLBot
         private ITLBotService _botService;
 
         private readonly IDictionary<long, IChatDataInfo> _chatsInfo = new ConcurrentDictionary<long, IChatDataInfo>();
-        private ApplicationContext _db;
+        private readonly ApplicationContext _db;
 
         public TLBotProcessor(IFilterHelper filterHelper, IPlayBillDataResolver playBillResolver)
         {
