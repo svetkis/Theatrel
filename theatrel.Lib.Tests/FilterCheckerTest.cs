@@ -21,9 +21,9 @@ namespace theatrel.Tests
             public DayOfWeek[] Days { get; set; }
         }
 
-        internal class PerfomanceData
+        internal class PerformanceData
         {
-            public PerfomanceData(object[] initData)
+            public PerformanceData(object[] initData)
             {
                 Date = new DateTime((int)initData[0], (int)initData[1], (int)initData[2]);
                 Type = initData.Last() as string;
@@ -43,18 +43,18 @@ namespace theatrel.Tests
         {
             var filterChecker = DIContainerHolder.Resolve<IFilterChecker>();
             var filter = DIContainerHolder.Resolve<IPerformanceFilter>();
-            var perfomance = DIContainerHolder.Resolve<IPerformanceData>();
+            var performance = DIContainerHolder.Resolve<IPerformanceData>();
 
-            var perfomanceData = new PerfomanceData(perfomanceDataArr);
+            var performanceData = new PerformanceData(perfomanceDataArr);
             var filterData = new FilterData(filterDataArr);
 
-            perfomance.DateTime = perfomanceData.Date;
-            perfomance.Type = perfomanceData.Type;
+            performance.DateTime = performanceData.Date;
+            performance.Type = performanceData.Type;
 
             filter.DaysOfWeek = filterData.Days;
-            filter.PerfomanceTypes = filterData.Types;
+            filter.PerformanceTypes = filterData.Types;
 
-            Assert.True(filterChecker.IsDataSuitable(perfomance, filter) == expected);
+            Assert.Equal(expected, filterChecker.IsDataSuitable(performance, filter));
         }
     }
 }

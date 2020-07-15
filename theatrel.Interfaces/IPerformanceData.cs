@@ -10,7 +10,7 @@ namespace theatrel.Interfaces
         DateTime DateTime { get; set; }
         string Url { get; set; }
         string Type { get; set; }
-        IPerfomanceTickets Tickets { get; set; }
+        IPerformanceTickets Tickets { get; set; }
         HttpStatusCode StatusCode { get; set; }
     }
 }

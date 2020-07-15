@@ -6,15 +6,16 @@ namespace theatrel.Lib
 {
     public class FilterChecker : IFilterChecker
     {
-        public bool IsDataSuitable(IPerformanceData perfomance, IPerformanceFilter filter)
+        public bool IsDataSuitable(IPerformanceData performance, IPerformanceFilter filter)
         {
-            if (filter.Locations != null && filter.Locations.Any() && !filter.Locations.Contains(perfomance.Location))
+            if (filter.Locations != null && filter.Locations.Any() && !filter.Locations.Contains(performance.Location))
                 return false;
 
-            if (filter.PerfomanceTypes != null && filter.PerfomanceTypes.Any() && !filter.PerfomanceTypes.Any(val => 0 == string.Compare(val, perfomance.Type, true)))
+            if (filter.PerformanceTypes != null && filter.PerformanceTypes.Any() 
+                                                && filter.PerformanceTypes.All(val => 0 != string.Compare(val, performance.Type, true)))
                 return false;
 
-            if (filter.DaysOfWeek != null && filter.DaysOfWeek.Any() && !filter.DaysOfWeek.Contains(perfomance.DateTime.DayOfWeek))
+            if (filter.DaysOfWeek != null && filter.DaysOfWeek.Any() && !filter.DaysOfWeek.Contains(performance.DateTime.DayOfWeek))
                 return false;
 
             return true;

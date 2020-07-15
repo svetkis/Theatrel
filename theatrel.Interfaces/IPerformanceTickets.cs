@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace theatrel.Interfaces
 {
-    public interface IPerfomanceTickets
+    public interface IPerformanceTickets
     {
         string Description { get; set; }
 

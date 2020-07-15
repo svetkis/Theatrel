@@ -5,7 +5,7 @@ using theatrel.Interfaces;
 
 namespace theatrel.Lib
 {
-    internal class PerfomanceTickets : IPerfomanceTickets
+    internal class PerformanceTickets : IPerformanceTickets
     {
         public string Description { get; set; }
 
@@ -16,10 +16,9 @@ namespace theatrel.Lib
 
         public int GetMinPrice()
         {
-            if (!Tickets.Any())
-                return 0;
-
-            return Tickets.Min(block => block.Value.Keys.Any() ? block.Value.Keys.Min() : 0);
+            return !Tickets.Any()
+                ? 0 
+                : Tickets.Min(block => block.Value.Keys.Any() ? block.Value.Keys.Min() : 0);
         }
     }
 }

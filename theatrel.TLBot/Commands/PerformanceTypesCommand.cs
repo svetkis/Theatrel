@@ -1,28 +1,29 @@
 ﻿using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot.Commands
 {
-    internal class PerfomanceTypesCommand : DialogCommandBase
+    internal class PerformanceTypesCommand : DialogCommandBase
     {
-        private string[] _types = new[] { "опера", "балет", "концерт" };
-        private string[] _every = new[] { "все", "всё", "любой", "любое", "не важно"};
+        private readonly string[] _types = { "опера", "балет", "концерт" };
+        private readonly string[] _every = { "все", "всё", "любой", "любое", "не важно"};
 
-        public PerfomanceTypesCommand() : base((int)DialogStep.SelectType)
+        public PerformanceTypesCommand() : base((int)DialogStep.SelectType)
         { }
 
-        public override string ApplyResult(IChatDataInfo chatInfo, string message)
+        public override async Task<string> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             chatInfo.Types = ParseMessage(message);
 
             return null;
         }
 
-        public override bool IsMessageClear(string message) => SplitMessage(message).Any();
+        public override bool IsMessageReturnToStart(string message) => SplitMessage(message).Any();
 
-        public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo)
+        public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine($"Вас интересует {string.Join(" или ", _types)}?");
@@ -45,15 +46,15 @@ namespace theatrel.TLBot.Commands
             if (string.IsNullOrWhiteSpace(messagePart))
                 return -1;
 
-            return CheckEnumarable(_types, messagePart);
+            return CheckEnumerable(_types, messagePart);
         }
 
-        private int CheckEnumarable(string[] checkedData, string msg)
+        private int CheckEnumerable(string[] checkedData, string msg)
         {
             var data = checkedData.Select((item, idx) => new { idx, item })
                 .FirstOrDefault(data => 0 == string.Compare(data.item, msg, true));
 
-            return null != data ? data.idx : -1;
+            return data?.idx ?? -1;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace theatrel.TLBot
         private class PerformanceFilter : IPerformanceFilter
         {
             public DayOfWeek[] DaysOfWeek { get; set; }
-            public string[] PerfomanceTypes { get; set; }
+            public string[] PerformanceTypes { get; set; }
             public string[] Locations { get; set; }
 
             public bool Filter(IPerformanceData perfomance)
@@ -31,7 +31,7 @@ namespace theatrel.TLBot
             }
 
             if (dataInfo.Types != null && dataInfo.Types.Any())
-                filter.PerfomanceTypes = dataInfo.Types;
+                filter.PerformanceTypes = dataInfo.Types;
 
             return filter;
         }

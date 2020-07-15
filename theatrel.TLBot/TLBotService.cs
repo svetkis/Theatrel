@@ -21,13 +21,13 @@ namespace theatrel.TLBot
         {
             try
             {
-                WebProxy proxy = string.IsNullOrEmpty(ThSettings.Config.BotProxy)
+                WebProxy proxy = string.IsNullOrEmpty(ThSettings.BotProxy)
                     ? null
-                    : new WebProxy(ThSettings.Config.BotProxy, ThSettings.Config.BotProxyPort) { UseDefaultCredentials = true };
+                    : new WebProxy(ThSettings.BotProxy, ThSettings.BotProxyPort) { UseDefaultCredentials = true };
 
                 _botClient = proxy != null 
-                    ? new TelegramBotClient(ThSettings.Config.BotToken, proxy)
-                    : new TelegramBotClient(ThSettings.Config.BotToken);
+                    ? new TelegramBotClient(ThSettings.BotToken, proxy)
+                    : new TelegramBotClient(ThSettings.BotToken);
             }
             catch (Exception ex)
             {
@@ -60,7 +60,6 @@ namespace theatrel.TLBot
 
         private void BotOnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
         {
-            //throw new NotImplementedException();
         }
 
         private void BotOnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)

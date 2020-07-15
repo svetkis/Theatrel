@@ -37,7 +37,7 @@ namespace TheatrelConsole
 
             //filter.Locations = new[] { "Мариинский театр", "Мариинский театр 2" };
             filter.DaysOfWeek = new[] { DayOfWeek.Saturday, DayOfWeek.Sunday };
-            filter.PerfomanceTypes = new[] { "Опера", "Балет" };
+            filter.PerformanceTypes = new[] { "Опера", "Балет" };
 
             return filter;
         }

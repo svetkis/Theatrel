@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using theatrel.TLBot.Interfaces;
 
@@ -46,7 +47,7 @@ namespace theatrel.TLBot.Commands
                 _daysDictionary.Add(item.name, new[] { _idxToDays[item.i] });
         }
 
-        public override string ApplyResult(IChatDataInfo chatInfo, string message)
+        public override async Task<string> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             var days = ParseMessage(message);
             chatInfo.Days = days;
@@ -55,13 +56,13 @@ namespace theatrel.TLBot.Commands
             return $"Вы выбрали {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. {ReturnMsg}";
         }
 
-        public override bool IsMessageClear(string message)
+        public override bool IsMessageReturnToStart(string message)
         {
             var days = ParseMessage(message);
             return days.Any();
         }
 
-        public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo)
+        public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("В какой день недели Вы хотели бы посетить театр? Вы можете выбрать несколько дней.");

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces;
 using theatrel.Interfaces.Parsers;
@@ -11,9 +12,9 @@ namespace theatrel.Lib
 {
     public class PlayBillResolver : IPlayBillDataResolver
     {
-        private IPlayBillParser _playBillParser;
-        private ITicketsParser _ticketParser;
-        private IFilterChecker _filterChecker;
+        private readonly IPlayBillParser _playBillParser;
+        private readonly ITicketsParser _ticketParser;
+        private readonly IFilterChecker _filterChecker;
 
         public PlayBillResolver(IPlayBillParser playBillParser, ITicketsParser ticketParser, IFilterChecker filterChecker)
         {
@@ -22,18 +23,20 @@ namespace theatrel.Lib
             _filterChecker = filterChecker;
         }
 
-        public async Task<IPerformanceData[]> RequestProcess(DateTime startDate, DateTime endDate, IPerformanceFilter filter)
+        public async Task<IPerformanceData[]> RequestProcess(DateTime startDate, DateTime endDate, IPerformanceFilter filter, CancellationToken cancellationToken)
         {
             string content = await Request(startDate);
 
-            IPerformanceData[] performances = await _playBillParser.Parse(content);
+            IPerformanceData[] performances = await _playBillParser.Parse(content, cancellationToken);
 
             IList<Task> tasks = new List<Task>();
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             IEnumerable<IPerformanceData> filtered = performances.Where(item => _filterChecker.IsDataSuitable(item, filter)).ToArray();
 
             foreach (var item in filtered)
-                tasks.Add(Task.Run(async () => item.Tickets = await _ticketParser.ParseFromUrl(item.Url)));
+                tasks.Add(Task.Run(async () => item.Tickets = await _ticketParser.ParseFromUrl(item.Url, cancellationToken), cancellationToken));
 
             await Task.WhenAll(tasks.ToArray());
 

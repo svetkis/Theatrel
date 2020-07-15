@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces;
 using theatrel.Interfaces.Parsers;
@@ -12,36 +13,36 @@ namespace theatrel.Lib.Parsers
     {
         private readonly ITicketParser _ticketParser = new TicketParser();
 
-        public async Task<IPerfomanceTickets> ParseFromUrl(string url)
+        public async Task<IPerformanceTickets> ParseFromUrl(string url, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(url) || url == CommonTags.NotDefined)
             {
-                return new PerfomanceTickets()
-                {
-                    Description = CommonTags.NoTickets
-                };
+                return new PerformanceTickets {Description = CommonTags.NoTickets };
             }
 
-            var content = await PageRequester.Request(url);
-            return await PrivateParse(content);
+            var content = await PageRequester.Request(url, cancellationToken);
+            return await PrivateParse(content, cancellationToken);
         }
 
-        public async Task<IPerfomanceTickets> Parse(string data) => await PrivateParse(data);
+        public async Task<IPerformanceTickets> Parse(string data, CancellationToken cancellationToken)
+            => await PrivateParse(data, cancellationToken);
 
-        private async Task<IPerfomanceTickets> PrivateParse(string data)
+        private async Task<IPerformanceTickets> PrivateParse(string data, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(data))
-                return new PerfomanceTickets() { Description = CommonTags.RequestTicketsError };
+                return new PerformanceTickets { Description = CommonTags.RequestTicketsError };
 
             var context = BrowsingContext.New(Configuration.Default);
-            var parsedDoc = await context.OpenAsync(req => req.Content(data));
+            var parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
 
-            IPerfomanceTickets performanceTickets = new PerfomanceTickets();
+            IPerformanceTickets performanceTickets = new PerformanceTickets();
 
             var tickets = parsedDoc.All.Where(m => 0 == string.Compare(m.TagName, "ticket", true));
             foreach(var ticket in tickets)
             {
-                ITicket ticketData = _ticketParser.Parse(ticket);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                ITicket ticketData = _ticketParser.Parse(ticket, cancellationToken);
                 if (string.IsNullOrEmpty(ticketData.Region))
                     ticketData.Region = "Зал";
 
@@ -55,7 +56,7 @@ namespace theatrel.Lib.Parsers
                 }
                 else
                 {
-                   performanceTickets.Tickets.Add(ticketData.Region, new Dictionary<int, int>() { { ticketData.MinPrice, 1 } });
+                   performanceTickets.Tickets.Add(ticketData.Region, new Dictionary<int, int> { { ticketData.MinPrice, 1 } });
                 }
             }
 

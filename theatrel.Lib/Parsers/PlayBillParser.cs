@@ -2,6 +2,7 @@
 using AngleSharp.Dom;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces;
 using theatrel.Interfaces.Parsers;
@@ -17,30 +18,32 @@ namespace theatrel.Lib.Parsers
             PerformanceParser = performanceParser;
         }
 
-        public async Task<IPerformanceData[]> Parse(string playbill)
+        public async Task<IPerformanceData[]> Parse(string playbill, CancellationToken cancellationToken)
         {
             var context = BrowsingContext.New(Configuration.Default);
-            IDocument document = await context.OpenAsync(req => req.Content(playbill));
+            IDocument document = await context.OpenAsync(req => req.Content(playbill), cancellationToken);
 
             IList<IPerformanceData> performances = new List<IPerformanceData>();
             var dayRowList = document.All.Where(m => CheckClassListContains(m, DayRow));
 
             foreach (var row in dayRowList)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 string day = GetClassValueFromAllChildren(row, "d");
-                int dayValue;
-                int.TryParse(day, out dayValue);
+                int.TryParse(day, out _);
 
                 IElement spects = GetFirstClassFromAllChildren(row, Spects);
                 if (spects == null)
                     continue;
 
-                foreach (var perfomance in spects.Children)
-                {
-                    var parsed = PerformanceParser.Parse(perfomance);
-                    if (null != parsed)
-                        performances.Add(parsed);
-                }
+                Parallel.ForEach(spects.Children, new ParallelOptions {CancellationToken = cancellationToken},
+                    performance =>
+                    {
+                        var parsed = PerformanceParser.Parse(performance);
+                        if (null != parsed)
+                            performances.Add(parsed);
+                    });
             }
 
             return performances.ToArray();
@@ -58,8 +61,8 @@ namespace theatrel.Lib.Parsers
             return allElementChildren.FirstOrDefault(m => CheckClassList(m, classNames));
         }
 
-        private static string[] DayRow = { "row", "day_row" };
-        private static string[] Spects = { "col-md-10", "spects" };
+        private static readonly string[] DayRow = { "row", "day_row" };
+        private static readonly string[] Spects = { "col-md-10", "spects" };
 
         private static bool CheckClassList(IElement element, string[] tags)
             => element.ClassList.Intersect(tags).Count() == tags.Count();

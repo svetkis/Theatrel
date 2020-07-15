@@ -1,26 +1,23 @@
 ﻿using System;
-using System.Collections;
 
 namespace theatrel.TLBot
 {
     public class ThSettings
     {
-        private static readonly Lazy<ThSettings> _config = new Lazy<ThSettings>(() => new ThSettings());
-        private readonly IDictionary _envVariables;
-
-        public static ThSettings Config => _config.Value;
-
-        private ThSettings()
+        public static string BotToken => Environment.GetEnvironmentVariable("TheatrelBotToken");
+        public static string BotProxy => Environment.GetEnvironmentVariable("TheatrelBotProxy");
+        public static int BotProxyPort
         {
-            _envVariables = Environment.GetEnvironmentVariables();
+            get
+            {
+                string portString = Environment.GetEnvironmentVariable("TheatrelProxyPort");
+                if (string.IsNullOrWhiteSpace(portString))
+                    return 0;
+
+                return !int.TryParse(portString, out int port) ? 0 : port;
+            }
         }
 
-        public string GetValue(string name) => _envVariables[name].ToString();
-        public int GetIntValue(string name) => int.Parse(_envVariables[name].ToString());
-
-        public string BotToken => GetValue("TheatrelBotToken");
-        public string BotProxy => GetValue("TheatrelBotProxy");
-        public int BotProxyPort => GetIntValue("TheatrelProxyPort");
-        public string DatabaseUrl => GetValue("DATABASE_URL");
+        public static string DatabaseUrl => Environment.GetEnvironmentVariable("DATABASE_URL");
     }
 }

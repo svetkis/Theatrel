@@ -2,6 +2,6 @@
 {
     public interface IFilterChecker : IDISingleton
     {
-        bool IsDataSuitable(IPerformanceData data, IPerformanceFilter filter);
+        bool IsDataSuitable(IPerformanceData performance, IPerformanceFilter filter);
     }
 }

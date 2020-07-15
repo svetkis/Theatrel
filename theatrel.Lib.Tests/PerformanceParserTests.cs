@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces;
 using theatrel.Interfaces.Parsers;
@@ -14,13 +15,34 @@ namespace theatrel.Tests
         [InlineData(@"..\..\..\TestData\MariinskyPlayBill032020", "Фортепианные квинтеты. Брух. Шостакович", "Концерт")]
         public async Task CheckPerformanceTypes(string file, string name, string expected)
         {
-            string text = System.IO.File.ReadAllText(file);
+            string text = await System.IO.File.ReadAllTextAsync(file);
 
             var parser = DIContainerHolder.Resolve<IPlayBillParser>();
 
-            IPerformanceData[] performances = await parser.Parse(text);
+            IPerformanceData[] performances = await parser.Parse(text, CancellationToken.None);
             foreach (var performance in performances.Where(p => p.Name == name))
-                Assert.True(performance.Type == expected);
+                Assert.Equal(expected, performance.Type);
+        }
+
+        [Theory]
+        [InlineData(@"..\..\..\TestData\MariinskyPlayBill032020")]
+        public async Task CheckCancellation(string file)
+        {
+            string text = await System.IO.File.ReadAllTextAsync(file);
+
+            var parser = DIContainerHolder.Resolve<IPlayBillParser>();
+
+            bool wasCanceled = false;
+            try
+            {
+                IPerformanceData[] performances = await parser.Parse(text, new CancellationTokenSource(15).Token);
+            }
+            catch (TaskCanceledException ex)
+            {
+                wasCanceled = true;
+            }
+
+            Assert.True(wasCanceled);
         }
     }
 }

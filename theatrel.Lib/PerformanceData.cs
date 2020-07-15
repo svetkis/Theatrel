@@ -11,7 +11,7 @@ namespace theatrel.Lib
         public DateTime DateTime { get; set; }
         public string Url { get; set; }
         public string Type { get; set; }
-        public IPerfomanceTickets Tickets { get; set; }
+        public IPerformanceTickets Tickets { get; set; }
         public HttpStatusCode StatusCode { get; set; }
     }
 }

@@ -6,8 +6,8 @@ namespace theatrel.TLBot.Tests
 {
     public class DIContainerHolder
     {
-        private static Lazy<DIContainerHolder> DIContainer = new Lazy<DIContainerHolder>(() => new DIContainerHolder());
-        private ILifetimeScope _rootScope;
+        private static readonly Lazy<DIContainerHolder> DIContainer = new Lazy<DIContainerHolder>(() => new DIContainerHolder());
+        private readonly ILifetimeScope _rootScope;
 
         public static ILifetimeScope RootScope => DIContainer.Value._rootScope;
 

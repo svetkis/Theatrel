@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace theatrel.Interfaces.Parsers
 {
     public interface ITicketsParser : IDIRegistrable
     {
-        Task<IPerfomanceTickets> Parse(string data);
-        Task<IPerfomanceTickets> ParseFromUrl(string url);
+        Task<IPerformanceTickets> Parse(string data, CancellationToken cancellationToken);
+        Task<IPerformanceTickets> ParseFromUrl(string url, CancellationToken cancellationToken);
     }
 }

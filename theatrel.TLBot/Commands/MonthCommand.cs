@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using theatrel.TLBot.Interfaces;
 
@@ -12,8 +13,8 @@ namespace theatrel.TLBot.Commands
         private string IWillHelpYou = "Я помогу вам подобрать билеты в Мариинский театр. ";
         private string Msg = "Какой месяц вас интересует?";
 
-        private string[] _monthNames;
-        private string[] _monthNamesAbbreviated;
+        private readonly string[] _monthNames;
+        private readonly string[] _monthNamesAbbreviated;
 
         public MonthCommand() : base((int)DialogStep.SelectMonth)
         {
@@ -23,7 +24,7 @@ namespace theatrel.TLBot.Commands
             _monthNamesAbbreviated = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetAbbreviatedMonthName(num)).ToArray();
         }
 
-        public override bool IsMessageClear(string message) => 0 != GetMonth(message.Trim().ToLower());
+        public override bool IsMessageReturnToStart(string message) => 0 != GetMonth(message.Trim().ToLower());
 
         private int GetMonth(string msg)
         {
@@ -47,7 +48,7 @@ namespace theatrel.TLBot.Commands
             return 0;
         }
 
-        public override string ApplyResult(IChatDataInfo chatInfo, string message)
+        public override async Task<string> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             int month = GetMonth(message.Trim().ToLower());
 
@@ -59,7 +60,7 @@ namespace theatrel.TLBot.Commands
             return $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}";
         }
 
-        public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo)
+        public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             switch (chatInfo.DialogState)
             {

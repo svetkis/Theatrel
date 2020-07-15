@@ -21,7 +21,7 @@ namespace theatrel.TLBot
 
         private string GetConnectionString()
         {
-            var databaseUri = new Uri(ThSettings.Config.DatabaseUrl);
+            var databaseUri = new Uri(ThSettings.DatabaseUrl);
             var userInfo = databaseUri.UserInfo.Split(':');
 
             var builder = new NpgsqlConnectionStringBuilder

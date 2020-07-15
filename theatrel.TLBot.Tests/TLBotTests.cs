@@ -39,8 +39,6 @@ namespace theatrel.TLBot.Tests
                 builder.RegisterType<TLBotProcessor>().As<ITLBotProcessor>().AsImplementedInterfaces();
             });
 
-            var test = scope.Resolve<IPlayBillDataResolver>();
-
             var tlProcessor = scope.Resolve<ITLBotProcessor>();
 
             var tlBotServiceMock = new Mock<ITLBotService>(MockBehavior.Strict);
@@ -52,10 +50,10 @@ namespace theatrel.TLBot.Tests
             foreach (var cmd in commands)
                 tlBotServiceMock.Raise(x => x.OnMessage += null, null, GetMessageEventArgs(cmd));
 
-            Assert.True(playBillResolverMock.Filter != null);
+            Assert.NotNull(playBillResolverMock.Filter);
             Assert.True(playBillResolverMock.Filter.DaysOfWeek.OrderBy(d => d).SequenceEqual(dayOfWeeks.OrderBy(d => d)));
-            Assert.True(playBillResolverMock.StartDate.Month == month);
-            Assert.True( performanceType.Equals(playBillResolverMock.Filter.PerfomanceTypes.First(), StringComparison.InvariantCultureIgnoreCase));
+            Assert.Equal(month, playBillResolverMock.StartDate.Month);
+            Assert.Equal(performanceType.ToLower(), playBillResolverMock.Filter.PerformanceTypes.First().ToLower());
 
             tlBotServiceMock.Verify();
 
@@ -63,10 +61,10 @@ namespace theatrel.TLBot.Tests
             foreach (var cmd in commands)
                 tlBotServiceMock.Raise(x => x.OnMessage += null, null, GetMessageEventArgs(cmd));
 
-            Assert.True(playBillResolverMock.Filter != null);
+            Assert.NotNull(playBillResolverMock.Filter);
             Assert.True(playBillResolverMock.Filter.DaysOfWeek.OrderBy(d => d).SequenceEqual(dayOfWeeks.OrderBy(d => d)));
-            Assert.True(playBillResolverMock.StartDate.Month == month);
-            Assert.True(performanceType.Equals(playBillResolverMock.Filter.PerfomanceTypes.First(), StringComparison.InvariantCultureIgnoreCase));
+            Assert.Equal(month, playBillResolverMock.StartDate.Month);
+            Assert.Equal(performanceType.ToLower(), playBillResolverMock.Filter.PerformanceTypes.First().ToLower());
         }
     }
 }

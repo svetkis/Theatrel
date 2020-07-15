@@ -1,5 +1,7 @@
-﻿using AngleSharp.Dom;
+﻿using System.Globalization;
+using AngleSharp.Dom;
 using System.Linq;
+using System.Threading;
 using theatrel.Interfaces;
 using theatrel.Interfaces.Parsers;
 using theatrel.Lib.Utils;
@@ -20,11 +22,11 @@ namespace theatrel.Lib.Parsers
 
         private string ControlContent(string data) => data == null || data.Contains('<') ? string.Empty : data.Trim();
 
-        public ITicket Parse(IElement ticket)
+        public ITicket Parse(IElement ticket, CancellationToken cancellationToken)
         {
             IElement[] allTicketChildren = ticket.QuerySelectorAll("*").ToArray();
 
-            return new Ticket()
+            return new Ticket
             {
                 Id = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "ID")?.TextContent),
                 Region = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "TREGION")?.TextContent),

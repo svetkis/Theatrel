@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot.Commands
@@ -14,12 +15,12 @@ namespace theatrel.TLBot.Commands
             Label = label;
         }
 
-        protected readonly char[] WordSplitters = new char[] { ' ', ',', '.' };
+        protected readonly char[] WordSplitters = { ' ', ',', '.' };
 
-        public abstract bool IsMessageClear(string message);
+        public abstract bool IsMessageReturnToStart(string message);
 
-        public abstract Task<string> ExecuteAsync(IChatDataInfo chatInfo);
+        public abstract Task<string> ExecuteAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken);
 
-        public abstract string ApplyResult(IChatDataInfo chatInfo, string message);
+        public abstract Task<string> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);
     }
 }

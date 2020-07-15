@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using theatrel.Interfaces;
 using theatrel.TLBot.Commands;
 using theatrel.TLBot.Entities;
@@ -15,19 +16,19 @@ namespace theatrel.TLBot
     public class TLBotProcessor : ITLBotProcessor
     {
         private ITLBotService _botService;
+        private readonly CancellationTokenSource _cancellationTokenSource;
 
         private readonly IDictionary<long, IChatDataInfo> _chatsInfo = new ConcurrentDictionary<long, IChatDataInfo>();
-        private readonly ApplicationContext _db;
 
         public TLBotProcessor(IFilterHelper filterHelper, IPlayBillDataResolver playBillResolver)
         {
-            _db = new ApplicationContext();
+            _cancellationTokenSource = new CancellationTokenSource();
 
             _commands.Add(new StartCommand());
             _commands.Add(new MonthCommand());
             _commands.Add(new DaysOfWeekCommand());
-            _commands.Add(new PerfomanceTypesCommand());
-            _commands.Add(new GetPerfomancesCommand(playBillResolver, filterHelper));
+            _commands.Add(new PerformanceTypesCommand());
+            _commands.Add(new GetPerformancesCommand(playBillResolver, filterHelper));
         }
 
         public void Start(ITLBotService botService, CancellationToken cancellationToken)
@@ -37,18 +38,22 @@ namespace theatrel.TLBot
             _botService.Start(cancellationToken);
         }
 
-        public void Stop() => _botService?.Stop();
+        public void Stop()
+        {
+            _botService?.Stop();
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+        }
 
         ~TLBotProcessor()
         {
             _botService?.Stop();
-            _db.Dispose();
         }
 
         private IChatDataInfo GetChatInfo(long chatId)
         {
             if (!_chatsInfo.ContainsKey(chatId))
-                _chatsInfo[chatId] = new ChatDataInfo() { ChatId = chatId, Culture = "ru"};
+                _chatsInfo[chatId] = new ChatDataInfo { ChatId = chatId, Culture = "ru"};
 
             return _chatsInfo[chatId];
         }
@@ -61,15 +66,12 @@ namespace theatrel.TLBot
             string message = tLMessage.Message;
             long chatId = tLMessage.ChatId;
 
-            if (!_db.TlUsers.Any(u => u.Id == chatId))
-                await _db.TlUsers.AddAsync(new TlUser {Id = chatId});
-
             IChatDataInfo chatInfo = GetChatInfo(chatId);
             chatInfo.LastMessage = DateTime.Now;
 
             //check if user wants to return at first
             var startCmd = _commands.First();
-            if (startCmd.IsMessageClear(message))
+            if (startCmd.IsMessageReturnToStart(message))
                 chatInfo.Clear();
 
             if (message.ToLower().StartsWith("нет"))
@@ -85,13 +87,13 @@ namespace theatrel.TLBot
             }
 
             IDialogCommand command = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
-            if (!command.IsMessageClear(message))
+            if (!command.IsMessageReturnToStart(message))
             {
                 SendWrongCommandMessage(chatId, message, chatInfo.ChatStep);
                 return;
             }
 
-            string acknowledgement = command.ApplyResult(chatInfo, message);
+            string acknowledgement = await command.ApplyResultAsync(chatInfo, message, _cancellationTokenSource.Token);
 
             ++chatInfo.ChatStep;
 
@@ -104,12 +106,12 @@ namespace theatrel.TLBot
             if (cmd == null)
                 return;
 
-            string nextDlgQuestion = await cmd.ExecuteAsync(chatInfo);
+            string nextDlgQuestion = await cmd.ExecuteAsync(chatInfo, _cancellationTokenSource.Token);
             string botResponse = string.IsNullOrWhiteSpace(previousCmdAcknowledgement)
                 ? nextDlgQuestion
                 : $"{previousCmdAcknowledgement}{Environment.NewLine}{nextDlgQuestion}";
 
-            await Task.Run(() => _botService.SendMessageAsync(chatInfo.ChatId, botResponse));
+            await Task.Run(() => _botService.SendMessageAsync(chatInfo.ChatId, botResponse), _cancellationTokenSource.Token);
 
             if (_commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep + 1) == null)
                 chatInfo.ChatStep = (int)DialogStep.Start;

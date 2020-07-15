@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace theatrel.Lib
@@ -14,9 +15,9 @@ namespace theatrel.Lib
         { }
 
         private static PageRequester _instance;
-        public static PageRequester Instance => _instance ?? (_instance = new PageRequester());
+        public static PageRequester Instance => _instance ??= new PageRequester();
 
-        public static async Task<string> Request(string url)
+        public static async Task<string> Request(string url, CancellationToken cancellationToken)
         {
             try
             {
@@ -28,7 +29,9 @@ namespace theatrel.Lib
                     .WaitAndRetryAsync(4, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
                     .ExecuteAsync(async () =>
                 {
-                    IRestResponse response = await client.ExecuteAsync(request);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    IRestResponse response = await client.ExecuteAsync(request, cancellationToken);
 
                     if (response.StatusCode == HttpStatusCode.OK)
                     {

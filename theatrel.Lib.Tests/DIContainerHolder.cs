@@ -7,7 +7,7 @@ namespace theatrel.Tests
 {
     public static class DIContainerHolder
     {
-        private static ILifetimeScope _rootScope;
+        private static readonly ILifetimeScope RootScope;
 
         static DIContainerHolder()
         {
@@ -15,15 +15,15 @@ namespace theatrel.Tests
 
             containerBuilder.RegisterModule<DataResolverTestModule>();
 
-            _rootScope = containerBuilder.Build();
+            RootScope = containerBuilder.Build();
         }
 
         public static T Resolve<T>()
         {
-            if (_rootScope == null)
+            if (RootScope == null)
                 throw new Exception("Bootstrapper hasn't been started!");
 
-            return _rootScope.Resolve<T>(new Parameter[0]);
+            return RootScope.Resolve<T>(new Parameter[0]);
         }
     }
 

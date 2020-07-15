@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace theatrel.Interfaces.Parsers
 {
     public interface IPlayBillParser : IDIRegistrable
     {
-        Task<IPerformanceData[]> Parse(string playbill);
+        Task<IPerformanceData[]> Parse(string playbill, CancellationToken cancellationToken);
     }
 }

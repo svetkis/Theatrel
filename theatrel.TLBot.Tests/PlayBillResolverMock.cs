@@ -1,5 +1,6 @@
 ﻿using Moq;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces;
 
@@ -7,15 +8,15 @@ namespace theatrel.TLBot.Tests
 {
     internal class PlayBillResolverMock
     {
-        public DateTime StartDate = new DateTime();
-        public IPerformanceFilter Filter = null;
+        public DateTime StartDate;
+        public IPerformanceFilter Filter;
 
-        private Mock<IPlayBillDataResolver> _playBillResolverMock = new Mock<IPlayBillDataResolver>();
+        private readonly Mock<IPlayBillDataResolver> _playBillResolverMock = new Mock<IPlayBillDataResolver>();
         public IPlayBillDataResolver Object => _playBillResolverMock.Object;
 
         public PlayBillResolverMock()
         {
-            _playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<IPerformanceFilter>()))
+            _playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<IPerformanceFilter>(), CancellationToken.None))
                     .Callback<DateTime, DateTime, IPerformanceFilter>((dtStart, stEnd, filterResult) =>
                     {
                         StartDate = dtStart;
