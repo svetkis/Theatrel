@@ -18,6 +18,7 @@ namespace theatrel.TLBot.Tests
             var msgMock = Substitute.For<ITLMessage>();
             msgMock.ChatId.Returns(1);
             msgMock.Message.Returns(message);
+
             return msgMock;
         }
 
@@ -31,42 +32,41 @@ namespace theatrel.TLBot.Tests
         {
             var playBillResolverMock = new PlayBillResolverMock();
 
-            using (var scope = DIContainerHolder.RootScope.BeginLifetimeScope( builder =>
-                  {
-                      builder.RegisterInstance(playBillResolverMock.Object).As<IPlayBillDataResolver>().AsImplementedInterfaces();
-                      builder.RegisterType<FilterHelper>().As<IFilterHelper>().AsImplementedInterfaces();
-                      builder.RegisterType<TLBotProcessor>().As<ITLBotProcessor>().AsImplementedInterfaces();
-                  }))
+            await using var scope = DIContainerHolder.RootScope.BeginLifetimeScope( builder =>
             {
-                var test = scope.Resolve<IPlayBillDataResolver>();
+                builder.RegisterInstance(playBillResolverMock.Object).As<IPlayBillDataResolver>().AsImplementedInterfaces();
+                builder.RegisterType<FilterHelper>().As<IFilterHelper>().AsImplementedInterfaces();
+                builder.RegisterType<TLBotProcessor>().As<ITLBotProcessor>().AsImplementedInterfaces();
+            });
 
-                var tlProcessor = scope.Resolve<ITLBotProcessor>();
+            var test = scope.Resolve<IPlayBillDataResolver>();
 
-                var tlBotServiceMock = new Mock<ITLBotService>(MockBehavior.Strict);
-                tlBotServiceMock.Setup(x => x.Start(CancellationToken.None)).Verifiable();
-                tlBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<string>())).Verifiable();
+            var tlProcessor = scope.Resolve<ITLBotProcessor>();
 
-                tlProcessor.Start(tlBotServiceMock.Object, CancellationToken.None);
+            var tlBotServiceMock = new Mock<ITLBotService>(MockBehavior.Strict);
+            tlBotServiceMock.Setup(x => x.Start(CancellationToken.None)).Verifiable();
+            tlBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<string>())).Verifiable();
 
-                foreach (var cmd in commands)
-                    tlBotServiceMock.Raise(x => x.OnMessage += null, null, GetMessageEventArgs(cmd));
+            tlProcessor.Start(tlBotServiceMock.Object, CancellationToken.None);
 
-                Assert.True(playBillResolverMock.Filter != null);
-                Assert.True(playBillResolverMock.Filter.DaysOfWeek.OrderBy(d => d).SequenceEqual(dayOfWeeks.OrderBy(d => d)));
-                Assert.True(playBillResolverMock.StartDate.Month == month);
-                Assert.True( performanceType.Equals(playBillResolverMock.Filter.PerfomanceTypes.First(), StringComparison.InvariantCultureIgnoreCase));
+            foreach (var cmd in commands)
+                tlBotServiceMock.Raise(x => x.OnMessage += null, null, GetMessageEventArgs(cmd));
 
-                tlBotServiceMock.Verify();
+            Assert.True(playBillResolverMock.Filter != null);
+            Assert.True(playBillResolverMock.Filter.DaysOfWeek.OrderBy(d => d).SequenceEqual(dayOfWeeks.OrderBy(d => d)));
+            Assert.True(playBillResolverMock.StartDate.Month == month);
+            Assert.True( performanceType.Equals(playBillResolverMock.Filter.PerfomanceTypes.First(), StringComparison.InvariantCultureIgnoreCase));
 
-                //second dialog after first
-                foreach (var cmd in commands)
-                    tlBotServiceMock.Raise(x => x.OnMessage += null, null, GetMessageEventArgs(cmd));
+            tlBotServiceMock.Verify();
 
-                Assert.True(playBillResolverMock.Filter != null);
-                Assert.True(playBillResolverMock.Filter.DaysOfWeek.OrderBy(d => d).SequenceEqual(dayOfWeeks.OrderBy(d => d)));
-                Assert.True(playBillResolverMock.StartDate.Month == month);
-                Assert.True(performanceType.Equals(playBillResolverMock.Filter.PerfomanceTypes.First(), StringComparison.InvariantCultureIgnoreCase));
-            }
+            //second dialog after first
+            foreach (var cmd in commands)
+                tlBotServiceMock.Raise(x => x.OnMessage += null, null, GetMessageEventArgs(cmd));
+
+            Assert.True(playBillResolverMock.Filter != null);
+            Assert.True(playBillResolverMock.Filter.DaysOfWeek.OrderBy(d => d).SequenceEqual(dayOfWeeks.OrderBy(d => d)));
+            Assert.True(playBillResolverMock.StartDate.Month == month);
+            Assert.True(performanceType.Equals(playBillResolverMock.Filter.PerfomanceTypes.First(), StringComparison.InvariantCultureIgnoreCase));
         }
     }
 }

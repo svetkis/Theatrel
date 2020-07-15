@@ -5,8 +5,8 @@ namespace theatrel.TLBot
 {
     public class ThSettings
     {
-        private static Lazy<ThSettings> _config = new Lazy<ThSettings>(() => new ThSettings());
-        private IDictionary _envVariables;
+        private static readonly Lazy<ThSettings> _config = new Lazy<ThSettings>(() => new ThSettings());
+        private readonly IDictionary _envVariables;
 
         public static ThSettings Config => _config.Value;
 
@@ -21,5 +21,6 @@ namespace theatrel.TLBot
         public string BotToken => GetValue("TheatrelBotToken");
         public string BotProxy => GetValue("TheatrelBotProxy");
         public int BotProxyPort => GetIntValue("TheatrelProxyPort");
+        public string DatabaseUrl => GetValue("DATABASE_URL");
     }
 }

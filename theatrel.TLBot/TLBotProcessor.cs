@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces;
 using theatrel.TLBot.Commands;
+using theatrel.TLBot.Entities;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot
@@ -15,15 +16,18 @@ namespace theatrel.TLBot
     {
         private ITLBotService _botService;
 
-        private IDictionary<long, IChatDataInfo> _chatsInfo = new ConcurrentDictionary<long, IChatDataInfo>();
+        private readonly IDictionary<long, IChatDataInfo> _chatsInfo = new ConcurrentDictionary<long, IChatDataInfo>();
+        private ApplicationContext _db;
 
-        public TLBotProcessor(IFilterHelper filterhelper, IPlayBillDataResolver playBillResolver)
+        public TLBotProcessor(IFilterHelper filterHelper, IPlayBillDataResolver playBillResolver)
         {
+            _db = new ApplicationContext();
+
             _commands.Add(new StartCommand());
             _commands.Add(new MonthCommand());
             _commands.Add(new DaysOfWeekCommand());
             _commands.Add(new PerfomanceTypesCommand());
-            _commands.Add(new GetPerfomancesCommand(playBillResolver, filterhelper));
+            _commands.Add(new GetPerfomancesCommand(playBillResolver, filterHelper));
         }
 
         public void Start(ITLBotService botService, CancellationToken cancellationToken)
@@ -38,6 +42,7 @@ namespace theatrel.TLBot
         ~TLBotProcessor()
         {
             _botService?.Stop();
+            _db.Dispose();
         }
 
         private IChatDataInfo GetChatInfo(long chatId)
@@ -55,6 +60,9 @@ namespace theatrel.TLBot
             Trace.TraceInformation($"{tLMessage.ChatId} {tLMessage.Message}");
             string message = tLMessage.Message;
             long chatId = tLMessage.ChatId;
+
+            if (!_db.TlUsers.Any(u => u.Id == chatId))
+                await _db.TlUsers.AddAsync(new TlUser {Id = chatId});
 
             IChatDataInfo chatInfo = GetChatInfo(chatId);
             chatInfo.LastMessage = DateTime.Now;
