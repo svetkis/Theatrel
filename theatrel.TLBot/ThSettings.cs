@@ -17,7 +17,5 @@ namespace theatrel.TLBot
                 return !int.TryParse(portString, out int port) ? 0 : port;
             }
         }
-
-        public static string DatabaseUrl => Environment.GetEnvironmentVariable("DATABASE_URL");
     }
 }

@@ -32,7 +32,7 @@ namespace theatrel.TLBot.Tests
         {
             var playBillResolverMock = new PlayBillResolverMock();
 
-            await using var scope = DIContainerHolder.RootScope.BeginLifetimeScope( builder =>
+            await using ILifetimeScope scope = DIContainerHolder.RootScope.BeginLifetimeScope( builder =>
             {
                 builder.RegisterInstance(playBillResolverMock.Object).As<IPlayBillDataResolver>().AsImplementedInterfaces();
                 builder.RegisterType<FilterHelper>().As<IFilterHelper>().AsImplementedInterfaces();

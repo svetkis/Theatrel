@@ -19,3 +19,6 @@
 /theatrel.TLBot.Tests/obj/
 /theatrel.Tests/obj
 /.vs/theatrel/config
+/theatrel.Data/bin
+/theatrel.Data/obj
+/*.user

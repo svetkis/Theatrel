@@ -22,9 +22,11 @@ namespace theatrel.Lib.Parsers
 
         private string ControlContent(string data) => data == null || data.Contains('<') ? string.Empty : data.Trim();
 
-        public ITicket Parse(IElement ticket, CancellationToken cancellationToken)
+        public ITicket Parse(object ticket, CancellationToken cancellationToken)
         {
-            IElement[] allTicketChildren = ticket.QuerySelectorAll("*").ToArray();
+            IElement parsedTicket = (IElement)ticket;
+
+            IElement[] allTicketChildren = parsedTicket.QuerySelectorAll("*").ToArray();
 
             return new Ticket
             {

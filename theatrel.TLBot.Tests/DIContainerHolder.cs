@@ -1,5 +1,7 @@
 ﻿using Autofac;
 using System;
+using Microsoft.EntityFrameworkCore;
+using theatrel.DataAccess;
 using theatrel.Lib;
 
 namespace theatrel.TLBot.Tests
@@ -28,7 +30,29 @@ namespace theatrel.TLBot.Tests
             builder.RegisterModule<TheatrelLibModule>();
             builder.RegisterModule<TlBotModule>();
 
+            builder
+                .RegisterType<AppDbContext>()
+                .WithParameter("options", TestDbContextOptionsFactory.Get())
+                .InstancePerLifetimeScope();
+
             base.Load(builder);
         }
+    }
+
+    public class TestDbContextOptionsFactory
+    {
+        public static DbContextOptions<AppDbContext> Get()
+        {
+            var builder = new DbContextOptionsBuilder<AppDbContext>();
+            TestDbContextConfigurator.Configure(builder);
+
+            return builder.Options;
+        }
+    }
+
+    public class TestDbContextConfigurator
+    {
+        public static void Configure(DbContextOptionsBuilder<AppDbContext> builder)
+            => builder.UseInMemoryDatabase(databaseName: "Products Test");
     }
 }

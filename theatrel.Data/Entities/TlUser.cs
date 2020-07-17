@@ -1,4 +1,4 @@
-﻿namespace theatrel.TLBot.Entities
+﻿namespace theatrel.DataAccess.Entities
 {
     public class TlUser
     {

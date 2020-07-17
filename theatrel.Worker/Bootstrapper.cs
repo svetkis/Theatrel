@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using Autofac.Core;
-using Microsoft.Extensions.Configuration;
 using System;
+using theatrel.DataAccess;
 using theatrel.Lib;
 using theatrel.TLBot;
 
@@ -19,6 +19,7 @@ namespace theatrel.Worker
 
             builder.RegisterModule<TheatrelLibModule>();
             builder.RegisterModule<TlBotModule>();
+            builder.RegisterModule<DataAccessModule>();
 
             _rootScope = builder.Build();
         }

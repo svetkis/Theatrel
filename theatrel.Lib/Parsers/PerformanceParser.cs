@@ -9,11 +9,12 @@ namespace theatrel.Lib.Parsers
 {
     public class PerformanceParser: IPerformanceParser
     {
-        public IPerformanceData Parse(AngleSharp.Dom.IElement element)
+        public IPerformanceData Parse(object element)
         {
             try
             {
-                AngleSharp.Dom.IElement[] allElementChildren = element.QuerySelectorAll("*").ToArray();
+                AngleSharp.Dom.IElement parsedElement = (AngleSharp.Dom.IElement) element;
+                AngleSharp.Dom.IElement[] allElementChildren = parsedElement.QuerySelectorAll("*").ToArray();
 
                 var specName = allElementChildren.FirstOrDefault(m => m.ClassName == "spec_name");
                 string dtString = allElementChildren.FirstOrDefault(m => 0 == string.Compare(m.TagName, "time", true))?.GetAttribute("datetime");
@@ -28,7 +29,7 @@ namespace theatrel.Lib.Parsers
                     DateTime = DateTime.Parse(dtString),
                     Name = specName.Children.Any() ? specName?.Children?.Last()?.TextContent : CommonTags.NotDefined,
                     Url = url,
-                    Type = GetType(element.ClassList.ToArray()),
+                    Type = GetType(parsedElement.ClassList.ToArray()),
                     Location = location,
                 };
             }
@@ -54,7 +55,7 @@ namespace theatrel.Lib.Parsers
             return url;
         }
 
-        private static Lazy<IDictionary<string, string>> perfomanceTypes
+        private static Lazy<IDictionary<string, string>> performanceTypes
             = new Lazy<IDictionary<string, string>>(() => new Dictionary<string, string>()
         {
             {"c_opera", "Опера"},
@@ -66,8 +67,8 @@ namespace theatrel.Lib.Parsers
         {
             foreach(var type in types)
             {
-                if (perfomanceTypes.Value.ContainsKey(type))
-                    return perfomanceTypes.Value[type];
+                if (performanceTypes.Value.ContainsKey(type))
+                    return performanceTypes.Value[type];
             }
 
             return types.Reverse().Skip(1).First();

@@ -5,10 +5,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using theatrel.DataAccess;
 using theatrel.Interfaces;
 using theatrel.TLBot.Commands;
-using theatrel.TLBot.Entities;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot
@@ -20,11 +19,11 @@ namespace theatrel.TLBot
 
         private readonly IDictionary<long, IChatDataInfo> _chatsInfo = new ConcurrentDictionary<long, IChatDataInfo>();
 
-        public TLBotProcessor(IFilterHelper filterHelper, IPlayBillDataResolver playBillResolver)
+        public TLBotProcessor(IFilterHelper filterHelper, AppDbContext dbContext, IPlayBillDataResolver playBillResolver)
         {
             _cancellationTokenSource = new CancellationTokenSource();
 
-            _commands.Add(new StartCommand());
+            _commands.Add(new StartCommand(dbContext));
             _commands.Add(new MonthCommand());
             _commands.Add(new DaysOfWeekCommand());
             _commands.Add(new PerformanceTypesCommand());

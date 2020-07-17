@@ -16,8 +16,8 @@ namespace theatrel.TLBot.Tests
 
         public PlayBillResolverMock()
         {
-            _playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<IPerformanceFilter>(), CancellationToken.None))
-                    .Callback<DateTime, DateTime, IPerformanceFilter>((dtStart, stEnd, filterResult) =>
+            _playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
+                    .Callback<DateTime, DateTime, IPerformanceFilter, CancellationToken>((dtStart, stEnd, filterResult, cToken) =>
                     {
                         StartDate = dtStart;
                         Filter = filterResult;

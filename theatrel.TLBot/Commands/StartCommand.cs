@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using theatrel.TLBot.Entities;
+using theatrel.DataAccess;
+using theatrel.DataAccess.Entities;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot.Commands
@@ -14,8 +15,11 @@ namespace theatrel.TLBot.Commands
         private static readonly string[] StartCommandVariants
             = { @"/start", "привет", "hi", "hello", "добрый день", "начать", "давай", "поищи", "да" };
 
-        public StartCommand() : base((int)DialogStep.Start)
+        private readonly AppDbContext _dbContext;
+
+        public StartCommand(AppDbContext dbContext) : base((int)DialogStep.Start)
         {
+            _dbContext = dbContext;
         }
 
         public override bool IsMessageReturnToStart(string message) => StartCommandVariants.Any(variant => message.ToLower().StartsWith(variant));
@@ -24,11 +28,10 @@ namespace theatrel.TLBot.Commands
         {
             try
             {
-                await using var db = new ApplicationContext();
-                if (!await db.TlUsers.AnyAsync(u => u.Id == chatInfo.ChatId))
+                if (!await _dbContext.TlUsers.AsNoTracking().AnyAsync(u => u.Id == chatInfo.ChatId, cancellationToken))
                 {
-                    await db.TlUsers.AddAsync(new TlUser { Id = chatInfo.ChatId });
-                    await db.SaveChangesAsync();
+                    _dbContext.TlUsers.Add(new TlUser { Id = chatInfo.ChatId });
+                    await _dbContext.SaveChangesAsync(cancellationToken);
                 }
             }
             catch (Exception ex)

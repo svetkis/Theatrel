@@ -28,8 +28,6 @@ namespace theatrel.Worker
 
             _tLBotProcessor = Bootstrapper.Resolve<ITLBotProcessor>();
             _tLBotProcessor.Start(Bootstrapper.Resolve<ITLBotService>(), cancellationToken);
-
-            return;
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -40,7 +38,6 @@ namespace theatrel.Worker
             Bootstrapper.Stop();
 
             await base.StopAsync(cancellationToken);
-            return;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
