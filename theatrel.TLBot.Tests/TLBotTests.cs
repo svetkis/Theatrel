@@ -43,7 +43,7 @@ namespace theatrel.TLBot.Tests
 
             var tlBotServiceMock = new Mock<ITLBotService>(MockBehavior.Strict);
             tlBotServiceMock.Setup(x => x.Start(CancellationToken.None)).Verifiable();
-            tlBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<string>())).Verifiable();
+            tlBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ICommandResponse>())).Verifiable();
 
             tlProcessor.Start(tlBotServiceMock.Object, CancellationToken.None);
 

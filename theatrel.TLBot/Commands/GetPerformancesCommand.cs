@@ -20,18 +20,18 @@ namespace theatrel.TLBot.Commands
             _filterHelper = filterHelper;
         }
 
-        public override async Task<string> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
-            => null;
+        public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+            => new TlCommandResponse(null);
 
         public override bool IsMessageReturnToStart(string message) => true;
 
-        public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             IPerformanceFilter filter = _filterHelper.GetFilter(chatInfo);
 
             IPerformanceData[] data = await _playBillResolver.RequestProcess(chatInfo.When, new DateTime(), filter, cancellationToken);
 
-            return await PerformancesMessage(data, filter, chatInfo.When);
+            return new TlCommandResponse(await PerformancesMessage(data, filter, chatInfo.When));
         }
 
         private async Task<string> PerformancesMessage(IPerformanceData[] performances, IPerformanceFilter filter, DateTime when)

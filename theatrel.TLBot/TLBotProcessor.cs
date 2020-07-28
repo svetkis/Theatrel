@@ -92,7 +92,7 @@ namespace theatrel.TLBot
                 return;
             }
 
-            string acknowledgement = await command.ApplyResultAsync(chatInfo, message, _cancellationTokenSource.Token);
+            ICommandResponse acknowledgement = await command.ApplyResultAsync(chatInfo, message, _cancellationTokenSource.Token);
 
             ++chatInfo.ChatStep;
 
@@ -100,15 +100,15 @@ namespace theatrel.TLBot
             await CommandAskQuestion(nextCommand, chatInfo, acknowledgement);
         }
 
-        private async Task CommandAskQuestion(IDialogCommand cmd, IChatDataInfo chatInfo, string previousCmdAcknowledgement)
+        private async Task CommandAskQuestion(IDialogCommand cmd, IChatDataInfo chatInfo, ICommandResponse previousCmdAcknowledgement)
         {
             if (cmd == null)
                 return;
 
-            string nextDlgQuestion = await cmd.ExecuteAsync(chatInfo, _cancellationTokenSource.Token);
-            string botResponse = string.IsNullOrWhiteSpace(previousCmdAcknowledgement)
-                ? nextDlgQuestion
-                : $"{previousCmdAcknowledgement}{Environment.NewLine}{nextDlgQuestion}";
+            ICommandResponse nextDlgQuestion = await cmd.AscUserAsync(chatInfo, _cancellationTokenSource.Token);
+            ICommandResponse botResponse = nextDlgQuestion;
+            if (!string.IsNullOrWhiteSpace(previousCmdAcknowledgement?.Message))
+                botResponse.Message = $"{previousCmdAcknowledgement.Message}{Environment.NewLine}{nextDlgQuestion}";
 
             await Task.Run(() => _botService.SendMessageAsync(chatInfo.ChatId, botResponse), _cancellationTokenSource.Token);
 
@@ -119,7 +119,7 @@ namespace theatrel.TLBot
         private void SendWrongCommandMessage(long chatId, string message, int chatLevel)
         {
             Trace.TraceInformation($"Wrong command: {chatId} {chatLevel} {message}");
-           _botService.SendMessageAsync(chatId, "Простите, я вас не понял. Попробуйте еще раз.");
+           _botService.SendMessageAsync(chatId, new TlCommandResponse("Простите, я вас не понял. Попробуйте еще раз."));
         }
     }
 }

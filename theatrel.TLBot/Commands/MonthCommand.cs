@@ -28,8 +28,7 @@ namespace theatrel.TLBot.Commands
 
         private int GetMonth(string msg)
         {
-            int value;
-            if (int.TryParse(msg, out value))
+            if (int.TryParse(msg, out var value))
             {
                 if (value > 0 && value < 12)
                     return value;
@@ -37,18 +36,18 @@ namespace theatrel.TLBot.Commands
                 return 0;
             }
 
-            int num = CheckEnumarable(_monthNames, msg);
+            int num = CheckEnumerable(_monthNames, msg);
             if (num != 0)
                 return num;
 
-            int numAbr = CheckEnumarable(_monthNamesAbbreviated, msg);
+            int numAbr = CheckEnumerable(_monthNamesAbbreviated, msg);
             if (numAbr != 0)
                 return numAbr;
 
             return 0;
         }
 
-        public override async Task<string> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             int month = GetMonth(message.Trim().ToLower());
 
@@ -57,28 +56,28 @@ namespace theatrel.TLBot.Commands
             chatInfo.When = new DateTime(year, month, 1);
 
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
-            return $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}";
+            return new TlCommandResponse($"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}");
         }
 
-        public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             switch (chatInfo.DialogState)
             {
                 case DialogStateEnum.DialogReturned:
-                    return Msg;
+                    return new TlCommandResponse(Msg);
                 case DialogStateEnum.DialogStarted:
-                    return $"{GoodDay}{IWillHelpYou}{Msg}";
+                    return new TlCommandResponse($"{GoodDay}{IWillHelpYou}{Msg}");
                 default:
                     throw new NotImplementedException();
             }
         }
 
-        private int CheckEnumarable(string[] checkedData, string msg)
+        private int CheckEnumerable(string[] checkedData, string msg)
         {
             var monthData = checkedData.Select((month, idx) => new { idx, month })
                 .FirstOrDefault(data => msg.Equals(data.month, StringComparison.OrdinalIgnoreCase ));
 
-            return null != monthData ? monthData.idx + 1 : 0;
+            return monthData?.idx + 1 ?? 0;
         }
     }
 }

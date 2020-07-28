@@ -14,20 +14,21 @@ namespace theatrel.TLBot.Commands
         public PerformanceTypesCommand() : base((int)DialogStep.SelectType)
         { }
 
-        public override async Task<string> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             chatInfo.Types = ParseMessage(message);
 
-            return null;
+            return new TlCommandResponse(null);
         }
 
         public override bool IsMessageReturnToStart(string message) => SplitMessage(message).Any();
 
-        public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine($"Вас интересует {string.Join(" или ", _types)}?");
-            return stringBuilder.ToString();
+
+            return new TlCommandResponse(stringBuilder.ToString());
         }
 
         private string[] ParseMessage(string message)

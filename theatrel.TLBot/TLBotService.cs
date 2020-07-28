@@ -63,11 +63,11 @@ namespace theatrel.TLBot
         }
 
         private void BotOnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
-            => OnMessage?.Invoke(sender, new TLMessage() { ChatId = e.Message.Chat.Id, Message = e.Message.Text.Trim() });
+            => OnMessage?.Invoke(sender, new TLMessage { ChatId = e.Message.Chat.Id, Message = e.Message.Text.Trim() });
 
-        public async void SendMessageAsync(long chatId, string message)
+        public async void SendMessageAsync(long chatId, ICommandResponse commandResponse)
         {
-            Trace.TraceInformation($"SendMessage id: {chatId} msg: {new string(message.Take(100).ToArray())}...");
+            Trace.TraceInformation($"SendMessage id: {chatId} msg: {new string(commandResponse.Message?.Take(100).ToArray())}...");
             try
             {
                 await Policy
@@ -75,8 +75,8 @@ namespace theatrel.TLBot
                     .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
                     .ExecuteAsync(async () =>
                     {
-                        await _botClient.SendChatActionAsync(chatId, Telegram.Bot.Types.Enums.ChatAction.Typing);
-                        await _botClient.SendTextMessageAsync(chatId, message, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
+                        await _botClient.SendChatActionAsync(chatId, ChatAction.Typing);
+                        await _botClient.SendTextMessageAsync(chatId, commandResponse.Message, parseMode: ParseMode.MarkdownV2, replyMarkup: commandResponse.ReplyKeyboard);
                     });
             }
             catch (HttpRequestException ex)

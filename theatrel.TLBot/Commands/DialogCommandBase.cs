@@ -19,8 +19,8 @@ namespace theatrel.TLBot.Commands
 
         public abstract bool IsMessageReturnToStart(string message);
 
-        public abstract Task<string> ExecuteAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken);
+        public abstract Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken);
 
-        public abstract Task<string> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);
+        public abstract Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);
     }
 }

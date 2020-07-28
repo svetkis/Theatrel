@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot.Commands
@@ -19,41 +20,69 @@ namespace theatrel.TLBot.Commands
             {4, DayOfWeek.Thursday },
             {5, DayOfWeek.Friday },
             {6, DayOfWeek.Saturday },
-            {7, DayOfWeek.Sunday },
+            {7, DayOfWeek.Sunday }
         };
 
-        private readonly IDictionary<string, DayOfWeek[]> _daysDictionary = new Dictionary<string, DayOfWeek[]>
-        {
-            {"1", new [] { DayOfWeek.Monday}},
-            {"2", new [] { DayOfWeek.Tuesday } },
-            {"3", new [] { DayOfWeek.Wednesday } },
-            {"4", new [] { DayOfWeek.Thursday } },
-            {"5", new [] { DayOfWeek.Friday } },
-            {"6", new [] { DayOfWeek.Saturday } },
-            {"7", new [] { DayOfWeek.Sunday } },
-            {"будни", new [] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday } },
-            {"выходные", new [] { DayOfWeek.Saturday, DayOfWeek.Sunday } },
-            {"все", new [] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday } },
-            {"любой", new [] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday } },
-        };
+        private static readonly DayOfWeek[] Weekends = { DayOfWeek.Saturday, DayOfWeek.Sunday };
+        private static readonly DayOfWeek[] AllDays = { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
+        private static readonly DayOfWeek[] WeekDays = { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday };
+
+        private static readonly string[] WeekendsNames = {"Выходные"};
+        private static readonly string[] WeekDaysNames = { "Будни" };
+        private static readonly string[] AllDaysNames = { "Любой", "не важно", "все"};
+
+        private ReplyKeyboardMarkup _daysOfWeekKeyboardMarkup;
+
+        private readonly IDictionary<string, DayOfWeek[]> _daysDictionary = new Dictionary<string, DayOfWeek[]>();
 
         public DaysOfWeekCommand() : base((int)DialogStep.SelectDays)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture("ru");
-            foreach(var item in Enumerable.Range(1, 7).Select(idx => new { i = idx, name = cultureRu.DateTimeFormat.GetDayName(_idxToDays[idx]).ToLower() }))
-                _daysDictionary.Add(item.name, new[] { _idxToDays[item.i] });
+            List<KeyboardButton> buttons = new List<KeyboardButton>();
 
-            foreach (var item in Enumerable.Range(1, 7).Select(idx => new { i = idx, name = cultureRu.DateTimeFormat.GetAbbreviatedDayName(_idxToDays[idx]).ToLower() }))
+            var daysArr = Enumerable.Range(1, 7).Select(idx =>
+                new
+                {
+                    i = idx,
+                    name = cultureRu.DateTimeFormat.GetDayName(_idxToDays[idx]).ToLower(),
+                    abbrName = cultureRu.DateTimeFormat.GetAbbreviatedDayName(_idxToDays[idx]).ToLower()
+                });
+
+            foreach (var item in daysArr)
+            {
+                _daysDictionary.Add(item.i.ToString(), new[] { _idxToDays[item.i] });
                 _daysDictionary.Add(item.name, new[] { _idxToDays[item.i] });
+                _daysDictionary.Add(item.abbrName, new[] { _idxToDays[item.i] });
+
+                buttons.Add(new KeyboardButton(item.name));
+            }
+
+            buttons.Add(new KeyboardButton(WeekDaysNames.First()));
+            foreach (var name in WeekDaysNames)
+                _daysDictionary.Add(name.ToLower(), WeekDays);
+
+            buttons.Add(new KeyboardButton(WeekendsNames.First()));
+            foreach (var name in WeekendsNames)
+                _daysDictionary.Add(name.ToLower(), Weekends);
+
+            buttons.Add(new KeyboardButton(AllDaysNames.First()));
+            foreach (var name in AllDaysNames)
+                _daysDictionary.Add(name.ToLower(), AllDays);
+
+            _daysOfWeekKeyboardMarkup = new ReplyKeyboardMarkup
+            {
+                Keyboard = new[] { buttons.ToArray(), }
+            };
         }
 
-        public override async Task<string> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             var days = ParseMessage(message);
             chatInfo.Days = days;
 
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
-            return $"Вы выбрали {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. {ReturnMsg}";
+            return new TlCommandResponse(
+                $"Вы выбрали {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. {ReturnMsg}");
         }
 
         public override bool IsMessageReturnToStart(string message)
@@ -62,11 +91,11 @@ namespace theatrel.TLBot.Commands
             return days.Any();
         }
 
-        public override async Task<string> ExecuteAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("В какой день недели Вы хотели бы посетить театр? Вы можете выбрать несколько дней.");
-            return stringBuilder.ToString();
+            return new TlCommandResponse(stringBuilder.ToString(), _daysOfWeekKeyboardMarkup);
         }
 
         private DayOfWeek[] ParseMessage(string message)
