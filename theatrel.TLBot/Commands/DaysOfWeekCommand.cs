@@ -31,7 +31,7 @@ namespace theatrel.TLBot.Commands
         private static readonly string[] WeekDaysNames = { "Будни" };
         private static readonly string[] AllDaysNames = { "Любой", "не важно", "все"};
 
-        private ReplyKeyboardMarkup _daysOfWeekKeyboardMarkup;
+        private readonly ReplyKeyboardMarkup _daysOfWeekKeyboardMarkup;
 
         private readonly IDictionary<string, DayOfWeek[]> _daysDictionary = new Dictionary<string, DayOfWeek[]>();
 

@@ -76,7 +76,7 @@ namespace theatrel.TLBot
                     .ExecuteAsync(async () =>
                     {
                         await _botClient.SendChatActionAsync(chatId, ChatAction.Typing);
-                        await _botClient.SendTextMessageAsync(chatId, commandResponse.Message, parseMode: ParseMode.MarkdownV2, replyMarkup: commandResponse.ReplyKeyboard);
+                        await _botClient.SendTextMessageAsync(chatId, EscapeMessageForMarkupV2(commandResponse.Message), parseMode: ParseMode.MarkdownV2, replyMarkup: commandResponse.ReplyKeyboard);
                     });
             }
             catch (HttpRequestException ex)
@@ -84,5 +84,9 @@ namespace theatrel.TLBot
                 Trace.TraceInformation("SendMessage: {chatId} {message} failed");
             }
         }
+
+        private static readonly string[] CharsToEscape = {"!", "."};
+        private string EscapeMessageForMarkupV2(string originalMessage)
+            => CharsToEscape.Aggregate(originalMessage, (current, charToReplace) => current.Replace(charToReplace, $"\\{charToReplace}"));
     }
 }
