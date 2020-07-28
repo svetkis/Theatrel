@@ -14,6 +14,8 @@ namespace theatrel.TLBot.Commands
         private readonly IPlayBillDataResolver _playBillResolver;
         private readonly IFilterHelper _filterHelper;
 
+        protected override string ReturnCommandMessage { get; set; } = string.Empty;
+
         public GetPerformancesCommand(IPlayBillDataResolver playBillResolver, IFilterHelper filterHelper) : base ((int)DialogStep.Final)
         {
             _playBillResolver = playBillResolver;

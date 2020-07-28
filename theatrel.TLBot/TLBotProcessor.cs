@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.DataAccess;
 using theatrel.Interfaces;
 using theatrel.TLBot.Commands;
@@ -73,7 +74,9 @@ namespace theatrel.TLBot
             if (startCmd.IsMessageReturnToStart(message))
                 chatInfo.Clear();
 
-            if (message.ToLower().StartsWith("нет"))
+            var prevCmd = GetPreviousCommand(chatInfo);
+
+            if (message.ToLower().StartsWith("нет") || (prevCmd?.IsReturnCommand(message) ?? false))
             {
                 if (chatInfo.ChatStep > 0)
                     --chatInfo.ChatStep;
@@ -82,6 +85,7 @@ namespace theatrel.TLBot
 
                 var prevCommand = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
                 await CommandAskQuestion(prevCommand, chatInfo, null);
+
                 return;
             }
 
@@ -100,6 +104,13 @@ namespace theatrel.TLBot
             await CommandAskQuestion(nextCommand, chatInfo, acknowledgement);
         }
 
+        private IDialogCommand GetPreviousCommand(IChatDataInfo chatInfo)
+        {
+            return chatInfo.ChatStep == 0
+                ? null
+                : _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep - 1);
+        }
+
         private async Task CommandAskQuestion(IDialogCommand cmd, IChatDataInfo chatInfo, ICommandResponse previousCmdAcknowledgement)
         {
             if (cmd == null)
@@ -109,6 +120,17 @@ namespace theatrel.TLBot
             ICommandResponse botResponse = nextDlgQuestion;
             if (!string.IsNullOrWhiteSpace(previousCmdAcknowledgement?.Message))
                 botResponse.Message = $"{previousCmdAcknowledgement.Message}{Environment.NewLine}{nextDlgQuestion.Message}";
+
+            if (null != previousCmdAcknowledgement?.ReplyKeyboard)
+            {
+                botResponse.ReplyKeyboard = new ReplyKeyboardMarkup
+                {
+                    Keyboard = botResponse.ReplyKeyboard?.Keyboard != null
+                        ? previousCmdAcknowledgement.ReplyKeyboard.Keyboard.Concat(botResponse.ReplyKeyboard.Keyboard)
+                        : previousCmdAcknowledgement.ReplyKeyboard?.Keyboard,
+                    OneTimeKeyboard = botResponse.ReplyKeyboard?.OneTimeKeyboard ?? true
+                };
+            }
 
             await Task.Run(() => _botService.SendMessageAsync(chatInfo.ChatId, botResponse), _cancellationTokenSource.Token);
 

@@ -17,6 +17,8 @@ namespace theatrel.TLBot.Commands
 
         private readonly AppDbContext _dbContext;
 
+        protected override string ReturnCommandMessage { get; set; } = string.Empty;
+
         public StartCommand(AppDbContext dbContext) : base((int)DialogStep.Start)
         {
             _dbContext = dbContext;

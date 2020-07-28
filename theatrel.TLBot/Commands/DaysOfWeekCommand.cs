@@ -23,6 +23,17 @@ namespace theatrel.TLBot.Commands
             {7, DayOfWeek.Sunday }
         };
 
+        private readonly IDictionary<DayOfWeek, int> _daysToIdx = new Dictionary<DayOfWeek, int>
+        {
+            {DayOfWeek.Monday, 1},
+            {DayOfWeek.Tuesday, 2},
+            {DayOfWeek.Wednesday, 3},
+            {DayOfWeek.Thursday, 4},
+            {DayOfWeek.Friday, 5},
+            {DayOfWeek.Saturday, 6},
+            {DayOfWeek.Sunday, 7}
+        };
+
         private static readonly DayOfWeek[] Weekends = { DayOfWeek.Saturday, DayOfWeek.Sunday };
         private static readonly DayOfWeek[] AllDays = { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
         private static readonly DayOfWeek[] WeekDays = { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday };
@@ -31,10 +42,9 @@ namespace theatrel.TLBot.Commands
         private static readonly string[] WeekDaysNames = { "Будни" };
         private static readonly string[] AllDaysNames = { "Любой", "не важно", "все"};
 
-        private readonly ReplyKeyboardMarkup _daysOfWeekKeyboardMarkup;
-
         private readonly IDictionary<string, DayOfWeek[]> _daysDictionary = new Dictionary<string, DayOfWeek[]>();
-        private const int ButtonsInLine = 3;
+
+        protected override string ReturnCommandMessage { get; set; } = "Выбрать другие дни";
 
         public DaysOfWeekCommand() : base((int)DialogStep.SelectDays)
         {
@@ -70,24 +80,11 @@ namespace theatrel.TLBot.Commands
             foreach (var name in AllDaysNames)
                 _daysDictionary.Add(name.ToLower(), AllDays);
 
-            _daysOfWeekKeyboardMarkup = new ReplyKeyboardMarkup
+            CommandKeyboardMarkup = new ReplyKeyboardMarkup
             {
-                Keyboard = GroupKeyboardButtons(buttons, ButtonsInLine)
+                Keyboard = GroupKeyboardButtons(buttons, ButtonsInLine),
+                OneTimeKeyboard = true
             };
-        }
-
-        private KeyboardButton[][] GroupKeyboardButtons(IEnumerable<KeyboardButton> buttons, int maxCount)
-        {
-            List<List<KeyboardButton>> groupedButtons = new List<List<KeyboardButton>> { new List<KeyboardButton>() };
-            foreach (var keyboardButton in buttons)
-            {
-                if (groupedButtons.Last().Count >= maxCount)
-                    groupedButtons.Add(new List<KeyboardButton>());
-
-                groupedButtons.Last().Add(keyboardButton);
-            }
-
-            return groupedButtons.Select(list => list.ToArray()).ToArray();
         }
 
         private const string YouSelected = "Вы выбрали";
@@ -99,16 +96,17 @@ namespace theatrel.TLBot.Commands
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
 
             if (days.SequenceEqual(WeekDays))
-                return new TlCommandResponse($"{YouSelected} {WeekDaysNames.First()}. {ReturnMsg}");
+                return new TlCommandResponse($"{YouSelected} {WeekDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage);
 
             if (days.SequenceEqual(Weekends))
-                return new TlCommandResponse($"{YouSelected} {WeekendsNames.First()}. {ReturnMsg}");
+                return new TlCommandResponse($"{YouSelected} {WeekendsNames.First()}. {ReturnMsg}", ReturnCommandMessage);
 
             if (days.SequenceEqual(AllDays))
-                return new TlCommandResponse($"{YouSelected} {AllDaysNames.First()}. {ReturnMsg}");
+                return new TlCommandResponse($"{YouSelected} {AllDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage);
 
             return new TlCommandResponse(
-                $"{YouSelected} {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. {ReturnMsg}");
+                $"{YouSelected} {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. {ReturnMsg}",
+                ReturnCommandMessage);
         }
 
         public override bool IsMessageReturnToStart(string message)
@@ -121,7 +119,7 @@ namespace theatrel.TLBot.Commands
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("В какой день недели Вы хотели бы посетить театр? Вы можете выбрать несколько дней.");
-            return new TlCommandResponse(stringBuilder.ToString(), _daysOfWeekKeyboardMarkup);
+            return new TlCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup);
         }
 
         private DayOfWeek[] ParseMessage(string message)
@@ -132,7 +130,7 @@ namespace theatrel.TLBot.Commands
                 days.AddRange(daysArray);
             }
 
-            return days.Distinct().OrderBy(item => item).ToArray();
+            return days.Distinct().OrderBy(item => _daysToIdx[item]).ToArray();
         }
 
         private string[] SplitMessage(string message) => message.Split(WordSplitters).Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();

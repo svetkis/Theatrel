@@ -5,6 +5,6 @@ namespace theatrel.TLBot.Interfaces
     public interface ICommandResponse
     {
         string Message { get; set; }
-        ReplyKeyboardMarkup ReplyKeyboard { get; }
+        ReplyKeyboardMarkup ReplyKeyboard { get; set; }
     }
 }

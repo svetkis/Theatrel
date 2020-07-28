@@ -10,5 +10,6 @@ namespace theatrel.TLBot.Interfaces
         Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken);
 
         bool IsMessageReturnToStart(string message);
+        bool IsReturnCommand(string message);
     }
 }

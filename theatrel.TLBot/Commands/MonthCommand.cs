@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot.Commands
@@ -16,12 +18,21 @@ namespace theatrel.TLBot.Commands
         private readonly string[] _monthNames;
         private readonly string[] _monthNamesAbbreviated;
 
+        protected override string ReturnCommandMessage { get; set; } = "Выбрать другой месяц";
+
         public MonthCommand() : base((int)DialogStep.SelectMonth)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture("ru");
 
             _monthNames = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetMonthName(num)).ToArray();
             _monthNamesAbbreviated = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetAbbreviatedMonthName(num)).ToArray();
+
+            var buttons = _monthNames.Select(m => new KeyboardButton(m)).ToArray();
+            CommandKeyboardMarkup = new ReplyKeyboardMarkup
+            {
+                Keyboard = GroupKeyboardButtons(buttons, ButtonsInLine),
+                OneTimeKeyboard = true
+            };
         }
 
         public override bool IsMessageReturnToStart(string message) => 0 != GetMonth(message.Trim().ToLower());
@@ -41,10 +52,8 @@ namespace theatrel.TLBot.Commands
                 return num;
 
             int numAbr = CheckEnumerable(_monthNamesAbbreviated, msg);
-            if (numAbr != 0)
-                return numAbr;
 
-            return 0;
+            return numAbr;
         }
 
         public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
@@ -56,7 +65,8 @@ namespace theatrel.TLBot.Commands
             chatInfo.When = new DateTime(year, month, 1);
 
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
-            return new TlCommandResponse($"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}");
+            return new TlCommandResponse(
+                $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}", ReturnKeyboardMarkup);
         }
 
         public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
@@ -66,7 +76,7 @@ namespace theatrel.TLBot.Commands
                 case DialogStateEnum.DialogReturned:
                     return new TlCommandResponse(Msg);
                 case DialogStateEnum.DialogStarted:
-                    return new TlCommandResponse($"{GoodDay}{IWillHelpYou}{Msg}");
+                    return new TlCommandResponse($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup);
                 default:
                     throw new NotImplementedException();
             }

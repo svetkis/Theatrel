@@ -66,12 +66,15 @@ namespace theatrel.TLBot
         private void BotOnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
             => OnMessage?.Invoke(sender, new TLMessage { ChatId = e.Message.Chat.Id, Message = e.Message.Text.Trim() });
 
-        public async void SendMessageAsync(long chatId, ICommandResponse commandResponse)
+        public async void SendMessageAsync(long chatId, ICommandResponse message)
         {
-            Trace.TraceInformation($"SendMessage id: {chatId} msg: {new string(commandResponse.Message?.Take(100).ToArray())}...");
+            char[] toLog = message.Message?.Take(100).ToArray();
+            string msgToLog = toLog == null ? string.Empty : new string(toLog);
+            Trace.TraceInformation($"SendMessage id: {chatId} msg: {msgToLog}...");
+
             try
             {
-                IReplyMarkup replyMarkup = commandResponse.ReplyKeyboard;
+                IReplyMarkup replyMarkup = message.ReplyKeyboard;
                 replyMarkup ??= new ReplyKeyboardRemove();
 
                 await Policy
@@ -81,19 +84,25 @@ namespace theatrel.TLBot
                     {
                         await _botClient.SendChatActionAsync(chatId, ChatAction.Typing);
                         await _botClient.SendTextMessageAsync(chatId,
-                            EscapeMessageForMarkupV2(commandResponse.Message),
-                            parseMode: ParseMode.MarkdownV2,
+                            EscapeMessageForMarkupV2(message.Message),
+                            parseMode:ParseMode.MarkdownV2,
                             replyMarkup: replyMarkup);
                     });
             }
-            catch (HttpRequestException ex)
+            catch (Exception exception)
             {
-                Trace.TraceInformation("SendMessage: {chatId} {message} failed");
+                Trace.TraceInformation($"SendMessage: {chatId} {message} failed. Exception {exception.Message}{Environment.NewLine}{exception.StackTrace}");
             }
         }
 
         private static readonly string[] CharsToEscape = {"!", "."};
         private string EscapeMessageForMarkupV2(string originalMessage)
-            => CharsToEscape.Aggregate(originalMessage, (current, charToReplace) => current.Replace(charToReplace, $"\\{charToReplace}"));
+        {
+            if (string.IsNullOrWhiteSpace(originalMessage))
+                return string.Empty;
+
+            return CharsToEscape.Aggregate(originalMessage,
+                (current, charToReplace) => current.Replace(charToReplace, $"\\{charToReplace}"));
+        }
     }
 }

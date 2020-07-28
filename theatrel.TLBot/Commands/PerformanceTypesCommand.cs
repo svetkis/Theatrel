@@ -11,6 +11,8 @@ namespace theatrel.TLBot.Commands
         private readonly string[] _types = { "опера", "балет", "концерт" };
         private readonly string[] _every = { "все", "всё", "любой", "любое", "не важно"};
 
+        protected override string ReturnCommandMessage { get; set; } = "Выбрать другое";
+
         public PerformanceTypesCommand() : base((int)DialogStep.SelectType)
         { }
 
