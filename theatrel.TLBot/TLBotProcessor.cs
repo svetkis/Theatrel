@@ -108,7 +108,7 @@ namespace theatrel.TLBot
             ICommandResponse nextDlgQuestion = await cmd.AscUserAsync(chatInfo, _cancellationTokenSource.Token);
             ICommandResponse botResponse = nextDlgQuestion;
             if (!string.IsNullOrWhiteSpace(previousCmdAcknowledgement?.Message))
-                botResponse.Message = $"{previousCmdAcknowledgement.Message}{Environment.NewLine}{nextDlgQuestion}";
+                botResponse.Message = $"{previousCmdAcknowledgement.Message}{Environment.NewLine}{nextDlgQuestion.Message}";
 
             await Task.Run(() => _botService.SendMessageAsync(chatInfo.ChatId, botResponse), _cancellationTokenSource.Token);
 

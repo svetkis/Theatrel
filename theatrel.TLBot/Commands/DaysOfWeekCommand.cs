@@ -34,6 +34,7 @@ namespace theatrel.TLBot.Commands
         private readonly ReplyKeyboardMarkup _daysOfWeekKeyboardMarkup;
 
         private readonly IDictionary<string, DayOfWeek[]> _daysDictionary = new Dictionary<string, DayOfWeek[]>();
+        private const int ButtonsInLine = 3;
 
         public DaysOfWeekCommand() : base((int)DialogStep.SelectDays)
         {
@@ -71,18 +72,43 @@ namespace theatrel.TLBot.Commands
 
             _daysOfWeekKeyboardMarkup = new ReplyKeyboardMarkup
             {
-                Keyboard = new[] { buttons.ToArray(), }
+                Keyboard = GroupKeyboardButtons(buttons, ButtonsInLine)
             };
         }
 
+        private KeyboardButton[][] GroupKeyboardButtons(IEnumerable<KeyboardButton> buttons, int maxCount)
+        {
+            List<List<KeyboardButton>> groupedButtons = new List<List<KeyboardButton>> { new List<KeyboardButton>() };
+            foreach (var keyboardButton in buttons)
+            {
+                if (groupedButtons.Last().Count >= maxCount)
+                    groupedButtons.Add(new List<KeyboardButton>());
+
+                groupedButtons.Last().Add(keyboardButton);
+            }
+
+            return groupedButtons.Select(list => list.ToArray()).ToArray();
+        }
+
+        private const string YouSelected = "Вы выбрали";
         public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             var days = ParseMessage(message);
             chatInfo.Days = days;
 
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
+
+            if (days.SequenceEqual(WeekDays))
+                return new TlCommandResponse($"{YouSelected} {WeekDaysNames.First()}. {ReturnMsg}");
+
+            if (days.SequenceEqual(Weekends))
+                return new TlCommandResponse($"{YouSelected} {WeekendsNames.First()}. {ReturnMsg}");
+
+            if (days.SequenceEqual(AllDays))
+                return new TlCommandResponse($"{YouSelected} {AllDaysNames.First()}. {ReturnMsg}");
+
             return new TlCommandResponse(
-                $"Вы выбрали {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. {ReturnMsg}");
+                $"{YouSelected} {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. {ReturnMsg}");
         }
 
         public override bool IsMessageReturnToStart(string message)
@@ -106,7 +132,7 @@ namespace theatrel.TLBot.Commands
                 days.AddRange(daysArray);
             }
 
-            return days.ToArray();
+            return days.Distinct().OrderBy(item => item).ToArray();
         }
 
         private string[] SplitMessage(string message) => message.Split(WordSplitters).Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
@@ -118,10 +144,7 @@ namespace theatrel.TLBot.Commands
 
             string key = messagePart.ToLower();
 
-            if (!_daysDictionary.ContainsKey(key))
-                return new DayOfWeek[0];
-
-            return _daysDictionary[key];
+            return !_daysDictionary.ContainsKey(key) ? new DayOfWeek[0] : _daysDictionary[key];
         }
     }
 }

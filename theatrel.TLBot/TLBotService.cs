@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot
@@ -70,13 +71,19 @@ namespace theatrel.TLBot
             Trace.TraceInformation($"SendMessage id: {chatId} msg: {new string(commandResponse.Message?.Take(100).ToArray())}...");
             try
             {
+                IReplyMarkup replyMarkup = commandResponse.ReplyKeyboard;
+                replyMarkup ??= new ReplyKeyboardRemove();
+
                 await Policy
                     .Handle<HttpRequestException>()
                     .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
                     .ExecuteAsync(async () =>
                     {
                         await _botClient.SendChatActionAsync(chatId, ChatAction.Typing);
-                        await _botClient.SendTextMessageAsync(chatId, EscapeMessageForMarkupV2(commandResponse.Message), parseMode: ParseMode.MarkdownV2, replyMarkup: commandResponse.ReplyKeyboard);
+                        await _botClient.SendTextMessageAsync(chatId,
+                            EscapeMessageForMarkupV2(commandResponse.Message),
+                            parseMode: ParseMode.MarkdownV2,
+                            replyMarkup: replyMarkup);
                     });
             }
             catch (HttpRequestException ex)
