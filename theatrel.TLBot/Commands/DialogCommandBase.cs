@@ -26,7 +26,13 @@ namespace theatrel.TLBot.Commands
             Label = label;
 
             if (!string.IsNullOrWhiteSpace(ReturnCommandMessage))
-                ReturnKeyboardMarkup = new ReplyKeyboardMarkup(new[] { new KeyboardButton(ReturnCommandMessage) });
+            {
+                ReturnKeyboardMarkup = new ReplyKeyboardMarkup(new[] { new KeyboardButton(ReturnCommandMessage) })
+                {
+                    OneTimeKeyboard = true,
+                    ResizeKeyboard = true
+                };
+            }
         }
 
         protected KeyboardButton[][] GroupKeyboardButtons(IEnumerable<KeyboardButton> buttons, int maxCount)

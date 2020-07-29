@@ -128,7 +128,8 @@ namespace theatrel.TLBot
                     Keyboard = botResponse.ReplyKeyboard?.Keyboard != null
                         ? previousCmdAcknowledgement.ReplyKeyboard.Keyboard.Concat(botResponse.ReplyKeyboard.Keyboard)
                         : previousCmdAcknowledgement.ReplyKeyboard?.Keyboard,
-                    OneTimeKeyboard = botResponse.ReplyKeyboard?.OneTimeKeyboard ?? true
+                    OneTimeKeyboard = botResponse.ReplyKeyboard?.OneTimeKeyboard ?? true,
+                    ResizeKeyboard = botResponse.ReplyKeyboard?.ResizeKeyboard ?? true
                 };
             }
 

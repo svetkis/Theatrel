@@ -31,7 +31,8 @@ namespace theatrel.TLBot.Commands
             CommandKeyboardMarkup = new ReplyKeyboardMarkup
             {
                 Keyboard = GroupKeyboardButtons(buttons, ButtonsInLine),
-                OneTimeKeyboard = true
+                OneTimeKeyboard = true,
+                ResizeKeyboard = true
             };
         }
 
