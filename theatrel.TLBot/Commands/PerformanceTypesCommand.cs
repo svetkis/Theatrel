@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot.Commands
@@ -13,8 +14,17 @@ namespace theatrel.TLBot.Commands
 
         protected override string ReturnCommandMessage { get; set; } = "Выбрать другое";
 
-        public PerformanceTypesCommand() : base((int)DialogStep.SelectType)
-        { }
+        public PerformanceTypesCommand() : base((int) DialogStep.SelectType)
+        {
+            var buttons = _types.Select(m => new KeyboardButton(m)).ToArray();
+
+            CommandKeyboardMarkup = new ReplyKeyboardMarkup
+            {
+                Keyboard = GroupKeyboardButtons(buttons, ButtonsInLine),
+                OneTimeKeyboard = true,
+                ResizeKeyboard = true
+            };
+        }
 
         public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
@@ -28,9 +38,9 @@ namespace theatrel.TLBot.Commands
         public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine($"Вас интересует {string.Join(" или ", _types)}?");
+            stringBuilder.AppendLine("Какие представления Вас интересуют?");
 
-            return new TlCommandResponse(stringBuilder.ToString());
+            return new TlCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup);
         }
 
         private string[] ParseMessage(string message)

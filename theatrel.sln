@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Console", "theatrel.Console\theatrel.Console.csproj", "{0C0ACE72-955A-4A75-B34D-35F05E62D18B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Lib", "theatrel.Lib\theatrel.Lib.csproj", "{12E8F016-5E98-4350-97FA-5C606440852D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Interfaces", "theatrel.Interfaces\theatrel.Interfaces.csproj", "{79518D79-6163-41D2-A1E8-7F27E4120B6D}"
@@ -19,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.TLBot.Tests", "the
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Lib.Tests", "theatrel.Lib.Tests\theatrel.Lib.Tests.csproj", "{0442000B-3205-4608-B7A5-5E750A1EC625}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "theatrel.DataAccess", "theatrel.Data\theatrel.DataAccess.csproj", "{D36BB35F-4EB3-4B27-AC49-2AB8F4814133}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.DataAccess", "theatrel.Data\theatrel.DataAccess.csproj", "{D36BB35F-4EB3-4B27-AC49-2AB8F4814133}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,10 +25,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0C0ACE72-955A-4A75-B34D-35F05E62D18B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0C0ACE72-955A-4A75-B34D-35F05E62D18B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0C0ACE72-955A-4A75-B34D-35F05E62D18B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0C0ACE72-955A-4A75-B34D-35F05E62D18B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{12E8F016-5E98-4350-97FA-5C606440852D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{12E8F016-5E98-4350-97FA-5C606440852D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12E8F016-5E98-4350-97FA-5C606440852D}.Release|Any CPU.ActiveCfg = Release|Any CPU

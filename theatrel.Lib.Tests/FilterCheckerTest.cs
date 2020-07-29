@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using theatrel.Interfaces;
+using theatrel.Tests;
 using Xunit;
 
-namespace theatrel.Tests
+namespace theatrel.Lib.Tests
 {
     public class FilterCheckerTest
     {

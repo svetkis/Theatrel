@@ -25,7 +25,7 @@ namespace theatrel.TLBot
 
             if (dataInfo.Days != null && dataInfo.Days.Any())
             {
-                var days = dataInfo.Days.Distinct();
+                var days = dataInfo.Days.Distinct().ToArray();
                 if (days.Count() < 7)
                     filter.DaysOfWeek = days.ToArray();
             }

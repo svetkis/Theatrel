@@ -5,8 +5,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.DataAccess;
+using theatrel.DataAccess.Entities;
 using theatrel.Interfaces;
 using theatrel.TLBot.Commands;
 using theatrel.TLBot.Interfaces;
@@ -20,9 +22,13 @@ namespace theatrel.TLBot
 
         private readonly IDictionary<long, IChatDataInfo> _chatsInfo = new ConcurrentDictionary<long, IChatDataInfo>();
 
+        private readonly AppDbContext _dbContext;
+
         public TLBotProcessor(IFilterHelper filterHelper, AppDbContext dbContext, IPlayBillDataResolver playBillResolver)
         {
             _cancellationTokenSource = new CancellationTokenSource();
+
+            _dbContext = dbContext;
 
             _commands.Add(new StartCommand(dbContext));
             _commands.Add(new MonthCommand());
@@ -50,12 +56,34 @@ namespace theatrel.TLBot
             _botService?.Stop();
         }
 
-        private IChatDataInfo GetChatInfo(long chatId)
+        private ChatDataInfo GetChatInfo(long chatId)
         {
-            if (!_chatsInfo.ContainsKey(chatId))
-                _chatsInfo[chatId] = new ChatDataInfo { ChatId = chatId, Culture = "ru"};
+            try
+            {
+                return _dbContext.TlChats.FirstOrDefault(u => u.ChatId == chatId);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation($"DbException {ex.Message}");
+            }
 
-            return _chatsInfo[chatId];
+            return null;
+        }
+
+        private async Task AddChatInfo(ChatDataInfo chatInfo, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (!_dbContext.TlChats.AsNoTracking().Any(u => u.ChatId == chatInfo.ChatId))
+                {
+                    _dbContext.TlChats.Add(chatInfo);
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation($"DbException {ex.Message}");
+            }
         }
 
         private readonly List<IDialogCommand> _commands = new List<IDialogCommand>();
@@ -66,7 +94,13 @@ namespace theatrel.TLBot
             string message = tLMessage.Message;
             long chatId = tLMessage.ChatId;
 
-            IChatDataInfo chatInfo = GetChatInfo(chatId);
+            ChatDataInfo chatInfo = GetChatInfo(chatId);
+            if (null == chatInfo)
+            {
+                chatInfo = new ChatDataInfo {ChatId = chatId, Culture = "ru"};
+                await AddChatInfo(chatInfo, _cancellationTokenSource.Token);
+            }
+
             chatInfo.LastMessage = DateTime.Now;
 
             //check if user wants to return at first

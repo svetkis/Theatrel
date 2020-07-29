@@ -8,8 +8,9 @@ namespace theatrel.DataAccess
     public class AppDbContext : DbContext
     {
         public DbSet<TlUser> TlUsers { get; set; } = null!;
+        public DbSet<ChatDataInfo> TlChats { get; set; } = null!;
 
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        public AppDbContext(DbContextOptions options) : base(options)
         {
             Database.EnsureCreated();
         }

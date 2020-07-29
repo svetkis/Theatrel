@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using AngleSharp.Dom;
+﻿using AngleSharp.Dom;
 using System.Linq;
 using System.Threading;
 using theatrel.Interfaces;
