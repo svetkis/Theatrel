@@ -24,6 +24,7 @@ namespace theatrel.TLBot.Tests
 
         [Theory]
         [InlineData(5, new[] { DayOfWeek.Monday }, "концерт", "пр»вет", "апрель", "Ќет!", "май", "—уббота", "нет", "понедельник", "кќнцерт")]
+        [InlineData(5, new[] { DayOfWeek.Monday }, "концерт", "пр»вет", "апрель", "¬ыбрать другой мес€ц", "май", "—уббота", "нет", "понедельник", "кќнцерт")]
         [InlineData(4, new[] { DayOfWeek.Saturday}, "концерт", "пр»вет", "апрель", "—уббота", "кќнцерт")]
         [InlineData(6, new[] { DayOfWeek.Sunday }, "ќпера"  , "Hi", "июнь",   "вс", "опера")]
         [InlineData(7, new[] { DayOfWeek.Friday }, "балет", "ƒобрый деЌь!", "июль", "5", "Ѕалет")]

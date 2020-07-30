@@ -26,7 +26,7 @@ namespace theatrel.TLBot.Commands
             _dbContext = dbContext;
         }
 
-        public override bool IsMessageReturnToStart(string message) => StartCommandVariants.Any(variant => message.ToLower().StartsWith(variant));
+        public override bool IsMessageCorrect(string message) => StartCommandVariants.Any(variant => message.ToLower().StartsWith(variant));
 
         public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {

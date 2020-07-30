@@ -112,7 +112,7 @@ namespace theatrel.TLBot.Commands
                 ReturnCommandMessage);
         }
 
-        public override bool IsMessageReturnToStart(string message)
+        public override bool IsMessageCorrect(string message)
         {
             var days = ParseMessage(message);
             return days.Any();

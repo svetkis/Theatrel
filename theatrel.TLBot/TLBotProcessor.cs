@@ -106,7 +106,7 @@ namespace theatrel.TLBot
 
             //check if user wants to return at first
             var startCmd = _commands.First();
-            if (startCmd.IsMessageReturnToStart(message))
+            if (startCmd.IsMessageCorrect(message))
                 chatInfo.Clear();
 
             var prevCmd = GetPreviousCommand(chatInfo);
@@ -119,13 +119,16 @@ namespace theatrel.TLBot
                     return;
 
                 chatInfo.DialogState = DialogStateEnum.DialogReturned;
+                chatInfo.CurrentStepId -= 1;
+                chatInfo.PreviousStepId -= 1;
+
                 await CommandAskQuestion(prevCommand, chatInfo, null);
 
                 return;
             }
 
             IDialogCommand command = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
-            if (!command.IsMessageReturnToStart(message))
+            if (!command.IsMessageCorrect(message))
             {
                 SendWrongCommandMessage(chatId, message, chatInfo.CurrentStepId);
                 return;

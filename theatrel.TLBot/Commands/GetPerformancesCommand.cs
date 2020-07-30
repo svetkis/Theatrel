@@ -27,7 +27,7 @@ namespace theatrel.TLBot.Commands
         public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
             => new TlCommandResponse(null);
 
-        public override bool IsMessageReturnToStart(string message) => true;
+        public override bool IsMessageCorrect(string message) => true;
 
         public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {

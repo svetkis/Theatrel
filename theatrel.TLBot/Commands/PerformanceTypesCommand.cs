@@ -34,7 +34,7 @@ namespace theatrel.TLBot.Commands
             return new TlCommandResponse(null);
         }
 
-        public override bool IsMessageReturnToStart(string message) => SplitMessage(message).Any();
+        public override bool IsMessageCorrect(string message) => SplitMessage(message).Any();
 
         public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {

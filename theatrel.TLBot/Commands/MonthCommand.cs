@@ -37,7 +37,7 @@ namespace theatrel.TLBot.Commands
             };
         }
 
-        public override bool IsMessageReturnToStart(string message) => 0 != GetMonth(message.Trim().ToLower());
+        public override bool IsMessageCorrect(string message) => 0 != GetMonth(message.Trim().ToLower());
 
         private int GetMonth(string msg)
         {
@@ -76,7 +76,7 @@ namespace theatrel.TLBot.Commands
             switch (chatInfo.DialogState)
             {
                 case DialogStateEnum.DialogReturned:
-                    return new TlCommandResponse(Msg);
+                    return new TlCommandResponse(Msg, CommandKeyboardMarkup);
                 case DialogStateEnum.DialogStarted:
                     return new TlCommandResponse($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup);
                 default:
