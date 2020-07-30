@@ -19,6 +19,8 @@ namespace theatrel.TLBot.Commands
 
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
 
+        public override string Name => "Старт";
+
         public StartCommand(AppDbContext dbContext) : base((int)DialogStep.Start)
         {
             _dbContext = dbContext;

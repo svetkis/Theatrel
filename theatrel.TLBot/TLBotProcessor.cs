@@ -74,11 +74,12 @@ namespace theatrel.TLBot
         {
             try
             {
-                if (!_dbContext.TlChats.AsNoTracking().Any(u => u.ChatId == chatInfo.ChatId))
-                {
-                    _dbContext.TlChats.Add(chatInfo);
-                    await _dbContext.SaveChangesAsync(cancellationToken);
-                }
+                var chatInfoItem = _dbContext.TlChats.FirstOrDefault(u => u.ChatId == chatInfo.ChatId);
+                if (chatInfoItem != null)
+                    _dbContext.TlChats.Remove(chatInfoItem);
+
+                _dbContext.TlChats.Add(chatInfo);
+                await _dbContext.SaveChangesAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -112,38 +113,43 @@ namespace theatrel.TLBot
 
             if (message.ToLower().StartsWith("нет") || (prevCmd?.IsReturnCommand(message) ?? false))
             {
-                if (chatInfo.ChatStep > 0)
-                    --chatInfo.ChatStep;
+                var prevCommand = GetPreviousCommand(chatInfo);
+
+                if (prevCommand == null)
+                    return;
 
                 chatInfo.DialogState = DialogStateEnum.DialogReturned;
-
-                var prevCommand = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
                 await CommandAskQuestion(prevCommand, chatInfo, null);
 
                 return;
             }
 
-            IDialogCommand command = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
+            IDialogCommand command = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
             if (!command.IsMessageReturnToStart(message))
             {
-                SendWrongCommandMessage(chatId, message, chatInfo.ChatStep);
+                SendWrongCommandMessage(chatId, message, chatInfo.CurrentStepId);
                 return;
             }
 
             ICommandResponse acknowledgement = await command.ApplyResultAsync(chatInfo, message, _cancellationTokenSource.Token);
 
-            ++chatInfo.ChatStep;
+            chatInfo.PreviousStepId = chatInfo.CurrentStepId;
+            ++chatInfo.CurrentStepId;
 
-            var nextCommand = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep);
+            var nextCommand = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
             await CommandAskQuestion(nextCommand, chatInfo, acknowledgement);
         }
 
         private IDialogCommand GetPreviousCommand(IChatDataInfo chatInfo)
         {
-            return chatInfo.ChatStep == 0
+            return chatInfo.PreviousStepId == -1
                 ? null
-                : _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep - 1);
+                : _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.PreviousStepId);
         }
+
+        private IDialogCommand GetNextCommand(IChatDataInfo chatInfo)
+            => _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId + 1);
+
 
         private async Task CommandAskQuestion(IDialogCommand cmd, IChatDataInfo chatInfo, ICommandResponse previousCmdAcknowledgement)
         {
@@ -169,8 +175,13 @@ namespace theatrel.TLBot
 
             await Task.Run(() => _botService.SendMessageAsync(chatInfo.ChatId, botResponse), _cancellationTokenSource.Token);
 
-            if (_commands.FirstOrDefault(cmd => cmd.Label == chatInfo.ChatStep + 1) == null)
-                chatInfo.ChatStep = (int)DialogStep.Start;
+            if (null == GetNextCommand(chatInfo))
+            {
+                if (chatInfo is ChatDataInfo info)
+                    _dbContext.TlChats.Remove(info);
+            }
+
+            await _dbContext.SaveChangesAsync();
         }
 
         private void SendWrongCommandMessage(long chatId, string message, int chatLevel)

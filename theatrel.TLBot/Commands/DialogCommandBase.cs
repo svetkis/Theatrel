@@ -15,6 +15,7 @@ namespace theatrel.TLBot.Commands
         protected const int ButtonsInLine = 3;
 
         public int Label { get; }
+        public abstract string Name { get; }
 
         protected abstract string ReturnCommandMessage { get; set; }
 

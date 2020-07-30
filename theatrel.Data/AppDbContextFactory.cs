@@ -30,11 +30,11 @@ namespace theatrel.DataAccess
         {
             return new NpgsqlConnectionStringBuilder
             {
-                Host = "1",
-                Port = 1,
-                Username = "1",
-                Password = "1",
-                Database = "1"
+                Host = "localhost",
+                Port = 5432,
+                Username = "postgres",
+                Password = "",
+                Database = "TheatrelTest"
             }.ToString();
         }
     }

@@ -12,7 +12,6 @@ namespace theatrel.DataAccess
 
         public AppDbContext(DbContextOptions options) : base(options)
         {
-            Database.EnsureCreated();
         }
     }
 

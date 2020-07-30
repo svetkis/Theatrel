@@ -13,7 +13,9 @@ namespace theatrel.DataAccess.Entities
         public long ChatId { get; set; }
 
         public string Culture { get; set; }
-        public int ChatStep { get; set; }
+
+        public int CurrentStepId { get; set; }
+        public int PreviousStepId { get; set; }
 
         public DateTime When { get; set; }
 
@@ -42,7 +44,9 @@ namespace theatrel.DataAccess.Entities
 
         public void Clear()
         {
-            ChatStep = 0;
+            CurrentStepId = 0;
+            PreviousStepId = -1;
+
             Days = null;
             Types = null;
             DialogState = DialogStateEnum.DialogStarted;

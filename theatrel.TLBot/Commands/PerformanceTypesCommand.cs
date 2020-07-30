@@ -10,13 +10,14 @@ namespace theatrel.TLBot.Commands
     internal class PerformanceTypesCommand : DialogCommandBase
     {
         private readonly string[] _types = { "опера", "балет", "концерт" };
-        private readonly string[] _every = { "все", "всё", "любой", "любое", "не важно"};
+        private readonly string[] _every = { "Все", "всё", "любой", "любое", "не важно"};
 
         protected override string ReturnCommandMessage { get; set; } = "Выбрать другое";
 
+        public override string Name => "Выбрать тип представления";
         public PerformanceTypesCommand() : base((int) DialogStep.SelectType)
         {
-            var buttons = _types.Select(m => new KeyboardButton(m)).ToArray();
+            var buttons = _types.Select(m => new KeyboardButton(m)).Concat(new []{ new KeyboardButton(_every.First()) }).ToArray();
 
             CommandKeyboardMarkup = new ReplyKeyboardMarkup
             {

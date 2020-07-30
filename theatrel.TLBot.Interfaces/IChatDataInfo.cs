@@ -12,7 +12,8 @@ namespace theatrel.TLBot.Interfaces
     {
         long ChatId { get; set; }
         string Culture { get; set; }
-        int ChatStep { get; set; }
+        int CurrentStepId { get; set; }
+        int PreviousStepId { get; set; }
         DateTime When { get; set; }
         DayOfWeek[] Days { get; set; }
         string[] Types { get; set; }

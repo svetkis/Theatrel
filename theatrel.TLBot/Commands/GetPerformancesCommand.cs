@@ -16,6 +16,8 @@ namespace theatrel.TLBot.Commands
 
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
 
+        public override string Name => "Искать";
+
         public GetPerformancesCommand(IPlayBillDataResolver playBillResolver, IFilterHelper filterHelper) : base ((int)DialogStep.Final)
         {
             _playBillResolver = playBillResolver;

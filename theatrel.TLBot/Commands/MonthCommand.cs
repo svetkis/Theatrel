@@ -19,6 +19,8 @@ namespace theatrel.TLBot.Commands
 
         protected override string ReturnCommandMessage { get; set; } = "Выбрать другой месяц";
 
+        public override string Name => "Выбрать месяц";
+
         public MonthCommand() : base((int)DialogStep.SelectMonth)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture("ru");

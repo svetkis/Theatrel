@@ -46,6 +46,8 @@ namespace theatrel.TLBot.Commands
 
         protected override string ReturnCommandMessage { get; set; } = "Выбрать другие дни";
 
+        public override string Name => "Выберите день недели";
+
         public DaysOfWeekCommand() : base((int)DialogStep.SelectDays)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture("ru");

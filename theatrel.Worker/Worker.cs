@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using theatrel.DataAccess;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.Worker
@@ -25,6 +27,8 @@ namespace theatrel.Worker
             Trace.Listeners.Add(new Trace2StdoutLogger());
 
             Trace.TraceInformation("Worker.StartAsync");
+
+            await Bootstrapper.Resolve<AppDbContext>().Database.MigrateAsync(cancellationToken);
 
             _tLBotProcessor = Bootstrapper.Resolve<ITLBotProcessor>();
             _tLBotProcessor.Start(Bootstrapper.Resolve<ITLBotService>(), cancellationToken);
