@@ -95,7 +95,7 @@ namespace theatrel.TLBot
             }
         }
 
-        private static readonly string[] CharsToEscape = {"!", "."};
+        private static readonly string[] CharsToEscape = {"!", ".", "(", ")", "_", "*", "[", "]", "~", ">", "#", "+", "-", "=", "|", "{", "}"};
         private string EscapeMessageForMarkupV2(string originalMessage)
         {
             if (string.IsNullOrWhiteSpace(originalMessage))
