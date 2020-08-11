@@ -2,7 +2,7 @@
 
 namespace theatrel.DataAccess.Entities
 {
-    public class TlUser
+    public class TelegramUserEntity
     {
         [Key]
         public long Id { get; set; }

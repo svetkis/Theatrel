@@ -56,7 +56,7 @@ namespace theatrel.TLBot
             _botService?.Stop();
         }
 
-        private ChatDataInfo GetChatInfo(long chatId)
+        private ChatInfoEntity GetChatInfo(long chatId)
         {
             try
             {
@@ -70,7 +70,7 @@ namespace theatrel.TLBot
             return null;
         }
 
-        private async Task AddChatInfo(ChatDataInfo chatInfo, CancellationToken cancellationToken)
+        private async Task AddChatInfo(ChatInfoEntity chatInfo, CancellationToken cancellationToken)
         {
             try
             {
@@ -95,10 +95,10 @@ namespace theatrel.TLBot
             string message = tLMessage.Message;
             long chatId = tLMessage.ChatId;
 
-            ChatDataInfo chatInfo = GetChatInfo(chatId);
+            ChatInfoEntity chatInfo = GetChatInfo(chatId);
             if (null == chatInfo)
             {
-                chatInfo = new ChatDataInfo {ChatId = chatId, Culture = "ru"};
+                chatInfo = new ChatInfoEntity {ChatId = chatId, Culture = "ru"};
                 await AddChatInfo(chatInfo, _cancellationTokenSource.Token);
             }
 
@@ -180,7 +180,7 @@ namespace theatrel.TLBot
 
             if (null == GetNextCommand(chatInfo))
             {
-                if (chatInfo is ChatDataInfo info)
+                if (chatInfo is ChatInfoEntity info)
                     _dbContext.TlChats.Remove(info);
             }
 

@@ -17,8 +17,10 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.6" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.8" />
+    <PackageReference Include="Quartz" Version="3.1.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\theatrel.DataUpdater\theatrel.DataUpdater.csproj" />
     <ProjectReference Include="..\theatrel.Lib\theatrel.Lib.csproj" />
     <ProjectReference Include="..\theatrel.TLBot\theatrel.TLBot.csproj" />
   </ItemGroup>

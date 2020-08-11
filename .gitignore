@@ -22,3 +22,5 @@
 /theatrel.Data/bin
 /theatrel.Data/obj
 /*.user
+/theatrel.DataUpdater/bin
+/theatrel.DataUpdater/obj

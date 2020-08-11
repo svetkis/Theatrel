@@ -34,7 +34,7 @@ namespace theatrel.TLBot.Commands
             {
                 if (!await _dbContext.TlUsers.AsNoTracking().AnyAsync(u => u.Id == chatInfo.ChatId, cancellationToken))
                 {
-                    _dbContext.TlUsers.Add(new TlUser { Id = chatInfo.ChatId });
+                    _dbContext.TlUsers.Add(new TelegramUserEntity { Id = chatInfo.ChatId });
                     await _dbContext.SaveChangesAsync(cancellationToken);
                 }
             }

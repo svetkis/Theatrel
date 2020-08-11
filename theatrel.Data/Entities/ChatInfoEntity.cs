@@ -7,7 +7,7 @@ using theatrel.TLBot.Interfaces;
 
 namespace theatrel.DataAccess.Entities
 {
-    public class ChatDataInfo : IChatDataInfo
+    public class ChatInfoEntity : IChatDataInfo
     {
         [Key]
         public long ChatId { get; set; }

@@ -1,10 +1,14 @@
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Quartz;
+using Quartz.Impl;
 using theatrel.DataAccess;
+using theatrel.Interfaces;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.Worker
@@ -32,6 +36,8 @@ namespace theatrel.Worker
 
             _tLBotProcessor = Bootstrapper.Resolve<ITLBotProcessor>();
             _tLBotProcessor.Start(Bootstrapper.Resolve<ITLBotService>(), cancellationToken);
+
+            await ScheduleDataUpdates(cancellationToken);
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -50,6 +56,49 @@ namespace theatrel.Worker
             {
                 //_logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
                 await Task.Delay(1000, stoppingToken);
+            }
+        }
+
+        private async Task ScheduleDataUpdates(CancellationToken cancellationToken)
+        {
+            ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
+
+            IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
+            await scheduler.Start(cancellationToken);
+            _logger.LogInformation("Scheduler started");
+
+            IJobDetail job = JobBuilder.Create<UpdateSeptemberJob>()
+                .WithIdentity("job1", "group1")
+                .Build();
+
+            ITrigger trigger = TriggerBuilder.Create()
+                .WithIdentity("trigger1", "group1")
+                .WithCronSchedule("0 10 10-20 * * ?")
+                .Build();
+
+            await scheduler.ScheduleJob(job, trigger, cancellationToken);
+
+            _logger.LogInformation("Job was scheduled");
+        }
+
+        public class UpdateSeptemberJob : IJob
+        {
+            public async Task Execute(IJobExecutionContext context)
+            {
+                Trace.TraceInformation("UpdateJob was started");
+                try
+                {
+                    var updater = Bootstrapper.Resolve<IDataUpdater>();
+                    await updater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
+                        context.CancellationToken);
+
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError($"Job failed {ex.Message}");
+                }
+
+                Trace.TraceInformation("UpdateJob was finished");
             }
         }
     }

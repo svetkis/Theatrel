@@ -7,8 +7,10 @@ namespace theatrel.DataAccess
 {
     public class AppDbContext : DbContext
     {
-        public DbSet<TlUser> TlUsers { get; set; } = null!;
-        public DbSet<ChatDataInfo> TlChats { get; set; } = null!;
+        public DbSet<TelegramUserEntity> TlUsers { get; set; } = null!;
+        public DbSet<ChatInfoEntity> TlChats { get; set; } = null!;
+        public DbSet<PerformanceEntity> Performances { get; set; } = null!;
+        public DbSet<PerformanceChangeEntity> PerformanceChanges { get; set; } = null!;
 
         public AppDbContext(DbContextOptions options) : base(options)
         {

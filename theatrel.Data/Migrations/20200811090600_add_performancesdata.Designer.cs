@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using theatrel.DataAccess;
@@ -9,9 +10,10 @@ using theatrel.DataAccess;
 namespace theatrel.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200811090600_add_performancesdata")]
+    partial class add_performancesdata
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -19,7 +21,7 @@ namespace theatrel.DataAccess.Migrations
                 .HasAnnotation("ProductVersion", "3.1.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            modelBuilder.Entity("theatrel.DataAccess.Entities.ChatInfoEntity", b =>
+            modelBuilder.Entity("theatrel.DataAccess.Entities.ChatInfoData", b =>
                 {
                     b.Property<long>("ChatId")
                         .ValueGeneratedOnAdd()
@@ -55,7 +57,7 @@ namespace theatrel.DataAccess.Migrations
                     b.ToTable("TlChats");
                 });
 
-            modelBuilder.Entity("theatrel.DataAccess.Entities.PerformanceChangeEntity", b =>
+            modelBuilder.Entity("theatrel.DataAccess.Entities.PerformanceChangeData", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -71,20 +73,17 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<int>("PerformanceDataId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("PerformanceEntityId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("ReasonOfChanges")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PerformanceEntityId");
+                    b.HasIndex("PerformanceDataId");
 
                     b.ToTable("PerformanceChanges");
                 });
 
-            modelBuilder.Entity("theatrel.DataAccess.Entities.PerformanceEntity", b =>
+            modelBuilder.Entity("theatrel.DataAccess.Entities.PerformanceData", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -94,15 +93,12 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<DateTime>("PerformanceDateTime")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("Url")
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.ToTable("Performances");
                 });
 
-            modelBuilder.Entity("theatrel.DataAccess.Entities.TelegramUserEntity", b =>
+            modelBuilder.Entity("theatrel.DataAccess.Entities.TlUserData", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -114,11 +110,13 @@ namespace theatrel.DataAccess.Migrations
                     b.ToTable("TlUsers");
                 });
 
-            modelBuilder.Entity("theatrel.DataAccess.Entities.PerformanceChangeEntity", b =>
+            modelBuilder.Entity("theatrel.DataAccess.Entities.PerformanceChangeData", b =>
                 {
-                    b.HasOne("theatrel.DataAccess.Entities.PerformanceEntity", "PerformanceEntity")
+                    b.HasOne("theatrel.DataAccess.Entities.PerformanceData", "PerformanceData")
                         .WithMany("Changes")
-                        .HasForeignKey("PerformanceEntityId");
+                        .HasForeignKey("PerformanceDataId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Lib.Tests", "theat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.DataAccess", "theatrel.Data\theatrel.DataAccess.csproj", "{D36BB35F-4EB3-4B27-AC49-2AB8F4814133}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "theatrel.DataUpdater", "theatrel.DataUpdater\theatrel.DataUpdater.csproj", "{690E39B1-33EE-4AD4-8E4D-C97F13052331}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{D36BB35F-4EB3-4B27-AC49-2AB8F4814133}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D36BB35F-4EB3-4B27-AC49-2AB8F4814133}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D36BB35F-4EB3-4B27-AC49-2AB8F4814133}.Release|Any CPU.Build.0 = Release|Any CPU
+		{690E39B1-33EE-4AD4-8E4D-C97F13052331}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{690E39B1-33EE-4AD4-8E4D-C97F13052331}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{690E39B1-33EE-4AD4-8E4D-C97F13052331}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{690E39B1-33EE-4AD4-8E4D-C97F13052331}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

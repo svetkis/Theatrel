@@ -25,7 +25,7 @@ namespace theatrel.Lib
 
         public async Task<IPerformanceData[]> RequestProcess(DateTime startDate, DateTime endDate, IPerformanceFilter filter, CancellationToken cancellationToken)
         {
-            string content = await Request(startDate);
+            string content = await Request(startDate, cancellationToken);
 
             IPerformanceData[] performances = await _playBillParser.Parse(content, cancellationToken);
 
@@ -45,17 +45,17 @@ namespace theatrel.Lib
             return filtered.ToArray();
         }
 
-        private async Task<string> Request(DateTime date)
+        private async Task<string> Request(DateTime date, CancellationToken cancellationToken)
         {
             string url = $"https://www.mariinsky.ru/ru/playbill/playbill/?year={date.Year}&month={date.Month}";
 
             RestClient client = new RestClient(url);
-            RestRequest request = new RestRequest(Method.GET);
 
+            RestRequest request = new RestRequest(Method.GET);
             request.AddHeader("Host", "www.mariinsky.ru");
             request.AddHeader("X-Requested-With", "XMLHttpRequest");
 
-            IRestResponse response = await client.ExecuteAsync(request);
+            IRestResponse response = await client.ExecuteAsync(request, cancellationToken);
             return response.Content;
         }
     }

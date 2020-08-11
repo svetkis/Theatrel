@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using theatrel.DataAccess;
@@ -9,9 +10,10 @@ using theatrel.DataAccess;
 namespace theatrel.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200811100614_add_performances_url")]
+    partial class add_performances_url
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -19,7 +21,7 @@ namespace theatrel.DataAccess.Migrations
                 .HasAnnotation("ProductVersion", "3.1.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            modelBuilder.Entity("theatrel.DataAccess.Entities.ChatInfoEntity", b =>
+            modelBuilder.Entity("theatrel.DataAccess.Entities.ChatInfoData", b =>
                 {
                     b.Property<long>("ChatId")
                         .ValueGeneratedOnAdd()
@@ -55,7 +57,7 @@ namespace theatrel.DataAccess.Migrations
                     b.ToTable("TlChats");
                 });
 
-            modelBuilder.Entity("theatrel.DataAccess.Entities.PerformanceChangeEntity", b =>
+            modelBuilder.Entity("theatrel.DataAccess.Entities.PerformanceChangeData", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -102,7 +104,7 @@ namespace theatrel.DataAccess.Migrations
                     b.ToTable("Performances");
                 });
 
-            modelBuilder.Entity("theatrel.DataAccess.Entities.TelegramUserEntity", b =>
+            modelBuilder.Entity("theatrel.DataAccess.Entities.TlUserData", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -114,7 +116,7 @@ namespace theatrel.DataAccess.Migrations
                     b.ToTable("TlUsers");
                 });
 
-            modelBuilder.Entity("theatrel.DataAccess.Entities.PerformanceChangeEntity", b =>
+            modelBuilder.Entity("theatrel.DataAccess.Entities.PerformanceChangeData", b =>
                 {
                     b.HasOne("theatrel.DataAccess.Entities.PerformanceEntity", "PerformanceEntity")
                         .WithMany("Changes")
