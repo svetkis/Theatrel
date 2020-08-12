@@ -1,6 +1,5 @@
 using Autofac;
 using Moq;
-using NSubstitute;
 using System;
 using System.Linq;
 using System.Threading;
@@ -15,11 +14,11 @@ namespace theatrel.TLBot.Tests
     {
         private ITLMessage GetMessageEventArgs(string message)
         {
-            var msgMock = Substitute.For<ITLMessage>();
-            msgMock.ChatId.Returns(1);
-            msgMock.Message.Returns(message);
+            Mock<ITLMessage> msgMock = new Mock<ITLMessage>();
+            msgMock.SetupGet(x => x.ChatId).Returns(1);
+            msgMock.SetupGet(x => x.Message).Returns(message);
 
-            return msgMock;
+            return msgMock.Object;
         }
 
         [Theory]

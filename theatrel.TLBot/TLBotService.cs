@@ -22,13 +22,13 @@ namespace theatrel.TLBot
         {
             try
             {
-                WebProxy proxy = string.IsNullOrEmpty(ThSettings.BotProxy)
+                WebProxy proxy = string.IsNullOrEmpty(BotSettings.BotProxy)
                     ? null
-                    : new WebProxy(ThSettings.BotProxy, ThSettings.BotProxyPort) { UseDefaultCredentials = true };
+                    : new WebProxy(BotSettings.BotProxy, BotSettings.BotProxyPort) { UseDefaultCredentials = true };
 
                 _botClient = proxy != null 
-                    ? new TelegramBotClient(ThSettings.BotToken, proxy)
-                    : new TelegramBotClient(ThSettings.BotToken);
+                    ? new TelegramBotClient(BotSettings.BotToken, proxy)
+                    : new TelegramBotClient(BotSettings.BotToken);
             }
             catch (Exception ex)
             {

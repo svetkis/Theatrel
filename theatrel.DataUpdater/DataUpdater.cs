@@ -23,13 +23,16 @@ namespace theatrel.DataUpdater
 
         public async Task<bool> UpdateAsync(int theaterId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken)
         {
+            Trace.TraceInformation("Get saved performances from db");
             PerformanceEntity[] savedPerformances =
                 _dbContext.Performances
                     .Where(p => p.PerformanceDateTime >= startDate && p.PerformanceDateTime <= endDate).ToArray();
 
+            Trace.TraceInformation("Request new data");
             IPerformanceData[] performances = await _dataResolver.RequestProcess(startDate, endDate, null, cancellationToken);
             foreach (var freshPerformanceData in performances)
             {
+                Trace.TraceInformation($"Process {freshPerformanceData.Name}");
                 var performance = savedPerformances.FirstOrDefault(p =>
                     string.Compare(p.Url, freshPerformanceData.Url, StringComparison.InvariantCultureIgnoreCase) == 0);
 
@@ -57,7 +60,9 @@ namespace theatrel.DataUpdater
                 }
             }
 
+            Trace.TraceInformation("Save Changes to db");
             await _dbContext.SaveChangesAsync(cancellationToken);
+
             return true;
         }
 

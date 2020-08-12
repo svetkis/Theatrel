@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Linq;
 
 namespace theatrel.TLBot
 {
-    public class ThSettings
+    public class BotSettings
     {
         public static string BotToken => Environment.GetEnvironmentVariable("TheatrelBotToken");
         public static string BotProxy => Environment.GetEnvironmentVariable("TheatrelBotProxy");
@@ -17,5 +18,8 @@ namespace theatrel.TLBot
                 return !int.TryParse(portString, out int port) ? 0 : port;
             }
         }
+
+        public static long[] AdminIds => Environment.GetEnvironmentVariable("OwnerTelegramgId")?.Split(",")
+            .Select(s => long.Parse(s.Trim())).ToArray();
     }
 }

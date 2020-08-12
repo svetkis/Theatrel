@@ -89,11 +89,39 @@ namespace theatrel.TLBot
 
         private readonly List<IDialogCommand> _commands = new List<IDialogCommand>();
 
+        private readonly string[] _adminCommands = {"update"};
+        private bool IsAdminCommand(ITLMessage tLMessage)
+        {
+            if (BotSettings.AdminIds == null)
+                return false;
+
+            if (BotSettings.AdminIds.All(id => id != tLMessage.ChatId))
+                return false;
+
+            return _adminCommands.Any(command => tLMessage.Message.ToLower().StartsWith(command));
+        }
+
+        private async Task<bool> ProcessAdminCommand(ITLMessage tLMessage)
+        {
+            foreach (var VARIABLE in tLMessage.Message.Split(" ").Skip(1))
+            {
+//                int 
+            }
+
+            return true;
+        }
+
         private async void OnMessage(object sender, ITLMessage tLMessage)
         {
             Trace.TraceInformation($"{tLMessage.ChatId} {tLMessage.Message}");
             string message = tLMessage.Message;
             long chatId = tLMessage.ChatId;
+
+            if (IsAdminCommand(tLMessage))
+            {
+
+                return;
+            }
 
             ChatInfoEntity chatInfo = GetChatInfo(chatId);
             if (null == chatInfo)

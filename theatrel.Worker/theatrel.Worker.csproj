@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker" ToolsVersion="Current">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker" ToolsVersion="Current">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>dotnet-theatrel.Worker-E9C10440-F5A4-41F3-A6AB-AEA1FD4FFFC1</UserSecretsId>
@@ -15,7 +15,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.7" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.8" />
     <PackageReference Include="Quartz" Version="3.1.0" />
   </ItemGroup>

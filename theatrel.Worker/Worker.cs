@@ -71,9 +71,11 @@ namespace theatrel.Worker
                 .WithIdentity("job1", "group1")
                 .Build();
 
+            TimeZoneInfo moscowCustomTimeZone = TimeZoneInfo.CreateCustomTimeZone("Moscow Time", new TimeSpan(03, 00, 00), "(GMT+03:00) Moscow Time", "Moscow Time");
+
             ITrigger trigger = TriggerBuilder.Create()
                 .WithIdentity("trigger1", "group1")
-                .WithCronSchedule("0 10 10-20 * * ?")
+                .WithCronSchedule("0 10 10-20 * * ?", cron => { cron.InTimeZone(moscowCustomTimeZone); })
                 .Build();
 
             await scheduler.ScheduleJob(job, trigger, cancellationToken);

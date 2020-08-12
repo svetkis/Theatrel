@@ -24,3 +24,5 @@
 /*.user
 /theatrel.DataUpdater/bin
 /theatrel.DataUpdater/obj
+/theatrel.DataUpdater.Tests/bin
+/theatrel.DataUpdater.Tests/obj

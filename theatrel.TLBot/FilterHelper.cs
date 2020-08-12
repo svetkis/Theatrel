@@ -13,7 +13,7 @@ namespace theatrel.TLBot
             public string[] PerformanceTypes { get; set; }
             public string[] Locations { get; set; }
 
-            public bool Filter(IPerformanceData perfomance)
+            public bool Filter(IPerformanceData performance)
             {
                 throw new NotImplementedException();
             }
