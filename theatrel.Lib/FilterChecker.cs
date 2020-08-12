@@ -7,6 +7,9 @@ namespace theatrel.Lib
     {
         public bool IsDataSuitable(IPerformanceData performance, IPerformanceFilter filter)
         {
+            if (filter == null)
+                return true;
+
             if (filter.Locations != null && filter.Locations.Any() && !filter.Locations.Contains(performance.Location))
                 return false;
 
