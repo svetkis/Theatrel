@@ -6,6 +6,6 @@ namespace theatrel.Interfaces
 {
     public interface IPlayBillDataResolver : IDIRegistrable
     {
-        Task<IPerformanceData[]> RequestProcess(DateTime startDate, DateTime endDate, IPerformanceFilter filter, CancellationToken cancellationToken);
+        Task<IPerformanceData[]> RequestProcess(IPerformanceFilter filter, CancellationToken cancellationToken);
     }
 }

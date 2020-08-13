@@ -5,13 +5,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.DataAccess;
 using theatrel.DataAccess.Entities;
 using theatrel.Interfaces;
 using theatrel.TLBot.Commands;
 using theatrel.TLBot.Interfaces;
+using IFilterHelper = theatrel.Interfaces.IFilterHelper;
 
 namespace theatrel.TLBot
 {

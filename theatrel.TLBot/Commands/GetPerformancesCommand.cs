@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces;
 using theatrel.TLBot.Interfaces;
+using IFilterHelper = theatrel.Interfaces.IFilterHelper;
 
 namespace theatrel.TLBot.Commands
 {
@@ -33,7 +34,7 @@ namespace theatrel.TLBot.Commands
         {
             IPerformanceFilter filter = _filterHelper.GetFilter(chatInfo);
 
-            IPerformanceData[] data = await _playBillResolver.RequestProcess(chatInfo.When, new DateTime(), filter, cancellationToken);
+            IPerformanceData[] data = await _playBillResolver.RequestProcess(filter, cancellationToken);
 
             return new TlCommandResponse(await PerformancesMessage(data, filter, chatInfo.When));
         }

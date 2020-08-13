@@ -2,6 +2,7 @@
 using Autofac;
 using Microsoft.EntityFrameworkCore;
 using theatrel.DataAccess;
+using theatrel.Lib;
 
 namespace theatrel.DataUpdater.Tests
 {
@@ -26,6 +27,7 @@ namespace theatrel.DataUpdater.Tests
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterModule<TheatrelLibModule>();
             builder.RegisterModule<DataUpdaterModule>();
 
             builder

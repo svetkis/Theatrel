@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using theatrel.DataAccess;
 using theatrel.DataAccess.Entities;
+using theatrel.Interfaces;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot.Commands

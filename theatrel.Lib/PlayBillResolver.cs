@@ -23,9 +23,9 @@ namespace theatrel.Lib
             _filterChecker = filterChecker;
         }
 
-        public async Task<IPerformanceData[]> RequestProcess(DateTime startDate, DateTime endDate, IPerformanceFilter filter, CancellationToken cancellationToken)
+        public async Task<IPerformanceData[]> RequestProcess(IPerformanceFilter filter, CancellationToken cancellationToken)
         {
-            string content = await Request(startDate, cancellationToken);
+            string content = await Request(filter.StartDate, cancellationToken);
 
             IPerformanceData[] performances = await _playBillParser.Parse(content, cancellationToken);
 

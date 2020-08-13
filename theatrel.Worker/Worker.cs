@@ -35,7 +35,8 @@ namespace theatrel.Worker
             await Bootstrapper.Resolve<AppDbContext>().Database.MigrateAsync(cancellationToken);
 
             _tLBotProcessor = Bootstrapper.Resolve<ITLBotProcessor>();
-            _tLBotProcessor.Start(Bootstrapper.Resolve<ITLBotService>(), cancellationToken);
+            var tlBotService = Bootstrapper.Resolve<ITLBotService>();
+            _tLBotProcessor.Start(tlBotService, cancellationToken);
 
             await ScheduleDataUpdates(cancellationToken);
         }
@@ -90,7 +91,7 @@ namespace theatrel.Worker
                 Trace.TraceInformation("UpdateJob was started");
                 try
                 {
-                    var updater = Bootstrapper.Resolve<IDataUpdater>();
+                    IDataUpdater updater = Bootstrapper.Resolve<IDataUpdater>();
                     await updater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
                         context.CancellationToken);
 

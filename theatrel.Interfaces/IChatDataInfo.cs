@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace theatrel.TLBot.Interfaces
+namespace theatrel.Interfaces
 {
     public enum DialogStateEnum
     {

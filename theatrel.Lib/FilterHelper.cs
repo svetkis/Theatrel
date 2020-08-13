@@ -1,27 +1,17 @@
 ﻿using System;
 using System.Linq;
 using theatrel.Interfaces;
-using theatrel.TLBot.Interfaces;
 
-namespace theatrel.TLBot
+namespace theatrel.Lib
 {
     public class FilterHelper : IFilterHelper
     {
-        private class PerformanceFilter : IPerformanceFilter
-        {
-            public DayOfWeek[] DaysOfWeek { get; set; }
-            public string[] PerformanceTypes { get; set; }
-            public string[] Locations { get; set; }
-
-            public bool Filter(IPerformanceData performance)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public IPerformanceFilter GetFilter(IChatDataInfo dataInfo)
         {
-            var filter = new PerformanceFilter();
+            var filter = new PerformanceFilter
+            {
+                StartDate = dataInfo.When,
+            };
 
             if (dataInfo.Days != null && dataInfo.Days.Any())
             {
@@ -35,5 +25,12 @@ namespace theatrel.TLBot
 
             return filter;
         }
+
+        public IPerformanceFilter GetFilter(DateTime start, DateTime end) =>
+            new PerformanceFilter
+            {
+                StartDate = start,
+                EndDate = end
+            };
     }
 }

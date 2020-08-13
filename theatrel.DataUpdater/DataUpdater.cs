@@ -14,11 +14,13 @@ namespace theatrel.DataUpdater
     {
         private readonly IPlayBillDataResolver _dataResolver;
         private readonly AppDbContext _dbContext;
+        private readonly IFilterHelper _filterHelper;
 
-        public DataUpdater(IPlayBillDataResolver dataResolver, AppDbContext dbContext)
+        public DataUpdater(IPlayBillDataResolver dataResolver, AppDbContext dbContext, IFilterHelper filterHelper)
         {
             _dataResolver = dataResolver;
             _dbContext = dbContext;
+            _filterHelper = filterHelper;
         }
 
         public async Task<bool> UpdateAsync(int theaterId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken)
@@ -29,7 +31,7 @@ namespace theatrel.DataUpdater
                     .Where(p => p.PerformanceDateTime >= startDate && p.PerformanceDateTime <= endDate).ToArray();
 
             Trace.TraceInformation("Request new data");
-            IPerformanceData[] performances = await _dataResolver.RequestProcess(startDate, endDate, null, cancellationToken);
+            IPerformanceData[] performances = await _dataResolver.RequestProcess(_filterHelper.GetFilter(startDate, endDate), cancellationToken);
             foreach (var freshPerformanceData in performances)
             {
                 Trace.TraceInformation($"Process {freshPerformanceData.Name}");
@@ -50,13 +52,16 @@ namespace theatrel.DataUpdater
                     if (compareResult == ReasonOfChangesEnum.NoReason)
                     {
                         if (lastChange != null)
+                        {
                             lastChange.LastUpdate = DateTime.Now;
+                            Trace.TraceInformation("Just update LastUpdate.");
+                        }
 
                         continue;
                     }
 
                     performance.Changes.Add(CreatePerformanceChangeEntity(freshPerformanceData.Tickets.GetMinPrice(), compareResult));
-                    Trace.TraceInformation($"Performance change information added {freshPerformanceData.Url}");
+                    Trace.TraceInformation($"Performance change information added {compareResult}");
                 }
             }
 

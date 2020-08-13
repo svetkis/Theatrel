@@ -1,12 +1,13 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Utilities;
 using Moq;
+using theatrel.DataAccess;
 using theatrel.Interfaces;
-using theatrel.TLBot.Interfaces;
 using Xunit;
+using static Xunit.Assert;
 
 namespace theatrel.DataUpdater.Tests
 {
@@ -19,11 +20,11 @@ namespace theatrel.DataUpdater.Tests
 
         private IPerformanceData GetPerformance(int minPrice, string url, DateTime performanceDateTime)
         {
-            Mock<IPerformanceTickets> ticketsMock = new Mock<IPerformanceTickets>();
-            ticketsMock.Setup(x => x.GetMinPrice()).Returns(minPrice);
-
             Mock<IPerformanceData> performanceMock = new Mock<IPerformanceData>();
-            performanceMock.SetupGet(x => x.Tickets).Returns(ticketsMock.Object);
+
+            performanceMock.SetupGet(x => x.Tickets)
+                .Returns(Mock.Of<IPerformanceTickets>(t => t.GetMinPrice() == minPrice));
+
             performanceMock.SetupGet(x => x.Url).Returns(url);
             performanceMock.SetupGet(x => x.DateTime).Returns(performanceDateTime);
 
@@ -34,7 +35,7 @@ namespace theatrel.DataUpdater.Tests
         public async void TestAdd()
         {
             Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
-            playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
+            playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new IPerformanceData[]
                 {
                     GetPerformance(0, "testUrl", new DateTime(2020, 9, 10 ))
@@ -49,13 +50,22 @@ namespace theatrel.DataUpdater.Tests
 
             await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1), CancellationToken.None);
 
-            playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
+            var minPrice500 = GetPerformance(500, "testUrl", new DateTime(2020, 9, 10));
+            playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new IPerformanceData[]
                 {
-                    GetPerformance(500, "testUrl", new DateTime(2020, 9, 10 ))
+                    minPrice500
                 }));
 
             await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1), CancellationToken.None);
+            // nothing changed
+            await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1), CancellationToken.None);
+
+            var db = scope.Resolve<AppDbContext>();
+            var changes = db.PerformanceChanges.OrderBy(d => d.LastUpdate);
+            Equal(2, db.PerformanceChanges.Count());
+            Equal(4, changes.Last().ReasonOfChanges);
+            Equal(1, changes.First().ReasonOfChanges);
         }
     }
 }

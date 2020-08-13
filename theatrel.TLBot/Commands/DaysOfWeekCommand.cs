@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
+using theatrel.Interfaces;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot.Commands

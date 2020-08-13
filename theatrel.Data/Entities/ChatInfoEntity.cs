@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using theatrel.Interfaces;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.DataAccess.Entities
