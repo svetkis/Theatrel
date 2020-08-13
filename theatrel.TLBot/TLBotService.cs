@@ -1,9 +1,11 @@
 ﻿using Polly;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
@@ -77,22 +79,46 @@ namespace theatrel.TLBot
                 IReplyMarkup replyMarkup = message.ReplyKeyboard;
                 replyMarkup ??= new ReplyKeyboardRemove();
 
-                await Policy
-                    .Handle<HttpRequestException>()
-                    .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
-                    .ExecuteAsync(async () =>
-                    {
-                        await _botClient.SendChatActionAsync(chatId, ChatAction.Typing);
-                        await _botClient.SendTextMessageAsync(chatId,
-                            EscapeMessageForMarkupV2(message.Message),
-                            parseMode:ParseMode.MarkdownV2,
-                            replyMarkup: replyMarkup);
-                    });
+                foreach (string msg in SplitMessage(EscapeMessageForMarkupV2(message.Message)))
+                {
+                    await Policy
+                        .Handle<HttpRequestException>()
+                        .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+                        .ExecuteAsync(async () =>
+                        {
+                            await _botClient.SendChatActionAsync(chatId, ChatAction.Typing);
+                            await _botClient.SendTextMessageAsync(chatId, msg, parseMode: ParseMode.MarkdownV2, replyMarkup: replyMarkup);
+                        });
+                }
             }
             catch (Exception exception)
             {
                 Trace.TraceInformation($"SendMessage: {chatId} {message} failed. Exception {exception.Message}{Environment.NewLine}{exception.StackTrace}");
             }
+        }
+
+        private const int MaxMessageSize = 4096;
+        private string[] SplitMessage(string message)
+        {
+            if (message.Length < MaxMessageSize || string.IsNullOrEmpty(message))
+                return new[] {message};
+
+            string[] lines = message.Split(Environment.NewLine);
+            List<StringBuilder> messages = new List<StringBuilder> {new StringBuilder(lines.First())};
+
+            foreach (var line in lines.Skip(1))
+            {
+                if (messages.Last().Length + line.Length >= MaxMessageSize - Environment.NewLine.Length)
+                {
+                    messages.Add(new StringBuilder(line));
+                    continue;
+                }
+
+                messages.Last().Append(Environment.NewLine);
+                messages.Last().Append(line);
+            }
+
+            return messages.Select(sb => sb.ToString()).ToArray();
         }
 
         private static readonly string[] CharsToEscape = {"!", ".", "(", ")", "_", "*", "[", "]", "~", ">", "#", "+", "-", "=", "|", "{", "}"};
