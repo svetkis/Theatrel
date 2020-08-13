@@ -109,7 +109,7 @@ namespace theatrel.TLBot.Commands
                 return new TlCommandResponse($"{YouSelected} {AllDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage);
 
             return new TlCommandResponse(
-                $"{YouSelected} {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName((DayOfWeek)d)))}. {ReturnMsg}",
+                $"{YouSelected} {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. {ReturnMsg}",
                 ReturnCommandMessage);
         }
 

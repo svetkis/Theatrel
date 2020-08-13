@@ -79,7 +79,7 @@ namespace theatrel.TLBot
                 IReplyMarkup replyMarkup = message.ReplyKeyboard;
                 replyMarkup ??= new ReplyKeyboardRemove();
 
-                foreach (string msg in SplitMessage(EscapeMessageForMarkupV2(message.Message)))
+                foreach (string msg in SplitMessage(message.IsEscaped ? message.Message : message.Message.EscapeMessageForMarkupV2()))
                 {
                     await Policy
                         .Handle<HttpRequestException>()
@@ -119,16 +119,6 @@ namespace theatrel.TLBot
             }
 
             return messages.Select(sb => sb.ToString()).ToArray();
-        }
-
-        private static readonly string[] CharsToEscape = {"!", ".", "(", ")", "_", "*", "[", "]", "~", ">", "#", "+", "-", "=", "|", "{", "}"};
-        private string EscapeMessageForMarkupV2(string originalMessage)
-        {
-            if (string.IsNullOrWhiteSpace(originalMessage))
-                return string.Empty;
-
-            return CharsToEscape.Aggregate(originalMessage,
-                (current, charToReplace) => current.Replace(charToReplace, $"\\{charToReplace}"));
         }
     }
 }

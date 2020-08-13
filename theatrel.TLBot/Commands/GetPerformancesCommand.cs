@@ -36,7 +36,10 @@ namespace theatrel.TLBot.Commands
 
             IPerformanceData[] data = await _playBillResolver.RequestProcess(filter, cancellationToken);
 
-            return new TlCommandResponse(await PerformancesMessage(data, filter, chatInfo.When));
+            return new TlCommandResponse(await PerformancesMessage(data, filter, chatInfo.When))
+            {
+                IsEscaped = true
+            };
         }
 
         private async Task<string> PerformancesMessage(IPerformanceData[] performances, IPerformanceFilter filter, DateTime when)
@@ -55,20 +58,25 @@ namespace theatrel.TLBot.Commands
                 ? "все представления"
                 : string.Join(", ", filter.PerformanceTypes);
 
-            stringBuilder.AppendLine($"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}.");
+            stringBuilder.AppendLine(
+                $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}.".EscapeMessageForMarkupV2());
+
             foreach (var item in performances.OrderBy(item => item.DateTime))
             {
                 string minPrice = item.Tickets.GetMinPrice().ToString();
 
+                string performanceString = $"{item.DateTime:ddMMM HH:mm} {item.Location} {item.Type} \"{item.Name}\" от {minPrice}"
+                    .EscapeMessageForMarkupV2();
+
                 stringBuilder.AppendLine(string.IsNullOrWhiteSpace(item.Url)
-                    ? $"{item.DateTime:ddMMM HH:mm} {item.Location} {item.Type} \"{item.Name}\" {minPrice}"
-                    : $"[{item.DateTime:ddMMM HH:mm} {item.Location} {item.Type} \"{item.Name}\" от {minPrice}]({item.Url})");
+                    ? performanceString
+                    : $"[{performanceString}]({item.Url.EscapeMessageForMarkupV2()})");
 
                 stringBuilder.AppendLine("");
             }
 
             if (!performances.Any())
-                return "Увы, я ничего не нашел. Попробуем поискать еще?";
+                return "Увы, я ничего не нашел. Попробуем поискать еще?".EscapeMessageForMarkupV2();
 
             return stringBuilder.ToString();
         }

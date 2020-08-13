@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,7 +68,7 @@ namespace theatrel.TLBot.Commands
         private int CheckEnumerable(string[] checkedData, string msg)
         {
             var data = checkedData.Select((item, idx) => new { idx, item })
-                .FirstOrDefault(data => 0 == string.Compare(data.item, msg, true));
+                .FirstOrDefault(data => 0 == string.Compare(data.item, msg, StringComparison.OrdinalIgnoreCase));
 
             return data?.idx ?? -1;
         }

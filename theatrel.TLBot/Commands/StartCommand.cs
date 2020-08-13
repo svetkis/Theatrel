@@ -51,6 +51,6 @@ namespace theatrel.TLBot.Commands
         }
 
         public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
-            => new TlCommandResponse("Вас привествует экономный театрал.");
+            => new TlCommandResponse("Вас приветствует экономный театрал.");
     }
 }

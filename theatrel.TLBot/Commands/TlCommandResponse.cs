@@ -13,5 +13,6 @@ namespace theatrel.TLBot.Commands
 
         public string Message { get; set; }
         public ReplyKeyboardMarkup ReplyKeyboard { get; set; }
+        public bool IsEscaped { get; set; }
     }
 }
