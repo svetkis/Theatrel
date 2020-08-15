@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces;
 using theatrel.TLBot.Interfaces;
+using theatrel.TLBot.Messages;
 using IFilterHelper = theatrel.Interfaces.IFilterHelper;
 
 namespace theatrel.TLBot.Commands
@@ -25,18 +26,18 @@ namespace theatrel.TLBot.Commands
             _filterHelper = filterHelper;
         }
 
-        public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
-            => new TlCommandResponse(null);
+        public override async Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+            => new TlOutboundMessage(null);
 
         public override bool IsMessageCorrect(string message) => true;
 
-        public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override async Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             IPerformanceFilter filter = _filterHelper.GetFilter(chatInfo);
 
             IPerformanceData[] data = await _playBillResolver.RequestProcess(filter, cancellationToken);
 
-            return new TlCommandResponse(await PerformancesMessage(data, filter, chatInfo.When))
+            return new TlOutboundMessage(await PerformancesMessage(data, filter, chatInfo.When))
             {
                 IsEscaped = true
             };
@@ -63,7 +64,7 @@ namespace theatrel.TLBot.Commands
 
             foreach (var item in performances.OrderBy(item => item.DateTime))
             {
-                string minPrice = item.Tickets.GetMinPrice().ToString();
+                string minPrice = item.MinPrice.ToString();
 
                 string performanceString = $"{item.DateTime:ddMMM HH:mm} {item.Location} {item.Type} \"{item.Name}\" от {minPrice}"
                     .EscapeMessageForMarkupV2();

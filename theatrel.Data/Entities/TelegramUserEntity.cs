@@ -6,5 +6,7 @@ namespace theatrel.DataAccess.Entities
     {
         [Key]
         public long Id { get; set; }
+
+        public string Culture { get; set; }
     }
 }

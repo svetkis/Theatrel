@@ -11,6 +11,7 @@ using theatrel.DataAccess.Entities;
 using theatrel.Interfaces;
 using theatrel.TLBot.Commands;
 using theatrel.TLBot.Interfaces;
+using theatrel.TLBot.Messages;
 using IFilterHelper = theatrel.Interfaces.IFilterHelper;
 
 namespace theatrel.TLBot
@@ -90,20 +91,20 @@ namespace theatrel.TLBot
         private readonly List<IDialogCommand> _commands = new List<IDialogCommand>();
 
         private readonly string[] _adminCommands = {"update"};
-        private bool IsAdminCommand(ITLMessage tLMessage)
+        private bool IsAdminCommand(ITlInboundMessage tLInboundMessage)
         {
             if (BotSettings.AdminIds == null)
                 return false;
 
-            if (BotSettings.AdminIds.All(id => id != tLMessage.ChatId))
+            if (BotSettings.AdminIds.All(id => id != tLInboundMessage.ChatId))
                 return false;
 
-            return _adminCommands.Any(command => tLMessage.Message.ToLower().StartsWith(command));
+            return _adminCommands.Any(command => tLInboundMessage.Message.ToLower().StartsWith(command));
         }
 
-        private async Task<bool> ProcessAdminCommand(ITLMessage tLMessage)
+        private async Task<bool> ProcessAdminCommand(ITlInboundMessage tLInboundMessage)
         {
-            foreach (var VARIABLE in tLMessage.Message.Split(" ").Skip(1))
+            foreach (var VARIABLE in tLInboundMessage.Message.Split(" ").Skip(1))
             {
 //                int 
             }
@@ -111,13 +112,13 @@ namespace theatrel.TLBot
             return true;
         }
 
-        private async void OnMessage(object sender, ITLMessage tLMessage)
+        private async void OnMessage(object sender, ITlInboundMessage tLInboundMessage)
         {
-            Trace.TraceInformation($"{tLMessage.ChatId} {tLMessage.Message}");
-            string message = tLMessage.Message;
-            long chatId = tLMessage.ChatId;
+            Trace.TraceInformation($"{tLInboundMessage.ChatId} {tLInboundMessage.Message}");
+            string message = tLInboundMessage.Message;
+            long chatId = tLInboundMessage.ChatId;
 
-            if (IsAdminCommand(tLMessage))
+            if (IsAdminCommand(tLInboundMessage))
             {
 
                 return;
@@ -162,7 +163,7 @@ namespace theatrel.TLBot
                 return;
             }
 
-            ICommandResponse acknowledgement = await command.ApplyResultAsync(chatInfo, message, _cancellationTokenSource.Token);
+            ITlOutboundMessage acknowledgement = await command.ApplyResultAsync(chatInfo, message, _cancellationTokenSource.Token);
 
             chatInfo.PreviousStepId = chatInfo.CurrentStepId;
             ++chatInfo.CurrentStepId;
@@ -182,13 +183,13 @@ namespace theatrel.TLBot
             => _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId + 1);
 
 
-        private async Task CommandAskQuestion(IDialogCommand cmd, IChatDataInfo chatInfo, ICommandResponse previousCmdAcknowledgement)
+        private async Task CommandAskQuestion(IDialogCommand cmd, IChatDataInfo chatInfo, ITlOutboundMessage previousCmdAcknowledgement)
         {
             if (cmd == null)
                 return;
 
-            ICommandResponse nextDlgQuestion = await cmd.AscUserAsync(chatInfo, _cancellationTokenSource.Token);
-            ICommandResponse botResponse = nextDlgQuestion;
+            ITlOutboundMessage nextDlgQuestion = await cmd.AscUserAsync(chatInfo, _cancellationTokenSource.Token);
+            ITlOutboundMessage botResponse = nextDlgQuestion;
             if (!string.IsNullOrWhiteSpace(previousCmdAcknowledgement?.Message))
                 botResponse.Message = $"{previousCmdAcknowledgement.Message}{Environment.NewLine}{nextDlgQuestion.Message}";
 
@@ -218,7 +219,7 @@ namespace theatrel.TLBot
         private void SendWrongCommandMessage(long chatId, string message, int chatLevel)
         {
             Trace.TraceInformation($"Wrong command: {chatId} {chatLevel} {message}");
-           _botService.SendMessageAsync(chatId, new TlCommandResponse("Простите, я вас не понял. Попробуйте еще раз."));
+           _botService.SendMessageAsync(chatId, new TlOutboundMessage("Простите, я вас не понял. Попробуйте еще раз."));
         }
     }
 }

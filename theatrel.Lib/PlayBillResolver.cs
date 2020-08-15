@@ -36,7 +36,10 @@ namespace theatrel.Lib
             IEnumerable<IPerformanceData> filtered = performances.Where(item => _filterChecker.IsDataSuitable(item, filter)).ToArray();
 
             foreach (var item in filtered)
-                tasks.Add(Task.Run(async () => item.Tickets = await _ticketParser.ParseFromUrl(item.Url, cancellationToken), cancellationToken));
+                tasks.Add(Task.Run(async () =>
+                {
+                    item.MinPrice = (await _ticketParser.ParseFromUrl(item.Url, cancellationToken)).GetMinPrice();
+                }, cancellationToken));
 
             await Task.WhenAll(tasks.ToArray());
 

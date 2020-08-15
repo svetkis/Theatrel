@@ -1,8 +1,8 @@
 ﻿using theatrel.TLBot.Interfaces;
 
-namespace theatrel.TLBot
+namespace theatrel.TLBot.Messages
 {
-    internal class TLMessage : ITLMessage
+    internal class TlInboundMessage : ITlInboundMessage
     {
         public long ChatId { get; set; }
         public string Message { get; set; }

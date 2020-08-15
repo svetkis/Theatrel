@@ -42,14 +42,14 @@ namespace theatrel.TLBot.Tests
 
             var tlBotServiceMock = new Mock<ITLBotService>(MockBehavior.Strict);
             tlBotServiceMock.Setup(x => x.Start(CancellationToken.None)).Verifiable();
-            tlBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ICommandResponse>())).Verifiable();
+            tlBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITlOutboundMessage>())).Verifiable();
 
             //test
             tlProcessor.Start(tlBotServiceMock.Object, CancellationToken.None);
 
             foreach (var cmd in commands)
                 tlBotServiceMock.Raise(x => x.OnMessage += null, null,
-                    Mock.Of<ITLMessage>(m => m.Message == cmd && m.ChatId == 1));
+                    Mock.Of<ITlInboundMessage>(m => m.Message == cmd && m.ChatId == 1));
 
             playBillResolverMock.Verify(lw => lw.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()),
                 Times.AtLeastOnce());
@@ -64,7 +64,7 @@ namespace theatrel.TLBot.Tests
             //second dialog after first
             foreach (var cmd in commands)
                 tlBotServiceMock.Raise(x => x.OnMessage += null, null,
-                    Mock.Of<ITLMessage>(m => m.Message == cmd && m.ChatId == 1));
+                    Mock.Of<ITlInboundMessage>(m => m.Message == cmd && m.ChatId == 1));
 
             Assert.NotNull(filter);
             Assert.True(filter.DaysOfWeek.OrderBy(d => d).SequenceEqual(dayOfWeeks.OrderBy(d => d)));

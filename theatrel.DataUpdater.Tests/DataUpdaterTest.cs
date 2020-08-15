@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Moq;
+using theatrel.Common.Enums;
 using theatrel.DataAccess;
 using theatrel.Interfaces;
 using Xunit;
@@ -22,8 +23,7 @@ namespace theatrel.DataUpdater.Tests
         {
             Mock<IPerformanceData> performanceMock = new Mock<IPerformanceData>();
 
-            performanceMock.SetupGet(x => x.Tickets)
-                .Returns(Mock.Of<IPerformanceTickets>(t => t.GetMinPrice() == minPrice));
+            performanceMock.SetupGet(x => x.MinPrice).Returns(minPrice);
 
             performanceMock.SetupGet(x => x.Url).Returns(url);
             performanceMock.SetupGet(x => x.DateTime).Returns(performanceDateTime);
@@ -64,8 +64,8 @@ namespace theatrel.DataUpdater.Tests
             var db = scope.Resolve<AppDbContext>();
             var changes = db.PerformanceChanges.OrderBy(d => d.LastUpdate);
             Equal(2, db.PerformanceChanges.Count());
-            Equal(4, changes.Last().ReasonOfChanges);
-            Equal(1, changes.First().ReasonOfChanges);
+            Equal((int)ReasonOfChanges.StartSales, changes.Last().ReasonOfChanges);
+            Equal((int)ReasonOfChanges.Creation, changes.First().ReasonOfChanges);
         }
     }
 }

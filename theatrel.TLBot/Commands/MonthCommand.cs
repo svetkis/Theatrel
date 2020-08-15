@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.Interfaces;
 using theatrel.TLBot.Interfaces;
+using theatrel.TLBot.Messages;
 
 namespace theatrel.TLBot.Commands
 {
@@ -59,7 +60,7 @@ namespace theatrel.TLBot.Commands
             return numAbr;
         }
 
-        public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override async Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             int month = GetMonth(message.Trim().ToLower());
 
@@ -68,18 +69,18 @@ namespace theatrel.TLBot.Commands
             chatInfo.When = new DateTime(year, month, 1);
 
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
-            return new TlCommandResponse(
+            return new TlOutboundMessage(
                 $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}", ReturnKeyboardMarkup);
         }
 
-        public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override async Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             switch (chatInfo.DialogState)
             {
                 case DialogStateEnum.DialogReturned:
-                    return new TlCommandResponse(Msg, CommandKeyboardMarkup);
+                    return new TlOutboundMessage(Msg, CommandKeyboardMarkup);
                 case DialogStateEnum.DialogStarted:
-                    return new TlCommandResponse($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup);
+                    return new TlOutboundMessage($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup);
                 default:
                     throw new NotImplementedException();
             }

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using theatrel.Interfaces.Parsers;
 using Xunit;
 
-namespace theatrel.Tests
+namespace theatrel.Lib.Tests
 {
     public class TicketsParserTests
     {

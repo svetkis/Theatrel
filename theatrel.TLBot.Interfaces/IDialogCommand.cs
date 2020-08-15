@@ -9,8 +9,8 @@ namespace theatrel.TLBot.Interfaces
         int Label { get; }
         string Name { get; }
 
-        Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);
-        Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken);
+        Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);
+        Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken);
 
         bool IsMessageCorrect(string message);
         bool IsReturnCommand(string message);

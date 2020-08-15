@@ -4,6 +4,7 @@ using System;
 using theatrel.DataAccess;
 using theatrel.DataUpdater;
 using theatrel.Lib;
+using theatrel.Subscriptions;
 using theatrel.TLBot;
 
 namespace theatrel.Worker
@@ -22,6 +23,7 @@ namespace theatrel.Worker
             builder.RegisterModule<TlBotModule>();
             builder.RegisterModule<DataAccessModule>();
             builder.RegisterModule<DataUpdaterModule>();
+            builder.RegisterModule<SubscriptionModule>();
 
             _rootScope = builder.Build();
         }

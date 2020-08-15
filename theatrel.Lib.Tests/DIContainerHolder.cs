@@ -1,9 +1,8 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
 using Autofac.Core;
-using System;
-using theatrel.Lib;
 
-namespace theatrel.Tests
+namespace theatrel.Lib.Tests
 {
     public static class DIContainerHolder
     {

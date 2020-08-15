@@ -1,11 +1,11 @@
 ﻿using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.TLBot.Interfaces;
 
-namespace theatrel.TLBot.Commands
+namespace theatrel.TLBot.Messages
 {
-    internal class TlCommandResponse : ICommandResponse
+    internal class TlOutboundMessage : ITlOutboundMessage
     {
-        public TlCommandResponse(string message, ReplyKeyboardMarkup replyKeyboard = null)
+        public TlOutboundMessage(string message, ReplyKeyboardMarkup replyKeyboard = null)
         {
             Message = message;
             ReplyKeyboard = replyKeyboard;

@@ -7,10 +7,12 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.TLBot.Interfaces;
+using theatrel.TLBot.Messages;
 
 namespace theatrel.TLBot
 {
@@ -18,7 +20,7 @@ namespace theatrel.TLBot
     {
         private readonly ITelegramBotClient _botClient;
 
-        public event EventHandler<ITLMessage> OnMessage;
+        public event EventHandler<ITlInboundMessage> OnMessage;
 
         public TLBotService()
         {
@@ -66,9 +68,9 @@ namespace theatrel.TLBot
         }
 
         private void BotOnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
-            => OnMessage?.Invoke(sender, new TLMessage { ChatId = e.Message.Chat.Id, Message = e.Message.Text.Trim() });
+            => OnMessage?.Invoke(sender, new TlInboundMessage { ChatId = e.Message.Chat.Id, Message = e.Message.Text.Trim() });
 
-        public async void SendMessageAsync(long chatId, ICommandResponse message)
+        public async Task<bool> SendMessageAsync(long chatId, ITlOutboundMessage message)
         {
             char[] toLog = message.Message?.Take(100).ToArray();
             string msgToLog = toLog == null ? string.Empty : new string(toLog);
@@ -94,8 +96,14 @@ namespace theatrel.TLBot
             catch (Exception exception)
             {
                 Trace.TraceInformation($"SendMessage: {chatId} {message} failed. Exception {exception.Message}{Environment.NewLine}{exception.StackTrace}");
+                return false;
             }
+
+            return true;
         }
+
+        public async Task<bool> SendMessageAsync(long chatId, string message)
+            => await SendMessageAsync(chatId, new TlOutboundMessage(message));
 
         private const int MaxMessageSize = 4096;
         private string[] SplitMessage(string message)

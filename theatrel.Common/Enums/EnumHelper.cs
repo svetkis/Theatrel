@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 
-namespace theatrel.DataUpdater
+namespace theatrel.Common.Enums
 {
     public static class EnumHelper
     {

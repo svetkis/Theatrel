@@ -95,6 +95,8 @@ namespace theatrel.Worker
                     await updater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
                         context.CancellationToken);
 
+                    ISubscriptionProcessor subscriptionProcessor = Bootstrapper.Resolve<ISubscriptionProcessor>();
+                    await subscriptionProcessor.ProcessSubscriptions();
                 }
                 catch (Exception ex)
                 {

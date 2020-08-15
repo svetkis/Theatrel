@@ -2,7 +2,7 @@
 
 namespace theatrel.TLBot.Interfaces
 {
-    public interface ICommandResponse
+    public interface ITlOutboundMessage
     {
         string Message { get; set; }
         ReplyKeyboardMarkup ReplyKeyboard { get; set; }

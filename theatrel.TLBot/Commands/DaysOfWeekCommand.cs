@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.Interfaces;
 using theatrel.TLBot.Interfaces;
+using theatrel.TLBot.Messages;
 
 namespace theatrel.TLBot.Commands
 {
@@ -92,7 +93,7 @@ namespace theatrel.TLBot.Commands
         }
 
         private const string YouSelected = "Вы выбрали";
-        public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override async Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             var days = ParseMessage(message);
             chatInfo.Days = days;
@@ -100,15 +101,15 @@ namespace theatrel.TLBot.Commands
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
 
             if (days.SequenceEqual(WeekDays))
-                return new TlCommandResponse($"{YouSelected} {WeekDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage);
+                return new TlOutboundMessage($"{YouSelected} {WeekDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage);
 
             if (days.SequenceEqual(Weekends))
-                return new TlCommandResponse($"{YouSelected} {WeekendsNames.First()}. {ReturnMsg}", ReturnCommandMessage);
+                return new TlOutboundMessage($"{YouSelected} {WeekendsNames.First()}. {ReturnMsg}", ReturnCommandMessage);
 
             if (days.SequenceEqual(AllDays))
-                return new TlCommandResponse($"{YouSelected} {AllDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage);
+                return new TlOutboundMessage($"{YouSelected} {AllDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage);
 
-            return new TlCommandResponse(
+            return new TlOutboundMessage(
                 $"{YouSelected} {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. {ReturnMsg}",
                 ReturnCommandMessage);
         }
@@ -119,11 +120,11 @@ namespace theatrel.TLBot.Commands
             return days.Any();
         }
 
-        public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override async Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("В какой день недели Вы хотели бы посетить театр? Вы можете выбрать несколько дней.");
-            return new TlCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup);
+            return new TlOutboundMessage(stringBuilder.ToString(), CommandKeyboardMarkup);
         }
 
         private DayOfWeek[] ParseMessage(string message)

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using theatrel.DataAccess;
@@ -9,9 +10,10 @@ using theatrel.DataAccess;
 namespace theatrel.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200814111716_SubscriptionsFix")]
+    partial class SubscriptionsFix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,20 +93,8 @@ namespace theatrel.DataAccess.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<DateTime>("DateTime")
+                    b.Property<DateTime>("PerformanceDateTime")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("text");
-
-                    b.Property<int>("MinPrice")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Type")
-                        .HasColumnType("text");
 
                     b.Property<string>("Url")
                         .HasColumnType("text");
@@ -154,26 +144,18 @@ namespace theatrel.DataAccess.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<string>("Culture")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("LastUpdate")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("PerformanceFilterId")
                         .HasColumnType("integer");
 
-                    b.Property<long>("TelegramUserId")
+                    b.Property<long>("UserId")
                         .HasColumnType("bigint");
-
-                    b.Property<int>("TrackingChanges")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PerformanceFilterId");
-
-                    b.HasIndex("TelegramUserId");
 
                     b.ToTable("Subscriptions");
                 });
@@ -184,9 +166,6 @@ namespace theatrel.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<string>("Culture")
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -205,12 +184,6 @@ namespace theatrel.DataAccess.Migrations
                     b.HasOne("theatrel.DataAccess.Entities.PerformanceFilterEntity", "PerformanceFilter")
                         .WithMany()
                         .HasForeignKey("PerformanceFilterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("theatrel.DataAccess.Entities.TelegramUserEntity", "TelegramUser")
-                        .WithMany()
-                        .HasForeignKey("TelegramUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

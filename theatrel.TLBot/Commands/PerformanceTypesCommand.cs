@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.Interfaces;
 using theatrel.TLBot.Interfaces;
+using theatrel.TLBot.Messages;
 
 namespace theatrel.TLBot.Commands
 {
@@ -29,21 +30,21 @@ namespace theatrel.TLBot.Commands
             };
         }
 
-        public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override async Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             chatInfo.Types = ParseMessage(message);
 
-            return new TlCommandResponse(null);
+            return new TlOutboundMessage(null);
         }
 
         public override bool IsMessageCorrect(string message) => SplitMessage(message).Any();
 
-        public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override async Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("Какие представления Вас интересуют?");
 
-            return new TlCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup);
+            return new TlOutboundMessage(stringBuilder.ToString(), CommandKeyboardMarkup);
         }
 
         private string[] ParseMessage(string message)

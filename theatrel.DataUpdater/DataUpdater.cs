@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using theatrel.DataAccess;
 using theatrel.DataAccess.Entities;
 using theatrel.Interfaces;
+using theatrel.Common.Enums;
 
 namespace theatrel.DataUpdater
 {
@@ -28,7 +29,7 @@ namespace theatrel.DataUpdater
             Trace.TraceInformation("Get saved performances from db");
             PerformanceEntity[] savedPerformances =
                 _dbContext.Performances
-                    .Where(p => p.PerformanceDateTime >= startDate && p.PerformanceDateTime <= endDate).ToArray();
+                    .Where(p => p.DateTime >= startDate && p.DateTime <= endDate).ToArray();
 
             Trace.TraceInformation("Request new data");
             IPerformanceData[] performances = await _dataResolver.RequestProcess(_filterHelper.GetFilter(startDate, endDate), cancellationToken);
@@ -49,7 +50,7 @@ namespace theatrel.DataUpdater
                         .FirstOrDefault();
 
                     var compareResult = ComparePerformanceData(lastChange, freshPerformanceData);
-                    if (compareResult == ReasonOfChangesEnum.NoReason)
+                    if (compareResult == ReasonOfChanges.NoReason)
                     {
                         if (lastChange != null)
                         {
@@ -60,7 +61,7 @@ namespace theatrel.DataUpdater
                         continue;
                     }
 
-                    performance.Changes.Add(CreatePerformanceChangeEntity(freshPerformanceData.Tickets.GetMinPrice(), compareResult));
+                    performance.Changes.Add(CreatePerformanceChangeEntity(freshPerformanceData.MinPrice, compareResult));
                     Trace.TraceInformation($"Performance change information added {compareResult}");
                 }
             }
@@ -71,7 +72,7 @@ namespace theatrel.DataUpdater
             return true;
         }
 
-        private PerformanceChangeEntity CreatePerformanceChangeEntity(int minPrice, ReasonOfChangesEnum reason)
+        private PerformanceChangeEntity CreatePerformanceChangeEntity(int minPrice, ReasonOfChanges reason)
         {
             return new PerformanceChangeEntity
             {
@@ -84,35 +85,39 @@ namespace theatrel.DataUpdater
         private PerformanceEntity CreatePerformanceEntity(IPerformanceData data) =>
             new PerformanceEntity
             {
-                PerformanceDateTime = data.DateTime,
+                Name = data.Name,
+                Location = data.Location,
+                Type = data.Type,
+                DateTime = data.DateTime,
                 Url = data.Url,
                 Changes = new List<PerformanceChangeEntity>
                 {
                     new PerformanceChangeEntity
                     {
                         LastUpdate = DateTime.Now,
-                        MinPrice = data.Tickets.GetMinPrice(),
-                        ReasonOfChanges = (int) ReasonOfChangesEnum.Creation,
+                        MinPrice = data.MinPrice,
+                        ReasonOfChanges = (int) ReasonOfChanges.Creation,
                     }
                 }
             };
 
-        private ReasonOfChangesEnum ComparePerformanceData(PerformanceChangeEntity lastChange, IPerformanceData freshData)
+        private ReasonOfChanges ComparePerformanceData(PerformanceChangeEntity lastChange, IPerformanceData freshData)
         {
-            if (lastChange == null)
-                return ReasonOfChangesEnum.Creation;
+            int freshMinPrice = freshData.MinPrice;
 
-            int freshMinPrice = freshData.Tickets.GetMinPrice();
+            if (lastChange == null)
+                return freshMinPrice == 0 ? ReasonOfChanges.Creation : ReasonOfChanges.StartSales;
+
             if (lastChange.MinPrice == 0)
-                return freshMinPrice == 0 ? ReasonOfChangesEnum.NoReason : ReasonOfChangesEnum.StartSales;
+                return freshMinPrice == 0 ? ReasonOfChanges.NoReason : ReasonOfChanges.StartSales;
 
             if (lastChange.MinPrice > freshMinPrice)
-                return ReasonOfChangesEnum.PriceDecreased;
+                return ReasonOfChanges.PriceDecreased;
 
             if (lastChange.MinPrice < freshMinPrice)
-                return ReasonOfChangesEnum.PriceIncreased;
+                return ReasonOfChanges.PriceIncreased;
 
-            return ReasonOfChangesEnum.NoReason;
+            return ReasonOfChanges.NoReason;
         }
     }
 }

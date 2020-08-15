@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using theatrel.DataAccess;
@@ -9,9 +10,10 @@ using theatrel.DataAccess;
 namespace theatrel.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200814104851_Subscriptions")]
+    partial class Subscriptions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,7 +83,7 @@ namespace theatrel.DataAccess.Migrations
 
                     b.HasIndex("PerformanceEntityId");
 
-                    b.ToTable("PerformanceChanges");
+                    b.ToTable("PerformanceChangeEntity");
                 });
 
             modelBuilder.Entity("theatrel.DataAccess.Entities.PerformanceEntity", b =>
@@ -91,20 +93,8 @@ namespace theatrel.DataAccess.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<DateTime>("DateTime")
+                    b.Property<DateTime>("PerformanceDateTime")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("text");
-
-                    b.Property<int>("MinPrice")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Type")
-                        .HasColumnType("text");
 
                     b.Property<string>("Url")
                         .HasColumnType("text");
@@ -147,46 +137,12 @@ namespace theatrel.DataAccess.Migrations
                     b.ToTable("Filters");
                 });
 
-            modelBuilder.Entity("theatrel.DataAccess.Entities.SubscriptionEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<string>("Culture")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("LastUpdate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("PerformanceFilterId")
-                        .HasColumnType("integer");
-
-                    b.Property<long>("TelegramUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("TrackingChanges")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PerformanceFilterId");
-
-                    b.HasIndex("TelegramUserId");
-
-                    b.ToTable("Subscriptions");
-                });
-
             modelBuilder.Entity("theatrel.DataAccess.Entities.TelegramUserEntity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<string>("Culture")
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -198,21 +154,6 @@ namespace theatrel.DataAccess.Migrations
                     b.HasOne("theatrel.DataAccess.Entities.PerformanceEntity", "PerformanceEntity")
                         .WithMany("Changes")
                         .HasForeignKey("PerformanceEntityId");
-                });
-
-            modelBuilder.Entity("theatrel.DataAccess.Entities.SubscriptionEntity", b =>
-                {
-                    b.HasOne("theatrel.DataAccess.Entities.PerformanceFilterEntity", "PerformanceFilter")
-                        .WithMany()
-                        .HasForeignKey("PerformanceFilterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("theatrel.DataAccess.Entities.TelegramUserEntity", "TelegramUser")
-                        .WithMany()
-                        .HasForeignKey("TelegramUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

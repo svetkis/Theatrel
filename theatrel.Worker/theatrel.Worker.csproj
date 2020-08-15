@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\theatrel.DataUpdater\theatrel.DataUpdater.csproj" />
     <ProjectReference Include="..\theatrel.Lib\theatrel.Lib.csproj" />
+    <ProjectReference Include="..\theatrel.Subscriptions\theatrel.Subscriptions.csproj" />
     <ProjectReference Include="..\theatrel.TLBot\theatrel.TLBot.csproj" />
   </ItemGroup>
 </Project>

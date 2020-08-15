@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 
 namespace theatrel.Interfaces
 {
@@ -10,7 +9,7 @@ namespace theatrel.Interfaces
         DateTime DateTime { get; set; }
         string Url { get; set; }
         string Type { get; set; }
-        IPerformanceTickets Tickets { get; set; }
-        HttpStatusCode StatusCode { get; set; }
+
+        int MinPrice { get; set; }
     }
 }

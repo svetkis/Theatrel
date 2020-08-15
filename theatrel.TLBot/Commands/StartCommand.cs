@@ -8,6 +8,7 @@ using theatrel.DataAccess;
 using theatrel.DataAccess.Entities;
 using theatrel.Interfaces;
 using theatrel.TLBot.Interfaces;
+using theatrel.TLBot.Messages;
 
 namespace theatrel.TLBot.Commands
 {
@@ -29,15 +30,20 @@ namespace theatrel.TLBot.Commands
 
         public override bool IsMessageCorrect(string message) => StartCommandVariants.Any(variant => message.ToLower().StartsWith(variant));
 
-        public override async Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override async Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             try
             {
-                if (!await _dbContext.TlUsers.AsNoTracking().AnyAsync(u => u.Id == chatInfo.ChatId, cancellationToken))
+                if (!_dbContext.TlUsers.AsNoTracking().Any(u => u.Id == chatInfo.ChatId))
                 {
-                    _dbContext.TlUsers.Add(new TelegramUserEntity { Id = chatInfo.ChatId });
-                    await _dbContext.SaveChangesAsync(cancellationToken);
+                    _dbContext.TlUsers.Add(new TelegramUserEntity {Id = chatInfo.ChatId, Culture = chatInfo.Culture});
                 }
+                else
+                {
+                    _dbContext.TlUsers.First(u => u.Id == chatInfo.ChatId).Culture = chatInfo.Culture;
+                }
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -47,10 +53,10 @@ namespace theatrel.TLBot.Commands
             Trace.TraceInformation($"reset chat {chatInfo}");
             chatInfo.Clear();
 
-            return new TlCommandResponse(null);
+            return new TlOutboundMessage(null);
         }
 
-        public override async Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
-            => new TlCommandResponse("Вас приветствует экономный театрал.");
+        public override async Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+            => new TlOutboundMessage("Вас приветствует экономный театрал.");
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using theatrel.Interfaces;
-using theatrel.Tests;
 using Xunit;
 
 namespace theatrel.Lib.Tests

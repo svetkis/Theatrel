@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace theatrel.TLBot
+namespace theatrel.TLBot.Messages
 {
     internal static class MessageHelper
     {

@@ -56,9 +56,9 @@ namespace theatrel.TLBot.Commands
 
         public abstract bool IsMessageCorrect(string message);
 
-        public abstract Task<ICommandResponse> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken);
+        public abstract Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken);
 
-        public abstract Task<ICommandResponse> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);
+        public abstract Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);
 
         public bool IsReturnCommand(string message)
             => string.Equals(message, ReturnCommandMessage, StringComparison.CurrentCultureIgnoreCase);
