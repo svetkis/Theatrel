@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using theatrel.DataAccess;
@@ -9,9 +10,10 @@ using theatrel.DataAccess;
 namespace theatrel.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200818134440_remove_locale_from_subscription")]
+    partial class remove_locale_from_subscription
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,7 +70,10 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<int>("MinPrice")
                         .HasColumnType("integer");
 
-                    b.Property<int>("PerformanceEntityId")
+                    b.Property<int>("PerformanceDataId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PerformanceEntityId")
                         .HasColumnType("integer");
 
                     b.Property<int>("ReasonOfChanges")
@@ -191,9 +196,7 @@ namespace theatrel.DataAccess.Migrations
                 {
                     b.HasOne("theatrel.DataAccess.Entities.PerformanceEntity", "PerformanceEntity")
                         .WithMany("Changes")
-                        .HasForeignKey("PerformanceEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PerformanceEntityId");
                 });
 
             modelBuilder.Entity("theatrel.DataAccess.Entities.SubscriptionEntity", b =>

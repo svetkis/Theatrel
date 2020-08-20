@@ -15,7 +15,5 @@ namespace theatrel.DataAccess.Entities
 
         public int PerformanceFilterId { get; set; }
         public PerformanceFilterEntity PerformanceFilter { get; set; }
-
-        public string Culture { get; set; }
     }
 }

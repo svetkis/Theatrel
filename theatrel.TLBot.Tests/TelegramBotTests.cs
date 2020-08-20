@@ -5,13 +5,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces;
-using theatrel.Lib;
 using theatrel.TLBot.Interfaces;
 using Xunit;
 
 namespace theatrel.TLBot.Tests
 {
-    public class TLBotTests
+    public class TelegramBotTests
     {
         [Theory]
         [InlineData(5, new[] { DayOfWeek.Monday }, "концерт", "пр»вет", "апрель", "Ќет!", "май", "—уббота", "нет", "понедельник", "кќнцерт")]
@@ -34,7 +33,6 @@ namespace theatrel.TLBot.Tests
             await using ILifetimeScope scope = DIContainerHolder.RootScope.BeginLifetimeScope( builder =>
             {
                 builder.RegisterInstance(playBillResolverMock.Object).As<IPlayBillDataResolver>().AsImplementedInterfaces();
-                builder.RegisterType<FilterHelper>().As<IFilterHelper>().AsImplementedInterfaces();
                 builder.RegisterType<TLBotProcessor>().As<ITLBotProcessor>().AsImplementedInterfaces();
             });
 
@@ -48,8 +46,10 @@ namespace theatrel.TLBot.Tests
             tlProcessor.Start(tlBotServiceMock.Object, CancellationToken.None);
 
             foreach (var cmd in commands)
+            {
                 tlBotServiceMock.Raise(x => x.OnMessage += null, null,
                     Mock.Of<ITlInboundMessage>(m => m.Message == cmd && m.ChatId == 1));
+            }
 
             playBillResolverMock.Verify(lw => lw.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()),
                 Times.AtLeastOnce());

@@ -8,17 +8,11 @@ using theatrel.Common.Enums;
 using theatrel.DataAccess;
 using theatrel.Interfaces;
 using Xunit;
-using static Xunit.Assert;
 
 namespace theatrel.DataUpdater.Tests
 {
     public class DataUpdaterTest
     {
-        public DataUpdaterTest()
-        {
-
-        }
-
         private IPerformanceData GetPerformance(int minPrice, string url, DateTime performanceDateTime)
         {
             Mock<IPerformanceData> performanceMock = new Mock<IPerformanceData>();
@@ -36,7 +30,7 @@ namespace theatrel.DataUpdater.Tests
         {
             Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
             playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(new IPerformanceData[]
+                .Returns(() => Task.FromResult(new[]
                 {
                     GetPerformance(0, "testUrl", new DateTime(2020, 9, 10 ))
                 }));
@@ -63,9 +57,9 @@ namespace theatrel.DataUpdater.Tests
 
             var db = scope.Resolve<AppDbContext>();
             var changes = db.PerformanceChanges.OrderBy(d => d.LastUpdate);
-            Equal(2, db.PerformanceChanges.Count());
-            Equal((int)ReasonOfChanges.StartSales, changes.Last().ReasonOfChanges);
-            Equal((int)ReasonOfChanges.Creation, changes.First().ReasonOfChanges);
+            Assert.Equal(2, db.PerformanceChanges.Count());
+            Assert.Equal((int)ReasonOfChanges.StartSales, changes.Last().ReasonOfChanges);
+            Assert.Equal((int)ReasonOfChanges.Creation, changes.First().ReasonOfChanges);
         }
     }
 }

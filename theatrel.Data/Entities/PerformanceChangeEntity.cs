@@ -15,7 +15,7 @@ namespace theatrel.DataAccess.Entities
         [DataType(DataType.DateTime)]
         public DateTime LastUpdate { get; set; }
 
-        public int PerformanceDataId { get; set; }
+        public int PerformanceEntityId { get; set; }
         public PerformanceEntity PerformanceEntity { get; set; }
     }
 }

@@ -37,7 +37,7 @@ namespace theatrel.Subscriptions
 
                 PerformanceChangeEntity[] performanceChanges = filter.PerformanceId >= 0
                     ? changes
-                        .Where(p => p.PerformanceDataId == filter.PerformanceId
+                        .Where(p => p.PerformanceEntityId == filter.PerformanceId
                                     && p.LastUpdate > subscription.LastUpdate
                                     && (subscription.TrackingChanges & p.ReasonOfChanges) != 0)
                         .OrderBy(p => p.LastUpdate).ToArray()
