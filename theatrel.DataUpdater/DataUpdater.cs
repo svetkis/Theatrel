@@ -26,26 +26,27 @@ namespace theatrel.DataUpdater
 
         public async Task<bool> UpdateAsync(int theaterId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken)
         {
-            Trace.TraceInformation("Get saved performances from db");
+            Trace.TraceInformation("DataUpdater.UpdateAsync started.");
             PerformanceEntity[] savedPerformances =
-                _dbContext.Performances
+                _dbContext.Performances?
                     .Where(p => p.DateTime >= startDate && p.DateTime <= endDate).ToArray();
 
-            Trace.TraceInformation("Request new data");
             IPerformanceData[] performances = await _dataResolver.RequestProcess(_filterHelper.GetFilter(startDate, endDate), cancellationToken);
             foreach (var freshPerformanceData in performances)
             {
                 Trace.TraceInformation($"Process {freshPerformanceData.Name}");
-                var performance = savedPerformances.FirstOrDefault(p =>
+                var performance = savedPerformances?.FirstOrDefault(p =>
                     string.Compare(p.Url, freshPerformanceData.Url, StringComparison.InvariantCultureIgnoreCase) == 0);
 
                 if (performance == null)
                 {
-                    _dbContext.Performances.Add(CreatePerformanceEntity(freshPerformanceData));
-                    Trace.TraceInformation($"Performance {freshPerformanceData.Url} was added to database");
+                    Trace.TraceInformation($"Performance {freshPerformanceData.Name} will be added to database");
+                    _dbContext.Performances?.Add(CreatePerformanceEntity(freshPerformanceData));
                 }
                 else
                 {
+                    Trace.TraceInformation($"PerformanceChanges {freshPerformanceData.Name} will be changed");
+
                     PerformanceChangeEntity lastChange = performance.Changes.OrderByDescending(x => x.LastUpdate)
                         .FirstOrDefault();
 

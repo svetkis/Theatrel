@@ -11,6 +11,7 @@ namespace theatrel.Lib
             var filter = new PerformanceFilter
             {
                 StartDate = dataInfo.When,
+                EndDate = dataInfo.When
             };
 
             if (dataInfo.Days != null && dataInfo.Days.Any())

@@ -62,6 +62,16 @@ namespace theatrel.Worker
 
         private async Task ScheduleDataUpdates(CancellationToken cancellationToken)
         {
+            string upgradeJobCron = Environment.GetEnvironmentVariable("UpdateJobSchedule");
+            if (string.IsNullOrWhiteSpace(upgradeJobCron))
+            {
+                _logger.LogInformation("UpdateJobSchedule not found");
+                return;
+            }
+
+            string group = "updateJobGroup";
+            string group2 = "updateJobGroup2";
+
             ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
 
             IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
@@ -69,17 +79,28 @@ namespace theatrel.Worker
             _logger.LogInformation("Scheduler started");
 
             IJobDetail job = JobBuilder.Create<UpdateSeptemberJob>()
-                .WithIdentity("job1", "group1")
+                .WithIdentity("updateJob", group)
                 .Build();
+
+            IJobDetail startUpdateJob = JobBuilder.Create<UpdateSeptemberJob>()
+                .WithIdentity("startUpdateJob", group)
+                .Build();
+
 
             TimeZoneInfo moscowCustomTimeZone = TimeZoneInfo.CreateCustomTimeZone("Moscow Time", new TimeSpan(03, 00, 00), "(GMT+03:00) Moscow Time", "Moscow Time");
 
             ITrigger trigger = TriggerBuilder.Create()
-                .WithIdentity("trigger1", "group1")
+                .WithIdentity("updateJobTrigger", group)
                 .WithCronSchedule("0 10 10-20 * * ?", cron => { cron.InTimeZone(moscowCustomTimeZone); })
                 .Build();
 
+            ITrigger triggerNow = TriggerBuilder.Create()
+                .WithIdentity("triggerNow", group2)
+                .StartNow()
+                .Build();
+
             await scheduler.ScheduleJob(job, trigger, cancellationToken);
+            await scheduler.ScheduleJob(startUpdateJob, triggerNow, cancellationToken);
 
             _logger.LogInformation("Job was scheduled");
         }
@@ -100,6 +121,14 @@ namespace theatrel.Worker
                 }
                 catch (Exception ex)
                 {
+                    if (long.TryParse(Environment.GetEnvironmentVariable("OwnerTelegramgId"), out var ownerId))
+                    {
+                        var telegramService = Bootstrapper.Resolve<ITLBotService>();
+                        await telegramService.SendMessageAsync(ownerId, "UpdateJob failed");
+                        await telegramService.SendMessageAsync(ownerId, $"{ex.Message}");
+                        Trace.TraceError(ex.StackTrace);
+                    }
+
                     Trace.TraceError($"Job failed {ex.Message}");
                 }
 

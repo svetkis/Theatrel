@@ -8,6 +8,7 @@
     <ProjectReference Include="..\theatrel.Common\theatrel.Common.csproj" />
     <ProjectReference Include="..\theatrel.Data\theatrel.DataAccess.csproj" />
     <ProjectReference Include="..\theatrel.Interfaces\theatrel.Interfaces.csproj" />
+    <ProjectReference Include="..\theatrel.Lib\theatrel.Lib.csproj" />
     <ProjectReference Include="..\theatrel.TLBot.Interfaces\theatrel.TLBot.Interfaces.csproj" />
   </ItemGroup>
 

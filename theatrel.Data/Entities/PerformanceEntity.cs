@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using theatrel.Interfaces;
 
 namespace theatrel.DataAccess.Entities
@@ -17,8 +18,10 @@ namespace theatrel.DataAccess.Entities
         public DateTime DateTime { get; set; }
         public string Url { get; set; }
         public string Type { get; set; }
-        public int MinPrice { get; set; }
 
         public List<PerformanceChangeEntity> Changes { get; set; }
+
+        [NotMapped]
+        public int MinPrice { get; set; }
     }
 }

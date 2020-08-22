@@ -35,7 +35,6 @@ namespace theatrel.Lib
 
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        Trace.TraceInformation($"{url} {response.StatusCode}");
                         return response.Content;
                     }
 

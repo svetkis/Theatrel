@@ -25,26 +25,32 @@ namespace theatrel.Lib
 
         public async Task<IPerformanceData[]> RequestProcess(IPerformanceFilter filter, CancellationToken cancellationToken)
         {
-            string content = await Request(filter.StartDate, cancellationToken);
+            Trace.TraceInformation("PlayBillResolver.RequestProcess started");
+            DateTime[] months = filter.StartDate.GetMonthsBetween(filter.EndDate);
 
-            IPerformanceData[] performances = await _playBillParser.Parse(content, cancellationToken);
+            List<IPerformanceData> performances = new List<IPerformanceData>();
 
-            IList<Task> tasks = new List<Task>();
+            foreach (var dateTime in months)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                string content = await Request(dateTime, cancellationToken);
+                performances.AddRange(await _playBillParser.Parse(content, cancellationToken));
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             IEnumerable<IPerformanceData> filtered = performances.Where(item => _filterChecker.IsDataSuitable(item, filter)).ToArray();
 
-            foreach (var item in filtered)
-                tasks.Add(Task.Run(async () =>
-                {
-                    item.MinPrice = (await _ticketParser.ParseFromUrl(item.Url, cancellationToken)).GetMinPrice();
-                }, cancellationToken));
+            Task[] resolvePricesTasks = filtered
+                .Select(item => Task.Run(async () =>
+                    {
+                        item.MinPrice = (await _ticketParser.ParseFromUrl(item.Url, cancellationToken)).GetMinPrice();
+                    }, cancellationToken)).ToArray();
 
-            await Task.WhenAll(tasks.ToArray());
+            await Task.WhenAll(resolvePricesTasks.ToArray());
 
-            Trace.TraceInformation("Parsing finished");
-
+            Trace.TraceInformation(" PlayBillResolver.RequestProcess finished");
             return filtered.ToArray();
         }
 

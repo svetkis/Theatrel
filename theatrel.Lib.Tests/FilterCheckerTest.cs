@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using Moq;
 using theatrel.Interfaces;
 using Xunit;
 
@@ -7,52 +7,28 @@ namespace theatrel.Lib.Tests
 {
     public class FilterCheckerTest
     {
-        internal class FilterData
-        {
-            public FilterData(object[] initData)
-            {
-                Days = initData[0] as DayOfWeek[];
-                Types = initData[1] as string[];
-            }
-
-            public string[] Types { get; set; }
-            public DayOfWeek[] Days { get; set; }
-        }
-
-        internal class PerformanceData
-        {
-            public PerformanceData(object[] initData)
-            {
-                Date = new DateTime((int)initData[0], (int)initData[1], (int)initData[2]);
-                Type = initData.Last() as string;
-            }
-
-            public DateTime Date { get; set; }
-            public string Type { get; set; }
-        }
-
         [Theory]
-        [InlineData( new object[] { 2020, 03, 23, "концерт" }, new object[] { new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }, new[] { "Концерт" } }, false)]
-        [InlineData(new object[] { 2020, 03, 21, "балет" }, new object[] { new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }, new[] { "Концерт" } }, false)]
-        [InlineData(new object[] { 2020, 03, 21, "концерт" }, new object[] { new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }, new[] { "Концерт" } }, true)]
-        [InlineData(new object[] { 2020, 03, 20, "опера" }, new object[] { new[] { DayOfWeek.Friday, DayOfWeek.Sunday }, new[] { "Концерт" } }, false)]
-        [InlineData(new object[] { 2020, 03, 20, "опера" }, new object[] { new[] { DayOfWeek.Friday, DayOfWeek.Sunday }, new[] { "Опера" } }, true)]
-        public void Test(object[] perfomanceDataArr, object[] filterDataArr, bool expected)
+        [InlineData( false, new[] { 2020, 03, 23 }, "концерт" , new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }, new[] { "Концерт" } )]
+        [InlineData( false, new [] { 2020, 03, 21}, "балет" , new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }, new[] { "Концерт" })]
+        [InlineData( true, new [] { 2020, 03, 21}, "концерт", new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }, new[] { "Концерт", "Балет" })]
+        [InlineData( false, new [] { 2020, 03, 20}, "опера" , new[] { DayOfWeek.Friday, DayOfWeek.Sunday }, new[] { "Концерт" })]
+        [InlineData( true, new [] { 2020, 03, 20}, "опера" , new[] { DayOfWeek.Friday, DayOfWeek.Sunday }, new[] { "Опера" })]
+        public void Test(bool expected, int[] performanceDate, string performanceType, DayOfWeek[] filterDays, string[] filterTypes)
         {
             var filterChecker = DIContainerHolder.Resolve<IFilterChecker>();
-            var filter = DIContainerHolder.Resolve<IPerformanceFilter>();
-            var performance = DIContainerHolder.Resolve<IPerformanceData>();
 
-            var performanceData = new PerformanceData(perfomanceDataArr);
-            var filterData = new FilterData(filterDataArr);
+            var filter = new Mock<IPerformanceFilter>();
+            filter.SetupGet(x => x.DaysOfWeek).Returns(filterDays);
+            filter.SetupGet(x => x.PerformanceTypes).Returns(filterTypes);
 
-            performance.DateTime = performanceData.Date;
-            performance.Type = performanceData.Type;
+            var performance = new Mock<IPerformanceData>();
+            performance.SetupGet(x => x.DateTime)
+                .Returns(new DateTime(performanceDate[0], performanceDate[1], performanceDate[2]));
+            performance.SetupGet(x => x.Type).Returns(performanceType);
 
-            filter.DaysOfWeek = filterData.Days;
-            filter.PerformanceTypes = filterData.Types;
+            bool result = filterChecker.IsDataSuitable(performance.Object, filter.Object);
 
-            Assert.Equal(expected, filterChecker.IsDataSuitable(performance, filter));
+            Assert.Equal(expected, result);
         }
     }
 }
