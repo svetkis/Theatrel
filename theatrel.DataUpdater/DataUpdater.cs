@@ -43,12 +43,10 @@ namespace theatrel.DataUpdater
 
                 if (savedPerformance == null)
                 {
-                    Trace.TraceInformation($"Performance {freshPerformanceData.Name} will be added to database");
-                    _dbContext.Performances.Add(CreatePerformanceEntity(freshPerformanceData));
+                    AddPerformance(freshPerformanceData);
+                    Trace.TraceInformation($"Performance {freshPerformanceData.Name} {freshPerformanceData.DateTime:g} was added to database");
                     continue;
                 }
-
-                Trace.TraceInformation($"PerformanceChanges {freshPerformanceData.Name} will be changed");
 
                 if (savedPerformance.Changes == null)
                     Trace.TraceInformation($"Performance {savedPerformance.Name} has no changes");
@@ -65,13 +63,38 @@ namespace theatrel.DataUpdater
                 }
 
                 savedPerformance.Changes?.Add(CreatePerformanceChangeEntity(freshPerformanceData.MinPrice, compareResult));
-                Trace.TraceInformation($"Performance change information was added {compareResult}");
+                Trace.TraceInformation($"Performance Performance {freshPerformanceData.Name} {freshPerformanceData.DateTime:g}, change information was added {compareResult}");
             }
 
             Trace.TraceInformation("Save Changes to db");
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return true;
+        }
+
+        private void AddPerformance(IPerformanceData data)
+        {
+            var performanceEntity = new PerformanceEntity
+            {
+                Name = data.Name,
+                Location = data.Location,
+                Type = data.Type,
+                DateTime = data.DateTime,
+                Url = data.Url,
+                Changes = new List<PerformanceChangeEntity>{
+                    new PerformanceChangeEntity
+                    {
+                        LastUpdate = DateTime.Now,
+                        MinPrice = data.MinPrice,
+                        ReasonOfChanges = (int) ReasonOfChanges.Creation,
+                    }}
+            };
+
+            _dbContext.Performances.Add(performanceEntity);
+            foreach (var change in performanceEntity.Changes)
+                _dbContext.Add(change);
+
+
         }
 
         private PerformanceChangeEntity CreatePerformanceChangeEntity(int minPrice, ReasonOfChanges reason)
@@ -82,30 +105,6 @@ namespace theatrel.DataUpdater
                 MinPrice = minPrice,
                 ReasonOfChanges = (int)reason,
             };
-        }
-
-        private PerformanceEntity CreatePerformanceEntity(IPerformanceData data)
-        {
-            var performance = new PerformanceEntity
-            {
-                Name = data.Name,
-                Location = data.Location,
-                Type = data.Type,
-                DateTime = data.DateTime,
-                Url = data.Url,
-                Changes = new List<PerformanceChangeEntity>
-                {
-                    new PerformanceChangeEntity
-                    {
-                        LastUpdate = DateTime.Now,
-                        MinPrice = data.MinPrice,
-                        ReasonOfChanges = (int) ReasonOfChanges.Creation
-                    }
-                }
-            };
-
-            _dbContext.Add(performance.Changes.First());
-            return performance;
         }
 
         private ReasonOfChanges ComparePerformanceData(PerformanceChangeEntity lastChange, IPerformanceData freshData)
