@@ -12,8 +12,10 @@ namespace theatrel.Subscriptions.Tests
 {
     public class SubscriptionsServiceTest
     {
-        private async Task ConfigureDb(AppDbContext dbContext, params int[] months)
+        private async Task ConfigureDb(params int[] months)
         {
+            var dbContext = DIContainerHolder.RootScope.Resolve<AppDbContext>();
+
             DateTime performanceDateTime = new DateTime(2020, months.First(), 1);
 
             var tgUser1 = new TelegramUserEntity { Culture = "ru" };
@@ -61,8 +63,7 @@ namespace theatrel.Subscriptions.Tests
         [InlineData(3, 5, 6, 7, 4, 3, 5)]
         public async Task Test(params int[] months)
         {
-            var db = DIContainerHolder.RootScope.Resolve<AppDbContext>();
-            await ConfigureDb(db, months);
+            await ConfigureDb(months);
 
             var service = DIContainerHolder.RootScope.Resolve<ISubscriptionService>();
 

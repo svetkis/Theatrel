@@ -29,46 +29,43 @@ namespace theatrel.DataUpdater
         {
             Trace.TraceInformation("DataUpdater.UpdateAsync started.");
             PerformanceEntity[] savedPerformances =
-                _dbContext.Performances?
-                    .Where(p => p.DateTime >= startDate && p.DateTime <= endDate).ToArray();
+                _dbContext.Performances
+                    .Include(x => x.Changes)
+                    .Where(p => p.DateTime >= startDate && p.DateTime <= endDate)
+                    .ToArray();
 
             IPerformanceData[] performances = await _dataResolver.RequestProcess(_filterHelper.GetFilter(startDate, endDate), cancellationToken);
             foreach (var freshPerformanceData in performances)
             {
                 Trace.TraceInformation($"Process {freshPerformanceData.Name}");
-                var savedPerformance = savedPerformances?.FirstOrDefault(p =>
+                var savedPerformance = savedPerformances.FirstOrDefault(p =>
                     string.Compare(p.Url, freshPerformanceData.Url, StringComparison.InvariantCultureIgnoreCase) == 0);
 
                 if (savedPerformance == null)
                 {
                     Trace.TraceInformation($"Performance {freshPerformanceData.Name} will be added to database");
-                    _dbContext.Performances?.Add(CreatePerformanceEntity(freshPerformanceData));
+                    _dbContext.Performances.Add(CreatePerformanceEntity(freshPerformanceData));
+                    continue;
                 }
-                else
+
+                Trace.TraceInformation($"PerformanceChanges {freshPerformanceData.Name} will be changed");
+
+                if (savedPerformance.Changes == null)
+                    Trace.TraceInformation($"Performance {savedPerformance.Name} has no changes");
+
+                PerformanceChangeEntity lastChange = savedPerformance.Changes?.OrderByDescending(x => x.LastUpdate)
+                    .FirstOrDefault();
+
+                var compareResult = ComparePerformanceData(lastChange, freshPerformanceData);
+                if (compareResult == ReasonOfChanges.NoReason && lastChange != null)
                 {
-                    Trace.TraceInformation($"PerformanceChanges {freshPerformanceData.Name} will be changed");
-
-                    if (savedPerformance.Changes == null)
-                        Trace.TraceInformation($"Performance {savedPerformance.Name} has no changes");
-
-                    PerformanceChangeEntity lastChange = savedPerformance.Changes?.OrderByDescending(x => x.LastUpdate)
-                        .FirstOrDefault();
-
-                    var compareResult = ComparePerformanceData(lastChange, freshPerformanceData);
-                    if (compareResult == ReasonOfChanges.NoReason)
-                    {
-                        if (lastChange != null)
-                        {
-                            lastChange.LastUpdate = DateTime.Now;
-                            Trace.TraceInformation("Just update LastUpdate.");
-                        }
-
-                        continue;
-                    }
-
-                    savedPerformance.Changes.Add(CreatePerformanceChangeEntity(freshPerformanceData.MinPrice, compareResult));
-                    Trace.TraceInformation($"Performance change information added {compareResult}");
+                    Trace.TraceInformation("Just update LastUpdate.");
+                    lastChange.LastUpdate = DateTime.Now;
+                    continue;
                 }
+
+                savedPerformance.Changes?.Add(CreatePerformanceChangeEntity(freshPerformanceData.MinPrice, compareResult));
+                Trace.TraceInformation($"Performance change information was added {compareResult}");
             }
 
             Trace.TraceInformation("Save Changes to db");
@@ -101,7 +98,7 @@ namespace theatrel.DataUpdater
                     {
                         LastUpdate = DateTime.Now,
                         MinPrice = data.MinPrice,
-                        ReasonOfChanges = (int) ReasonOfChanges.Creation,
+                        ReasonOfChanges = (int) ReasonOfChanges.Creation
                     }
                 }
             };

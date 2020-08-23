@@ -71,7 +71,7 @@ namespace theatrel.Worker
             }
 
             string group = "updateJobGroup";
-            string group2 = "updateJobGroup2";
+            string group2 = "updateJobOnceWhenStart";
 
             ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
 
