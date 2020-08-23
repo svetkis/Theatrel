@@ -34,7 +34,7 @@ namespace theatrel.Worker
             Trace.TraceInformation("Worker.StartAsync");
 
             var dbContext = Bootstrapper.Resolve<AppDbContext>();
-            await dbContext.Database.MigrateAsync(cancellationToken);
+            await dbContext.Database.EnsureCreatedAsync(cancellationToken);
 
             _tLBotProcessor = Bootstrapper.Resolve<ITLBotProcessor>();
             var tlBotService = Bootstrapper.Resolve<ITLBotService>();

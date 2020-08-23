@@ -3,12 +3,6 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY ["theatrel.Interfaces/theatrel.Interfaces.csproj", "theatrel.Interfaces/"]
-COPY ["theatrel.Lib/theatrel.Lib.csproj", "theatrel.Lib/"]
-COPY ["theatrel.Lib.Tests/theatrel.Lib.Tests.csproj", "theatrel.Lib.Tests/"]
-COPY ["theatrel.TLBot/theatrel.TLBot.csproj", "theatrel.TLBot/"]
-COPY ["theatrel.TLBot.Interfaces/theatrel.TLBot.Interfaces.csproj", "theatrel.TLBot.Interfaces/"]
-COPY ["theatrel.TLBot.Tests/theatrel.TLBot.Tests.csproj", "theatrel.TLBot.Tests/"]
 COPY ["theatrel.Worker/theatrel.Worker.csproj", "theatrel.Worker/"]
 COPY ["theatrel.sln", "./"]
 RUN dotnet restore "theatrel.Worker/theatrel.Worker.csproj"
