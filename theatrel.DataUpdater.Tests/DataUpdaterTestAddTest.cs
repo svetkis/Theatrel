@@ -19,20 +19,23 @@ namespace theatrel.DataUpdater.Tests
             string performanceUrl = "testAddUrl";
 
             Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
-            playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
+            playBillResolverMock.Setup(h =>
+                    h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new[]
                 {
-                    GetPerformanceMock(0, performanceUrl, new DateTime(2020, 9, 10 ))
+                    GetPerformanceMock(0, performanceUrl, new DateTime(2020, 9, 10))
                 }));
 
             await using ILifetimeScope scope = DIContainerHolder.RootScope.BeginLifetimeScope(builder =>
             {
-                builder.RegisterInstance(playBillResolverMock.Object).As<IPlayBillDataResolver>().AsImplementedInterfaces();
+                builder.RegisterInstance(playBillResolverMock.Object).As<IPlayBillDataResolver>()
+                    .AsImplementedInterfaces();
             });
 
             var dataUpdater = scope.Resolve<IDataUpdater>();
 
-            await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1), CancellationToken.None);
+            await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
+                CancellationToken.None);
 
             var minPrice500 = GetPerformanceMock(500, performanceUrl, new DateTime(2020, 9, 10));
             playBillResolverMock.Setup(h =>
@@ -42,9 +45,11 @@ namespace theatrel.DataUpdater.Tests
                     minPrice500
                 }));
 
-            await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1), CancellationToken.None);
+            await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
+                CancellationToken.None);
             // nothing changed
-            await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1), CancellationToken.None);
+            await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
+                CancellationToken.None);
 
             var db = scope.Resolve<AppDbContext>();
             var changes = db.PerformanceChanges
@@ -52,8 +57,17 @@ namespace theatrel.DataUpdater.Tests
                 .OrderBy(d => d.LastUpdate);
 
             Assert.Equal(2, changes.Count());
-            Assert.Equal((int)ReasonOfChanges.StartSales, changes.Last().ReasonOfChanges);
-            Assert.Equal((int)ReasonOfChanges.Creation, changes.First().ReasonOfChanges);
+            Assert.Equal((int) ReasonOfChanges.StartSales, changes.Last().ReasonOfChanges);
+            Assert.Equal((int) ReasonOfChanges.Creation, changes.First().ReasonOfChanges);
+        }
+
+        [Fact]
+        public async void TestString()
+        {
+            string str1 = "https://tickets.mariinsky.ru/ru/performance/a0QxYXcveDVZK1dwM1Q4dm03TzBTZz09/";
+            string str2 = "https://tickets.mariinsky.ru/ru/performance/a0QxYXcveDVZK1dwM1Q4dm03TzBTZz09/";
+
+            Assert.True(string.Compare(str1, str2, StringComparison.InvariantCultureIgnoreCase) == 0);
         }
     }
 }

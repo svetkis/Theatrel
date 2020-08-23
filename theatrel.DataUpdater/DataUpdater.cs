@@ -39,7 +39,7 @@ namespace theatrel.DataUpdater
             {
                 Trace.TraceInformation($"Process {freshPerformanceData.Name}");
                 var savedPerformance = savedPerformances.FirstOrDefault(p =>
-                    string.Compare(p.Url, freshPerformanceData.Url, StringComparison.InvariantCultureIgnoreCase) == 0);
+                    string.Compare(p.Url.Trim(), freshPerformanceData.Url.Trim(), StringComparison.InvariantCultureIgnoreCase) == 0);
 
                 if (savedPerformance == null)
                 {
