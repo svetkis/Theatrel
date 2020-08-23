@@ -84,8 +84,9 @@ namespace theatrel.DataUpdater
             };
         }
 
-        private PerformanceEntity CreatePerformanceEntity(IPerformanceData data) =>
-            new PerformanceEntity
+        private PerformanceEntity CreatePerformanceEntity(IPerformanceData data)
+        {
+            var performance = new PerformanceEntity
             {
                 Name = data.Name,
                 Location = data.Location,
@@ -102,6 +103,10 @@ namespace theatrel.DataUpdater
                     }
                 }
             };
+
+            _dbContext.Add(performance.Changes.First());
+            return performance;
+        }
 
         private ReasonOfChanges ComparePerformanceData(PerformanceChangeEntity lastChange, IPerformanceData freshData)
         {
