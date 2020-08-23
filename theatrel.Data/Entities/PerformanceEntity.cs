@@ -19,7 +19,7 @@ namespace theatrel.DataAccess.Entities
         public string Url { get; set; }
         public string Type { get; set; }
 
-        public List<PerformanceChangeEntity> Changes { get; set; }
+        public ICollection<PerformanceChangeEntity> Changes { get; set; }
 
         [NotMapped]
         public int MinPrice { get; set; }

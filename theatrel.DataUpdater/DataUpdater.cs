@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using theatrel.DataAccess;
 using theatrel.DataAccess.Entities;
 using theatrel.Interfaces;
@@ -35,10 +36,10 @@ namespace theatrel.DataUpdater
             foreach (var freshPerformanceData in performances)
             {
                 Trace.TraceInformation($"Process {freshPerformanceData.Name}");
-                var performance = savedPerformances?.FirstOrDefault(p =>
+                var savedPerformance = savedPerformances?.FirstOrDefault(p =>
                     string.Compare(p.Url, freshPerformanceData.Url, StringComparison.InvariantCultureIgnoreCase) == 0);
 
-                if (performance == null)
+                if (savedPerformance == null)
                 {
                     Trace.TraceInformation($"Performance {freshPerformanceData.Name} will be added to database");
                     _dbContext.Performances?.Add(CreatePerformanceEntity(freshPerformanceData));
@@ -47,7 +48,10 @@ namespace theatrel.DataUpdater
                 {
                     Trace.TraceInformation($"PerformanceChanges {freshPerformanceData.Name} will be changed");
 
-                    PerformanceChangeEntity lastChange = performance.Changes.OrderByDescending(x => x.LastUpdate)
+                    if (savedPerformance.Changes == null)
+                        Trace.TraceInformation($"Performance {savedPerformance.Name} has no changes");
+
+                    PerformanceChangeEntity lastChange = savedPerformance.Changes?.OrderByDescending(x => x.LastUpdate)
                         .FirstOrDefault();
 
                     var compareResult = ComparePerformanceData(lastChange, freshPerformanceData);
@@ -62,7 +66,7 @@ namespace theatrel.DataUpdater
                         continue;
                     }
 
-                    performance.Changes.Add(CreatePerformanceChangeEntity(freshPerformanceData.MinPrice, compareResult));
+                    savedPerformance.Changes.Add(CreatePerformanceChangeEntity(freshPerformanceData.MinPrice, compareResult));
                     Trace.TraceInformation($"Performance change information added {compareResult}");
                 }
             }

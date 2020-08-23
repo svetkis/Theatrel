@@ -9,6 +9,8 @@
     <Compile Remove="Migrations\20200810163810_Add_PerformancesData.Designer.cs" />
     <Compile Remove="Migrations\20200811100838_add_performances_renaming.cs" />
     <Compile Remove="Migrations\20200811100838_add_performances_renaming.Designer.cs" />
+    <Compile Remove="Migrations\20200823113612_ListToICollection.cs" />
+    <Compile Remove="Migrations\20200823113612_ListToICollection.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

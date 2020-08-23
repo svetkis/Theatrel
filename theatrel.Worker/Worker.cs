@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Quartz;
@@ -32,7 +33,8 @@ namespace theatrel.Worker
 
             Trace.TraceInformation("Worker.StartAsync");
 
-            await Bootstrapper.Resolve<AppDbContext>().Database.MigrateAsync(cancellationToken);
+            var dbContext = Bootstrapper.Resolve<AppDbContext>();
+            await dbContext.Database.MigrateAsync(cancellationToken);
 
             _tLBotProcessor = Bootstrapper.Resolve<ITLBotProcessor>();
             var tlBotService = Bootstrapper.Resolve<ITLBotService>();
@@ -55,7 +57,6 @@ namespace theatrel.Worker
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                //_logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
                 await Task.Delay(1000, stoppingToken);
             }
         }

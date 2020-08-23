@@ -53,6 +53,6 @@ namespace theatrel.DataUpdater.Tests
     public class TestDbContextConfigurator
     {
         public static void Configure(DbContextOptionsBuilder<AppDbContext> builder)
-            => builder.UseInMemoryDatabase(databaseName: "Products Test");
+            => builder.UseInMemoryDatabase(databaseName: "DataUpdaterTestDb");
     }
 }
