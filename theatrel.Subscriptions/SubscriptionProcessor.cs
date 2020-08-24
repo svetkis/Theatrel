@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Query;
 using theatrel.Common.Enums;
 using theatrel.DataAccess;
 using theatrel.DataAccess.Entities;
@@ -28,21 +30,29 @@ namespace theatrel.Subscriptions
         public async Task<bool> ProcessSubscriptions()
         {
             Trace.TraceInformation("Process subscriptions started");
-            LocalView<PerformanceChangeEntity> changes = _dbContext.PerformanceChanges.Local;
+            PlaybillChangeEntity[] changes = _dbContext.PerformanceChanges
+                .Include(c => c.PlaybillEntity)
+                    .ThenInclude(p => p.Performance)
+                    .ThenInclude(p => p.Type)
+                .Include(c => c.PlaybillEntity)
+                    .ThenInclude(p => p.Performance)
+                    .ThenInclude(p => p.Location)
+                .ToArray();
 
             bool dbIsDirty = false;
             foreach (SubscriptionEntity subscription in _dbContext.Subscriptions)
             {
                 var filter = subscription.PerformanceFilter;
 
-                PerformanceChangeEntity[] performanceChanges = filter.PerformanceId >= 0
+                PlaybillChangeEntity[] performanceChanges = filter.PerformanceId >= 0
                     ? changes
-                        .Where(p => p.PerformanceEntityId == filter.PerformanceId
+                        .Where(p => p.PlaybillEntity.PerformanceId == filter.PerformanceId
                                     && p.LastUpdate > subscription.LastUpdate
                                     && (subscription.TrackingChanges & p.ReasonOfChanges) != 0)
                         .OrderBy(p => p.LastUpdate).ToArray()
                     : changes
-                        .Where(p => _filterChecker.IsDataSuitable(p.PerformanceEntity, subscription.PerformanceFilter)
+                        .Where(p => _filterChecker.IsDataSuitable(p.PlaybillEntity.Performance.Location.Name,
+                                        p.PlaybillEntity.Performance.Type.TypeName, p.PlaybillEntity.When, subscription.PerformanceFilter)
                                     && p.LastUpdate > subscription.LastUpdate
                                     && (subscription.TrackingChanges & p.ReasonOfChanges) != 0)
                         .OrderBy(p => p.LastUpdate).ToArray();
@@ -60,7 +70,7 @@ namespace theatrel.Subscriptions
             return true;
         }
 
-        private async Task<bool> SendMessages(SubscriptionEntity subscription, PerformanceChangeEntity[] changes)
+        private async Task<bool> SendMessages(SubscriptionEntity subscription, PlaybillChangeEntity[] changes)
         {
             string message = string.Join(Environment.NewLine,
                 changes.Select(change => GetChangeDescription(subscription, change)));
@@ -68,7 +78,7 @@ namespace theatrel.Subscriptions
             return await _telegramService.SendMessageAsync(subscription.Id, message);
         }
 
-        private string GetChangeDescription(SubscriptionEntity subscription, PerformanceChangeEntity change)
+        private string GetChangeDescription(SubscriptionEntity subscription, PlaybillChangeEntity change)
         {
             var culture = CultureInfo.CreateSpecificCulture(subscription.TelegramUser.Culture);
 
@@ -76,14 +86,14 @@ namespace theatrel.Subscriptions
             switch (reason)
             {
                 case ReasonOfChanges.Creation:
-                    string month = culture.DateTimeFormat.GetMonthName(change.PerformanceEntity.DateTime.Month);
-                    return $"Новое в афише на {month}: {change.PerformanceEntity.Name} {change.PerformanceEntity.Url}";
+                    string month = culture.DateTimeFormat.GetMonthName(change.PlaybillEntity.When.Month);
+                    return $"Новое в афише на {month}: {change.PlaybillEntity.Performance.Name} {change.PlaybillEntity.Url}";
                 case ReasonOfChanges.PriceDecreased:
-                    return $"Снижена цена на {change.PerformanceEntity.Name} цена билета от {change.MinPrice} {change.PerformanceEntity.Url}";
+                    return $"Снижена цена на {change.PlaybillEntity.Performance.Name} цена билета от {change.MinPrice} {change.PlaybillEntity.Url}";
                 case ReasonOfChanges.PriceIncreased:
-                    return $"Билеты подорожали {change.PerformanceEntity.Name} цена билета от {change.MinPrice} {change.PerformanceEntity.Url}";
+                    return $"Билеты подорожали {change.PlaybillEntity.Performance.Name} цена билета от {change.MinPrice} {change.PlaybillEntity.Url}";
                 case ReasonOfChanges.StartSales:
-                    return $"Появились в продаже билеты на {change.PerformanceEntity.Name} цена билета от {change.MinPrice} {change.PerformanceEntity.Url}";
+                    return $"Появились в продаже билеты на {change.PlaybillEntity.Performance.Name} цена билета от {change.MinPrice} {change.PlaybillEntity.Url}";
             }
 
             return null;

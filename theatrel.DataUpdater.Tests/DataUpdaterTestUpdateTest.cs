@@ -15,27 +15,33 @@ namespace theatrel.DataUpdater.Tests
 {
     public class DataUpdaterTestUpdateTest : DataUpdaterTestBase
     {
-        private async Task ConfigureDb(ILifetimeScope scope, string url, DateTime performanceDateTime)
+        private async Task<int> ConfigureDb(ILifetimeScope scope, string url, DateTime performanceDateTime)
         {
             var dbContext = scope.Resolve<AppDbContext>();
 
             DateTime dt1 = performanceDateTime.AddDays(-3);
             DateTime dt2 = performanceDateTime.AddDays(-2);
 
-            var performanceWithDecreasedPrice = new PerformanceEntity
+            var playbillEntryWithDecreasedPrice = new PlaybillEntity
             {
-                Name = "TestOpera",
-                DateTime = performanceDateTime,
-                Url = url,
-                Changes = new List<PerformanceChangeEntity>
+                Performance = new PerformanceEntity
                 {
-                    new PerformanceChangeEntity
+                    Name = "TestOpera",
+                    Location = new LocationsEntity{Name = "TestLocation"},
+                    Type = new PerformanceTypeEntity{TypeName = "Opera"}
+
+                },
+                When = performanceDateTime,
+                Url = url,
+                Changes = new List<PlaybillChangeEntity>
+                {
+                    new PlaybillChangeEntity
                     {
                         LastUpdate = dt1,
                         MinPrice = 800,
                         ReasonOfChanges =(int)ReasonOfChanges.StartSales,
                     },
-                    new PerformanceChangeEntity
+                    new PlaybillChangeEntity
                     {
                         LastUpdate = dt2,
                         MinPrice = 500,
@@ -44,9 +50,10 @@ namespace theatrel.DataUpdater.Tests
                 }
             };
 
-            dbContext.Performances.Add(performanceWithDecreasedPrice);
-
+            dbContext.Playbill.Add(playbillEntryWithDecreasedPrice);
             await dbContext.SaveChangesAsync();
+
+            return playbillEntryWithDecreasedPrice.Id;
         }
 
 
@@ -60,7 +67,7 @@ namespace theatrel.DataUpdater.Tests
             playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new[]
                 {
-                    GetPerformanceMock(300, "testUrl", performanceDateTime)
+                    GetPerformanceMock("testOpera", 300, "testUrl", performanceDateTime, "loc1", "opera")
                 }));
 
             await using ILifetimeScope scope = DIContainerHolder.RootScope.BeginLifetimeScope(builder =>
@@ -68,8 +75,7 @@ namespace theatrel.DataUpdater.Tests
                 builder.RegisterInstance(playBillResolverMock.Object).As<IPlayBillDataResolver>().AsImplementedInterfaces();
             });
 
-            await ConfigureDb(scope, testPerformanceUrl, performanceDateTime);
-
+            int playbillEntryId = await ConfigureDb(scope, testPerformanceUrl, performanceDateTime);
 
             var dataUpdater = scope.Resolve<IDataUpdater>();
 
@@ -77,10 +83,10 @@ namespace theatrel.DataUpdater.Tests
 
             var db = scope.Resolve<AppDbContext>();
             var changes = db.PerformanceChanges
-                .Where(c => c.PerformanceEntity.Url == testPerformanceUrl)
+                .Where(c => c.PlaybillEntityId == playbillEntryId)
                 .OrderBy(d => d.LastUpdate);
 
-            Assert.Equal(3, changes.Count());
+            Assert.Equal(2, changes.Count());
             Assert.Equal((int)ReasonOfChanges.PriceDecreased, changes.Last().ReasonOfChanges);
             Assert.Equal((int)ReasonOfChanges.StartSales, changes.First().ReasonOfChanges);
         }

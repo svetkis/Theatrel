@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -28,42 +29,12 @@ namespace theatrel.DataUpdater
         public async Task<bool> UpdateAsync(int theaterId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken)
         {
             Trace.TraceInformation("DataUpdater.UpdateAsync started.");
-            PerformanceEntity[] savedPerformances =
-                _dbContext.Performances
-                    .Include(x => x.Changes)
-                    .Where(p => p.DateTime >= startDate && p.DateTime <= endDate)
-                    .ToArray();
 
             IPerformanceData[] performances = await _dataResolver.RequestProcess(_filterHelper.GetFilter(startDate, endDate), cancellationToken);
             foreach (var freshPerformanceData in performances)
             {
-                Trace.TraceInformation($"Process {freshPerformanceData.Name}");
-                var savedPerformance = savedPerformances.FirstOrDefault(p =>
-                    string.Compare(p.Url.Trim(), freshPerformanceData.Url.Trim(), StringComparison.InvariantCultureIgnoreCase) == 0);
-
-                if (savedPerformance == null)
-                {
-                    AddPerformance(freshPerformanceData);
-                    Trace.TraceInformation($"Performance {freshPerformanceData.Name} {freshPerformanceData.DateTime:g} was added to database");
-                    continue;
-                }
-
-                if (savedPerformance.Changes == null)
-                    Trace.TraceInformation($"Performance {savedPerformance.Name} has no changes");
-
-                PerformanceChangeEntity lastChange = savedPerformance.Changes?.OrderByDescending(x => x.LastUpdate)
-                    .FirstOrDefault();
-
-                var compareResult = ComparePerformanceData(lastChange, freshPerformanceData);
-                if (compareResult == ReasonOfChanges.NoReason && lastChange != null)
-                {
-                    Trace.TraceInformation("Just update LastUpdate.");
-                    lastChange.LastUpdate = DateTime.Now;
-                    continue;
-                }
-
-                savedPerformance.Changes?.Add(CreatePerformanceChangeEntity(freshPerformanceData.MinPrice, compareResult));
-                Trace.TraceInformation($"Performance Performance {freshPerformanceData.Name} {freshPerformanceData.DateTime:g}, change information was added {compareResult}");
+                Trace.TraceInformation($"Process {freshPerformanceData.Name} {freshPerformanceData.DateTime:g}");
+                await ProcessData(freshPerformanceData);
             }
 
             Trace.TraceInformation("Save Changes to db");
@@ -72,42 +43,90 @@ namespace theatrel.DataUpdater
             return true;
         }
 
-        private void AddPerformance(IPerformanceData data)
+        private async Task ProcessData(IPerformanceData data)
         {
-            var performanceEntity = new PerformanceEntity
+            var location = _dbContext.PerformanceLocations.FirstOrDefault(l => l.Name == data.Location);
+            var type = _dbContext.PerformanceTypes.FirstOrDefault(l => l.TypeName == data.Type);
+            var performance = location != null && type != null
+                ? _dbContext.Performances.FirstOrDefault(p => p.Location == location && p.Type == type && p.Name == data.Name)
+                : null;
+
+            if (performance == null)
             {
-                Name = data.Name,
-                Location = data.Location,
-                Type = data.Type,
-                DateTime = data.DateTime,
-                Url = data.Url,
-                Changes = new List<PerformanceChangeEntity>{
-                    new PerformanceChangeEntity
-                    {
-                        LastUpdate = DateTime.Now,
-                        MinPrice = data.MinPrice,
-                        ReasonOfChanges = (int) ReasonOfChanges.Creation,
-                    }}
-            };
+                Trace.TraceInformation($"Performance not found");
 
-            _dbContext.Performances.Add(performanceEntity);
-            foreach (var change in performanceEntity.Changes)
-                _dbContext.Add(change);
+                performance = new PerformanceEntity
+                {
+                    Name = data.Name,
+                    Location = location ?? new LocationsEntity {Name = data.Location},
+                    Type = type ?? new PerformanceTypeEntity {TypeName = data.Type},
+                };
 
+                _dbContext.Performances.Add(performance);
 
-        }
+                AddNewPlaybillEntry(performance, data);
 
-        private PerformanceChangeEntity CreatePerformanceChangeEntity(int minPrice, ReasonOfChanges reason)
-        {
-            return new PerformanceChangeEntity
+                await _dbContext.SaveChangesAsync();
+                return;
+            }
+
+            var existPlaybillEntry = _dbContext.Playbill
+                .Include(x => x.Changes)
+                .FirstOrDefault(x => x.When == data.DateTime && x.Performance == performance);
+
+            if (existPlaybillEntry == null)
+            {
+                Trace.TraceInformation($"Performance found, playbill entry not found");
+                AddNewPlaybillEntry(performance, data);
+                return;
+            }
+
+            Trace.TraceInformation($"Performance found, playbill found, need to update change");
+            var lastChange = existPlaybillEntry.Changes
+                .OrderByDescending(x => x.LastUpdate)
+                .FirstOrDefault();
+
+            var compareResult = ComparePerformanceData(lastChange, data);
+            if (compareResult == ReasonOfChanges.NoReason && lastChange != null)
+            {
+                Trace.TraceInformation("Just update LastUpdate.");
+                lastChange.LastUpdate = DateTime.Now;
+                return;
+            }
+
+            var newChange = new PlaybillChangeEntity
             {
                 LastUpdate = DateTime.Now,
-                MinPrice = minPrice,
-                ReasonOfChanges = (int)reason,
+                MinPrice = data.MinPrice,
+                ReasonOfChanges = (int)compareResult,
             };
+
+            existPlaybillEntry.Changes.Add(newChange);
+            _dbContext.Add(newChange);
         }
 
-        private ReasonOfChanges ComparePerformanceData(PerformanceChangeEntity lastChange, IPerformanceData freshData)
+        private void AddNewPlaybillEntry(PerformanceEntity performance, IPerformanceData data)
+        {
+            var change = new PlaybillChangeEntity
+            {
+                LastUpdate = DateTime.Now,
+                MinPrice = data.MinPrice,
+                ReasonOfChanges = (int)ReasonOfChanges.Creation,
+            };
+
+            var playBillEntry = new PlaybillEntity
+            {
+                Performance = performance,
+                Url = data.Url,
+                When = data.DateTime,
+                Changes = new List<PlaybillChangeEntity>{change}
+            };
+
+            _dbContext.Playbill.Add(playBillEntry);
+            _dbContext.Add(change);
+        }
+
+        private ReasonOfChanges ComparePerformanceData(PlaybillChangeEntity lastChange, IPerformanceData freshData)
         {
             int freshMinPrice = freshData.MinPrice;
 

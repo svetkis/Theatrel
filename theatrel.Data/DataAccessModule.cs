@@ -9,7 +9,7 @@ namespace theatrel.DataAccess
             builder
                 .RegisterType<AppDbContext>()
                 .WithParameter("options", DbContextOptionsFactory.Get())
-                .InstancePerLifetimeScope();
+                .InstancePerDependency();
         }
     }
 }

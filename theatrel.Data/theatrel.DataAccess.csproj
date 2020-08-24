@@ -5,15 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\20200810163810_Add_PerformancesData.cs" />
-    <Compile Remove="Migrations\20200810163810_Add_PerformancesData.Designer.cs" />
-    <Compile Remove="Migrations\20200811100838_add_performances_renaming.cs" />
-    <Compile Remove="Migrations\20200811100838_add_performances_renaming.Designer.cs" />
-    <Compile Remove="Migrations\20200823113612_ListToICollection.cs" />
-    <Compile Remove="Migrations\20200823113612_ListToICollection.Designer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.4">
       <PrivateAssets>all</PrivateAssets>

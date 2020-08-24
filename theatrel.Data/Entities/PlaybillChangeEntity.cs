@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace theatrel.DataAccess.Entities
 {
-    public class PerformanceChangeEntity
+    public class PlaybillChangeEntity
     {
         [Key]
         public int Id { get; set; }
@@ -15,7 +15,7 @@ namespace theatrel.DataAccess.Entities
         [DataType(DataType.DateTime)]
         public DateTime LastUpdate { get; set; }
 
-        public int PerformanceEntityId { get; set; }
-        public PerformanceEntity PerformanceEntity { get; set; }
+        public int PlaybillEntityId { get; set; }
+        public PlaybillEntity PlaybillEntity { get; set; }
     }
 }

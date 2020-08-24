@@ -17,13 +17,17 @@ namespace theatrel.DataUpdater.Tests
         public async void TestAdd()
         {
             string performanceUrl = "testAddUrl";
+            string performanceName = "TestOpera1";
+            string performanceLocation = "locAdd";
+            string performanceType = "operaTestTypeAdd";
 
             Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
             playBillResolverMock.Setup(h =>
                     h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new[]
                 {
-                    GetPerformanceMock(0, performanceUrl, new DateTime(2020, 9, 10))
+                    GetPerformanceMock(performanceName,0, performanceUrl, new DateTime(2020, 9, 10), performanceLocation, performanceType),
+                    GetPerformanceMock("TestOpera2",0, "op2", new DateTime(2020, 9, 11), performanceLocation, performanceType)
                 }));
 
             await using ILifetimeScope scope = DIContainerHolder.RootScope.BeginLifetimeScope(builder =>
@@ -37,7 +41,9 @@ namespace theatrel.DataUpdater.Tests
             await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
                 CancellationToken.None);
 
-            var minPrice500 = GetPerformanceMock(500, performanceUrl, new DateTime(2020, 9, 10));
+            var minPrice500 = GetPerformanceMock(
+                performanceName,500, performanceUrl, new DateTime(2020, 9, 10), performanceLocation, performanceType);
+
             playBillResolverMock.Setup(h =>
                     h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new[]
@@ -47,22 +53,26 @@ namespace theatrel.DataUpdater.Tests
 
             await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
                 CancellationToken.None);
+
+            await Task.Delay(1000);
             // nothing changed
             await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
                 CancellationToken.None);
 
             var db = scope.Resolve<AppDbContext>();
             var changes = db.PerformanceChanges
-                .Where(c => c.PerformanceEntity.Url == performanceUrl)
+                .Where(c => c.PlaybillEntity.Url == performanceUrl)
                 .OrderBy(d => d.LastUpdate);
 
             Assert.Equal(2, changes.Count());
+            Assert.Equal(1, db.PerformanceLocations.Count(l => l.Name == performanceLocation));
+            Assert.Equal(1, db.PerformanceTypes.Count(t => t.TypeName == performanceType));
             Assert.Equal((int) ReasonOfChanges.StartSales, changes.Last().ReasonOfChanges);
             Assert.Equal((int) ReasonOfChanges.Creation, changes.First().ReasonOfChanges);
         }
 
         [Fact]
-        public async void TestString()
+        public void TestString()
         {
             string str1 = "https://tickets.mariinsky.ru/ru/performance/a0QxYXcveDVZK1dwM1Q4dm03TzBTZz09/";
             string str2 = "https://tickets.mariinsky.ru/ru/performance/a0QxYXcveDVZK1dwM1Q4dm03TzBTZz09/";

@@ -21,7 +21,7 @@ namespace theatrel.Subscriptions
 
         public IPerformanceFilter[] GetUpdateFilters()
         {
-            if (!EnumerableExtensions.Any(_dbContext.Subscriptions))
+            if (!_dbContext.Subscriptions.Any())
                 return null;
 
             List<IPerformanceFilter> mergedFilters = new List<IPerformanceFilter>();
@@ -45,14 +45,14 @@ namespace theatrel.Subscriptions
                 }
                 else
                 {
-                    var performance = _dbContext.Performances.AsNoTracking()
+                    var playbillEntry = _dbContext.Playbill.AsNoTracking()
                         .FirstOrDefault(entity => entity.Id == newFilter.PerformanceId);
 
-                    if (null == performance)
+                    if (null == playbillEntry)
                         continue;
 
-                    year = performance.DateTime.Year;
-                    month = performance.DateTime.Month;
+                    year = playbillEntry.When.Year;
+                    month = playbillEntry.When.Month;
                     startDate = new DateTime(year, month, 1);
                     endDate = startDate.AddMonths(1).AddDays(-1);
                 }

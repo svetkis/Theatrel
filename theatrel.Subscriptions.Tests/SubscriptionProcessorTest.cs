@@ -38,19 +38,24 @@ namespace theatrel.Subscriptions.Tests
             dbContext.TlUsers.Add(tgUser1);
             dbContext.TlUsers.Add(tgUser2);
 
-            var performanceWithDecreasedPrice = new PerformanceEntity
+            var playbillEntryWithDecreasedPrice = new PlaybillEntity()
             {
-                Name = "TestOpera",
-                DateTime = performanceDateTime,
-                Changes = new List<PerformanceChangeEntity>(new[]
+                Performance = new PerformanceEntity()
                 {
-                    new PerformanceChangeEntity
+                    Name = "TestOpera",
+                    Location = new LocationsEntity("TestLocation"),
+                    Type = new PerformanceTypeEntity("Opera")
+                },
+                When = performanceDateTime,
+                Changes = new List<PlaybillChangeEntity>(new[]
+                {
+                    new PlaybillChangeEntity
                     {
                         LastUpdate = dt1,
                         MinPrice = 700,
                         ReasonOfChanges = (int) ReasonOfChanges.Creation,
                     },
-                    new PerformanceChangeEntity
+                    new PlaybillChangeEntity
                     {
                         LastUpdate = dt3,
                         MinPrice = 500,
@@ -59,14 +64,14 @@ namespace theatrel.Subscriptions.Tests
                 })
             };
 
-            dbContext.Performances.Add(performanceWithDecreasedPrice);
+            dbContext.Playbill.Add(playbillEntryWithDecreasedPrice);
 
             //subscription for tgUser1 for particular performance
             dbContext.Subscriptions.Add(new SubscriptionEntity
             {
                 TelegramUserId = tgUser1.Id,
                 LastUpdate = dt2,
-                PerformanceFilter = new PerformanceFilterEntity {PerformanceId = performanceWithDecreasedPrice.Id},
+                PerformanceFilter = new PerformanceFilterEntity {PerformanceId = playbillEntryWithDecreasedPrice.PerformanceId},
                 TrackingChanges = (int)(ReasonOfChanges.PriceDecreased|ReasonOfChanges.StartSales)
             });
 
@@ -84,7 +89,7 @@ namespace theatrel.Subscriptions.Tests
             {
                 TelegramUserId = tgUser3.Id,
                 LastUpdate = dt2,
-                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = performanceWithDecreasedPrice.Id },
+                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = playbillEntryWithDecreasedPrice.PerformanceId},
                 TrackingChanges = (int)(ReasonOfChanges.PriceIncreased | ReasonOfChanges.StartSales)
             });
 

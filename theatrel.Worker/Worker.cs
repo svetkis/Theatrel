@@ -2,8 +2,6 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Quartz;
@@ -114,7 +112,7 @@ namespace theatrel.Worker
                 try
                 {
                     IDataUpdater updater = Bootstrapper.Resolve<IDataUpdater>();
-                    await updater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
+                    await updater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 9, 30),
                         context.CancellationToken);
 
                     ISubscriptionProcessor subscriptionProcessor = Bootstrapper.Resolve<ISubscriptionProcessor>();

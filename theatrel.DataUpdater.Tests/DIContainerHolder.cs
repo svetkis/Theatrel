@@ -33,7 +33,7 @@ namespace theatrel.DataUpdater.Tests
             builder
                 .RegisterType<AppDbContext>()
                 .WithParameter("options", TestDbContextOptionsFactory.Get())
-                .InstancePerLifetimeScope();
+                .InstancePerDependency();
 
             base.Load(builder);
         }

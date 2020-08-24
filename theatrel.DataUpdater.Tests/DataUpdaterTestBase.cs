@@ -6,10 +6,13 @@ namespace theatrel.DataUpdater.Tests
 {
     public class DataUpdaterTestBase
     {
-        protected IPerformanceData GetPerformanceMock(int minPrice, string url, DateTime performanceDateTime)
+        protected IPerformanceData GetPerformanceMock(string name, int minPrice, string url, DateTime performanceDateTime, string location, string type)
         {
             Mock<IPerformanceData> performanceMock = new Mock<IPerformanceData>();
 
+            performanceMock.SetupGet(x => x.Name).Returns(name);
+            performanceMock.SetupGet(x => x.Type).Returns(type);
+            performanceMock.SetupGet(x => x.Location).Returns(location);
             performanceMock.SetupGet(x => x.MinPrice).Returns(minPrice);
 
             performanceMock.SetupGet(x => x.Url).Returns(url);

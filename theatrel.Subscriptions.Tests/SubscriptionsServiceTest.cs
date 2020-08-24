@@ -12,7 +12,7 @@ namespace theatrel.Subscriptions.Tests
 {
     public class SubscriptionsServiceTest
     {
-        private async Task ConfigureDb(params int[] months)
+        private void ConfigureDb(params int[] months)
         {
             var dbContext = DIContainerHolder.RootScope.Resolve<AppDbContext>();
 
@@ -24,20 +24,26 @@ namespace theatrel.Subscriptions.Tests
             dbContext.TlUsers.Add(tgUser1);
             dbContext.TlUsers.Add(tgUser2);
 
-            var performanceWithDecreasedPrice = new PerformanceEntity
+            var playBillEntryWithDecreasedPrice = new PlaybillEntity
             {
-                Name = "TestOpera",
-                DateTime = performanceDateTime,
+                Performance = new PerformanceEntity()
+                {
+                    Name = "TestBallet",
+                    Location = new LocationsEntity("Room2"),
+                    Type = new PerformanceTypeEntity("Ballet")
+                },
+                Url = "TestUrl",
+                When = performanceDateTime,
             };
 
-            dbContext.Performances.Add(performanceWithDecreasedPrice);
+            dbContext.Playbill.Add(playBillEntryWithDecreasedPrice);
 
             //subscription for tgUser1 for particular performance
             dbContext.Subscriptions.Add(new SubscriptionEntity
             {
                 TelegramUserId = tgUser1.Id,
                 LastUpdate = DateTime.Now,
-                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = performanceWithDecreasedPrice.Id },
+                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = playBillEntryWithDecreasedPrice.PerformanceId},
                 TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
             });
 
@@ -55,15 +61,15 @@ namespace theatrel.Subscriptions.Tests
                 });
             }
 
-            await dbContext.SaveChangesAsync();
+            dbContext.SaveChanges();
         }
 
         [Theory]
         [InlineData(3, 5, 6, 7, 4)]
         [InlineData(3, 5, 6, 7, 4, 3, 5)]
-        public async Task Test(params int[] months)
+        public void Test(params int[] months)
         {
-            await ConfigureDb(months);
+            ConfigureDb(months);
 
             var service = DIContainerHolder.RootScope.Resolve<ISubscriptionService>();
 
@@ -72,7 +78,7 @@ namespace theatrel.Subscriptions.Tests
 
             //check
             Assert.NotNull(filters);
-            Assert.Equal(months.Distinct().ToArray(), filters.Select(f => f.StartDate.Month));
+            Assert.Equal(months.Distinct().OrderBy(x => x).ToArray(), filters.Select(f => f.StartDate.Month).OrderBy(x => x));
         }
     }
 
