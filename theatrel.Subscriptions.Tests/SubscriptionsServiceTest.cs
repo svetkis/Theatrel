@@ -7,14 +7,25 @@ using theatrel.DataAccess;
 using theatrel.DataAccess.Entities;
 using theatrel.Interfaces;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace theatrel.Subscriptions.Tests
 {
-    public class SubscriptionsServiceTest
+    [Collection("Subscriptions Service Tests" )]
+    public class SubscriptionsServiceTest : IClassFixture<DatabaseFixture>
     {
+        private readonly DatabaseFixture _fixture;
+        private readonly ITestOutputHelper _output;
+
+        public SubscriptionsServiceTest(ITestOutputHelper output, DatabaseFixture fixture)
+        {
+            _output = output;
+            _fixture = fixture;
+        }
+
         private void ConfigureDb(params int[] months)
         {
-            var dbContext = DIContainerHolder.RootScope.Resolve<AppDbContext>();
+            var dbContext = _fixture.Db;
 
             DateTime performanceDateTime = new DateTime(2020, months.First(), 1);
 
@@ -67,11 +78,11 @@ namespace theatrel.Subscriptions.Tests
         [Theory]
         [InlineData(3, 5, 6, 7, 4)]
         [InlineData(3, 5, 6, 7, 4, 3, 5)]
-        public void Test(params int[] months)
+        public async Task Test(params int[] months)
         {
             ConfigureDb(months);
 
-            var service = DIContainerHolder.RootScope.Resolve<ISubscriptionService>();
+            var service = _fixture.RootScope.Resolve<ISubscriptionService>();
 
             //test
             var filters = service.GetUpdateFilters();

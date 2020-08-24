@@ -14,17 +14,21 @@ using Xunit.Abstractions;
 
 namespace theatrel.Subscriptions.Tests
 {
-    public class SubscriptionProcessorTest
+    public class SubscriptionProcessorTest : IClassFixture<DatabaseFixture>
     {
+        private readonly DatabaseFixture _fixture;
         private readonly ITestOutputHelper _output;
 
-        public SubscriptionProcessorTest(ITestOutputHelper output)
+        public SubscriptionProcessorTest(ITestOutputHelper output, DatabaseFixture fixture)
         {
             _output = output;
+            _fixture = fixture;
         }
 
-        private async Task<long[]> ConfigureDb(AppDbContext dbContext)
+        private async Task<long[]> ConfigureDb()
         {
+            AppDbContext dbContext = _fixture.Db;
+
             DateTime dt1 = DateTime.Now.AddDays(-3);
             DateTime dt2 = DateTime.Now.AddDays(-2);
             DateTime dt3 = DateTime.Now.AddDays(-1);
@@ -106,17 +110,17 @@ namespace theatrel.Subscriptions.Tests
             telegramService.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<string>()))
                 .Returns(() => Task.FromResult(true));
 
-            await using ILifetimeScope scope = DIContainerHolder.RootScope.BeginLifetimeScope(builder =>
+            await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
             {
                 builder.RegisterInstance(telegramService.Object).As<ITLBotService>().AsImplementedInterfaces().SingleInstance();
+                builder.RegisterModule<SubscriptionModule>();
             });
 
             try
             {
-                var db = scope.Resolve<AppDbContext>();
-                var usersWhoShouldGetMessage = await ConfigureDb(db);
+                var usersWhoShouldGetMessage = await ConfigureDb();
 
-                var subscriptionProcessor = new SubscriptionProcessor(telegramService.Object, scope.Resolve<IFilterChecker>(), db);
+                var subscriptionProcessor = scope.Resolve<ISubscriptionProcessor>();
 
                 //test
                 bool result = await subscriptionProcessor.ProcessSubscriptions();

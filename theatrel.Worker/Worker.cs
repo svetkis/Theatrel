@@ -45,6 +45,8 @@ namespace theatrel.Worker
         {
             Trace.TraceInformation("Worker.StopAsync");
 
+            var dbContext = Bootstrapper.Resolve<AppDbContext>();
+            dbContext.Dispose();
             _tLBotProcessor.Stop();
             Bootstrapper.Stop();
 

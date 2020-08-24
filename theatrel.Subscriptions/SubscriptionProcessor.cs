@@ -4,8 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Query;
 using theatrel.Common.Enums;
 using theatrel.DataAccess;
 using theatrel.DataAccess.Entities;
