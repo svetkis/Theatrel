@@ -1,4 +1,7 @@
-﻿namespace theatrel.Interfaces.Parsers
+﻿using theatrel.Interfaces.Autofac;
+using theatrel.Interfaces.Playbill;
+
+namespace theatrel.Interfaces.Parsers
 {
     public interface IPerformanceParser : IDIRegistrable
     {

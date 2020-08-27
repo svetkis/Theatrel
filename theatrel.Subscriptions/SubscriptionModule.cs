@@ -1,6 +1,6 @@
-﻿using System.Reflection;
-using Autofac;
-using theatrel.Interfaces;
+﻿using Autofac;
+using System.Reflection;
+using theatrel.Interfaces.Autofac;
 
 namespace theatrel.Subscriptions
 {

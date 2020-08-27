@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Lib", "theatrel.Lib\theatrel.Lib.csproj", "{12E8F016-5E98-4350-97FA-5C606440852D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Interfaces", "theatrel.Interfaces\theatrel.Interfaces.csproj", "{79518D79-6163-41D2-A1E8-7F27E4120B6D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Worker", "theatrel.Worker\theatrel.Worker.csproj", "{E29F9CC4-53CC-4C21-B638-1A0BFFBFDE06}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.TLBot", "theatrel.TLBot\theatrel.TLBot.csproj", "{A3112D70-1D12-4542-86F9-F665A629CC83}"
@@ -27,7 +25,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Subscriptions", "t
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Common", "theatrel.Common\theatrel.Common.csproj", "{7408C420-C564-44CC-B9C8-6E142826B289}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "theatrel.Subscriptions.Tests", "theatrel.Subscriptions.Tests\theatrel.Subscriptions.Tests.csproj", "{761084DE-BEFE-4CCE-882F-BEFF5FD35A72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Subscriptions.Tests", "theatrel.Subscriptions.Tests\theatrel.Subscriptions.Tests.csproj", "{761084DE-BEFE-4CCE-882F-BEFF5FD35A72}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Interfaces", "theatrel.Interfaces\theatrel.Interfaces.csproj", "{D36576CD-D155-4FCD-B4E5-ADD92870596E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "theatrel.DataAccess.Structures", "theatrel.DataAccess.Structures\theatrel.DataAccess.Structures.csproj", "{830C066F-45CF-4B73-B71D-0CA8FF7C4901}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,10 +41,6 @@ Global
 		{12E8F016-5E98-4350-97FA-5C606440852D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12E8F016-5E98-4350-97FA-5C606440852D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{12E8F016-5E98-4350-97FA-5C606440852D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{79518D79-6163-41D2-A1E8-7F27E4120B6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{79518D79-6163-41D2-A1E8-7F27E4120B6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{79518D79-6163-41D2-A1E8-7F27E4120B6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{79518D79-6163-41D2-A1E8-7F27E4120B6D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E29F9CC4-53CC-4C21-B638-1A0BFFBFDE06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E29F9CC4-53CC-4C21-B638-1A0BFFBFDE06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E29F9CC4-53CC-4C21-B638-1A0BFFBFDE06}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -87,6 +85,14 @@ Global
 		{761084DE-BEFE-4CCE-882F-BEFF5FD35A72}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{761084DE-BEFE-4CCE-882F-BEFF5FD35A72}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{761084DE-BEFE-4CCE-882F-BEFF5FD35A72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D36576CD-D155-4FCD-B4E5-ADD92870596E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D36576CD-D155-4FCD-B4E5-ADD92870596E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D36576CD-D155-4FCD-B4E5-ADD92870596E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D36576CD-D155-4FCD-B4E5-ADD92870596E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{830C066F-45CF-4B73-B71D-0CA8FF7C4901}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{830C066F-45CF-4B73-B71D-0CA8FF7C4901}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{830C066F-45CF-4B73-B71D-0CA8FF7C4901}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{830C066F-45CF-4B73-B71D-0CA8FF7C4901}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

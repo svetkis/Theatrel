@@ -1,8 +1,8 @@
 ﻿using AngleSharp.Dom;
 using System.Linq;
 using System.Threading;
-using theatrel.Interfaces;
 using theatrel.Interfaces.Parsers;
+using theatrel.Interfaces.Playbill;
 using theatrel.Lib.Utils;
 
 namespace theatrel.Lib.Parsers

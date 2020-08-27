@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace theatrel.Lib
 {
-    public class PageRequester
+    internal class PageRequester
     {
         private PageRequester()
         { }
@@ -47,7 +47,7 @@ namespace theatrel.Lib
                     return response.Content;
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return null;
             }

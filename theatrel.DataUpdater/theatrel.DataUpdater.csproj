@@ -11,7 +11,6 @@
   <ItemGroup>
     <ProjectReference Include="..\theatrel.Common\theatrel.Common.csproj" />
     <ProjectReference Include="..\theatrel.Data\theatrel.DataAccess.csproj" />
-    <ProjectReference Include="..\theatrel.Interfaces\theatrel.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

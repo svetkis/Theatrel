@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
-using theatrel.Interfaces;
+using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
@@ -13,14 +13,14 @@ namespace theatrel.TLBot.Commands
     internal class PerformanceTypesCommand : DialogCommandBase
     {
         private readonly string[] _types = { "опера", "балет", "концерт" };
-        private readonly string[] _every = { "Все", "всё", "любой", "любое", "не важно"};
+        private readonly string[] _every = { "Все", "всё", "любой", "любое", "не важно" };
 
         protected override string ReturnCommandMessage { get; set; } = "Выбрать другое";
 
         public override string Name => "Выбрать тип представления";
-        public PerformanceTypesCommand() : base((int) DialogStep.SelectType)
+        public PerformanceTypesCommand() : base((int)DialogStep.SelectType)
         {
-            var buttons = _types.Select(m => new KeyboardButton(m)).Concat(new []{ new KeyboardButton(_every.First()) }).ToArray();
+            var buttons = _types.Select(m => new KeyboardButton(m)).Concat(new[] { new KeyboardButton(_every.First()) }).ToArray();
 
             CommandKeyboardMarkup = new ReplyKeyboardMarkup
             {
@@ -30,21 +30,21 @@ namespace theatrel.TLBot.Commands
             };
         }
 
-        public override async Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             chatInfo.Types = ParseMessage(message);
 
-            return new TlOutboundMessage(null);
+            return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(null));
         }
 
         public override bool IsMessageCorrect(string message) => SplitMessage(message).Any();
 
-        public override async Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("Какие представления Вас интересуют?");
 
-            return new TlOutboundMessage(stringBuilder.ToString(), CommandKeyboardMarkup);
+            return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(stringBuilder.ToString(), CommandKeyboardMarkup));
         }
 
         private string[] ParseMessage(string message)

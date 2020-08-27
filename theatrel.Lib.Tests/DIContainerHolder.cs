@@ -1,6 +1,6 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
 using Autofac.Core;
+using System;
 
 namespace theatrel.Lib.Tests
 {

@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using theatrel.Interfaces;
 using theatrel.Interfaces.Parsers;
+using theatrel.Interfaces.Playbill;
+using theatrel.Interfaces.TimeZoneService;
 using Xunit;
 
 namespace theatrel.Lib.Tests
@@ -17,7 +19,7 @@ namespace theatrel.Lib.Tests
         {
             string text = await System.IO.File.ReadAllTextAsync(file);
 
-            var parser = DIContainerHolder.Resolve<IPlayBillParser>();
+            var parser = DIContainerHolder.Resolve<IPlaybillParser>();
 
             IPerformanceData[] performances = await parser.Parse(text, CancellationToken.None);
             foreach (var performance in performances.Where(p => p.Name == name))
@@ -30,19 +32,37 @@ namespace theatrel.Lib.Tests
         {
             string text = await System.IO.File.ReadAllTextAsync(file);
 
-            var parser = DIContainerHolder.Resolve<IPlayBillParser>();
+            var parser = DIContainerHolder.Resolve<IPlaybillParser>();
 
-            bool wasCanceled = false;
-            try
-            {
-                IPerformanceData[] performances = await parser.Parse(text, new CancellationTokenSource(15).Token);
-            }
-            catch (TaskCanceledException ex)
-            {
-                wasCanceled = true;
-            }
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await parser.Parse(text, new CancellationTokenSource(15).Token));
+        }
 
-            Assert.True(wasCanceled);
+        [Theory]
+        [InlineData(12, 0, @"..\..\..\TestData\MariinskyPlayBill032020")]
+        [InlineData(19, 30, @"..\..\..\TestData\MariinskiPB092020.txt")]
+        public async Task CheckDateTime(int hour, int minute, string file)
+        {
+            string text = await System.IO.File.ReadAllTextAsync(file);
+
+            var parser = DIContainerHolder.Resolve<IPlaybillParser>();
+
+            var performances = await parser.Parse(text, CancellationToken.None);
+
+            var timeZone = TimeZoneInfo.CreateCustomTimeZone("Moscow Time", new TimeSpan(03, 00, 00),
+                "(GMT+03:00) Moscow Time", "Moscow Time");
+
+            DateTime dt = TimeZoneInfo.ConvertTimeFromUtc(performances.First().DateTime, timeZone);
+
+            Assert.Equal(hour, dt.Hour);
+            Assert.Equal(minute, dt.Minute);
+
+            var exceptions = Record.Exception(() =>
+            {
+                foreach (var p in performances)
+                    TimeZoneInfo.ConvertTimeFromUtc(p.DateTime, timeZone);
+            });
+
+            Assert.Null(exceptions);
         }
     }
 }

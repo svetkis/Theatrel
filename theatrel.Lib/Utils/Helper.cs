@@ -25,7 +25,7 @@ namespace theatrel.Lib.Utils
                     return (T)new XmlSerializer(typeof(T)).Deserialize(reader);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return default(T);
             }

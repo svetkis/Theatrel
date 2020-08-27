@@ -1,11 +1,19 @@
-﻿using System;
-using Moq;
-using theatrel.Interfaces;
+﻿using Moq;
+using System;
+using theatrel.DataUpdater.Tests.TestSettings;
+using theatrel.Interfaces.Playbill;
+using Xunit;
 
 namespace theatrel.DataUpdater.Tests
 {
-    public class DataUpdaterTestBase
+    public class DataUpdaterTestBase : IClassFixture<DatabaseFixture>
     {
+        protected readonly DatabaseFixture Fixture;
+        public DataUpdaterTestBase(DatabaseFixture fixture)
+        {
+            Fixture = fixture;
+        }
+
         protected IPerformanceData GetPerformanceMock(string name, int minPrice, string url, DateTime performanceDateTime, string location, string type)
         {
             Mock<IPerformanceData> performanceMock = new Mock<IPerformanceData>();

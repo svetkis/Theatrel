@@ -1,30 +1,34 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using theatrel.DataAccess;
-using theatrel.DataAccess.Entities;
-using theatrel.Interfaces;
-using theatrel.Lib;
+using theatrel.DataAccess.DbService;
+using theatrel.DataAccess.Structures.Entities;
+using theatrel.Interfaces.Filters;
+using theatrel.Interfaces.Subscriptions;
 
 namespace theatrel.Subscriptions
 {
     public class SubscriptionService : ISubscriptionService
     {
-        private readonly AppDbContext _dbContext;
+        private readonly IDbService _dbService;
+        private readonly IFilterService _filterService;
 
-        public SubscriptionService(AppDbContext dbContext)
+        public SubscriptionService(IDbService dbService, IFilterService filterService)
         {
-            _dbContext = dbContext;
+            _dbService = dbService;
+            _filterService = filterService;
         }
 
         public IPerformanceFilter[] GetUpdateFilters()
         {
-            if (!_dbContext.Subscriptions.Any())
+            using var dbContext = _dbService.GetDbContext();
+            if (!dbContext.Subscriptions.Any())
                 return null;
 
             List<IPerformanceFilter> mergedFilters = new List<IPerformanceFilter>();
-            foreach (var subscription in _dbContext.Subscriptions.Local)
+            foreach (var subscription in dbContext.Subscriptions.Include(s => s.PerformanceFilter).AsNoTracking())
             {
                 PerformanceFilterEntity newFilter = subscription.PerformanceFilter;
 
@@ -44,7 +48,7 @@ namespace theatrel.Subscriptions
                 }
                 else
                 {
-                    var playbillEntry = _dbContext.Playbill.AsNoTracking()
+                    var playbillEntry = dbContext.Playbill.AsNoTracking()
                         .FirstOrDefault(entity => entity.Id == newFilter.PerformanceId);
 
                     if (null == playbillEntry)
@@ -56,7 +60,7 @@ namespace theatrel.Subscriptions
                     endDate = startDate.AddMonths(1).AddDays(-1);
                 }
 
-                MergeFilters(mergedFilters, new PerformanceFilter { StartDate = startDate, EndDate = endDate });
+                MergeFilters(mergedFilters, _filterService.GetFilter(startDate, endDate));
             }
 
             return mergedFilters.ToArray();

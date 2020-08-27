@@ -1,17 +1,20 @@
-﻿using System;
+﻿using Autofac;
+using Moq;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Autofac;
 using theatrel.Common.Enums;
 using theatrel.DataAccess;
-using theatrel.DataAccess.Entities;
-using theatrel.Interfaces;
+using theatrel.DataAccess.DbService;
+using theatrel.DataAccess.Structures.Entities;
+using theatrel.Interfaces.Subscriptions;
+using theatrel.Subscriptions.Tests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace theatrel.Subscriptions.Tests
 {
-    [Collection("Subscriptions Service Tests" )]
+    [Collection("Subscriptions Service Tests")]
     public class SubscriptionsServiceTest : IClassFixture<DatabaseFixture>
     {
         private readonly DatabaseFixture _fixture;
@@ -23,12 +26,8 @@ namespace theatrel.Subscriptions.Tests
             _fixture = fixture;
         }
 
-        private void ConfigureDb(params int[] months)
+        private void ConfigureDb(AppDbContext dbContext, params int[] months)
         {
-            var dbContext = _fixture.Db;
-
-            DateTime performanceDateTime = new DateTime(2020, months.First(), 1);
-
             var tgUser1 = new TelegramUserEntity { Culture = "ru" };
             var tgUser2 = new TelegramUserEntity { Culture = "ru" };
 
@@ -37,14 +36,14 @@ namespace theatrel.Subscriptions.Tests
 
             var playBillEntryWithDecreasedPrice = new PlaybillEntity
             {
-                Performance = new PerformanceEntity()
+                Performance = new PerformanceEntity
                 {
                     Name = "TestBallet",
                     Location = new LocationsEntity("Room2"),
                     Type = new PerformanceTypeEntity("Ballet")
                 },
                 Url = "TestUrl",
-                When = performanceDateTime,
+                When = new DateTime(2020, months.First(), 1),
             };
 
             dbContext.Playbill.Add(playBillEntryWithDecreasedPrice);
@@ -54,7 +53,7 @@ namespace theatrel.Subscriptions.Tests
             {
                 TelegramUserId = tgUser1.Id,
                 LastUpdate = DateTime.Now,
-                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = playBillEntryWithDecreasedPrice.PerformanceId},
+                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = playBillEntryWithDecreasedPrice.PerformanceId },
                 TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
             });
 
@@ -62,6 +61,7 @@ namespace theatrel.Subscriptions.Tests
             {
                 DateTime startDate = new DateTime(2020, month, 1);
                 DateTime endDateTime = startDate.AddMonths(1).AddDays(-1);
+
                 //subscription user2 for filter by date
                 dbContext.Subscriptions.Add(new SubscriptionEntity
                 {
@@ -76,21 +76,36 @@ namespace theatrel.Subscriptions.Tests
         }
 
         [Theory]
-        [InlineData(3, 5, 6, 7, 4)]
-        [InlineData(3, 5, 6, 7, 4, 3, 5)]
+        [InlineData(3, 5, 1, 7, 4, 3, 5)]
+        [InlineData(3, 6, 9)]
         public async Task Test(params int[] months)
         {
-            ConfigureDb(months);
+            await using AppDbContext db = _fixture.GetDb();
+            ConfigureDb(db, months);
 
-            var service = _fixture.RootScope.Resolve<ISubscriptionService>();
+            var dbService = new Mock<IDbService>();
+            dbService.Setup(x => x.GetDbContext()).Returns(db);
+
+            await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
+            {
+                builder.RegisterInstance(dbService.Object).AsImplementedInterfaces().AsSelf();
+                builder.RegisterModule<SubscriptionModule>();
+            });
+
+            var service = scope.Resolve<ISubscriptionService>();
 
             //test
             var filters = service.GetUpdateFilters();
 
             //check
             Assert.NotNull(filters);
-            Assert.Equal(months.Distinct().OrderBy(x => x).ToArray(), filters.Select(f => f.StartDate.Month).OrderBy(x => x));
+
+            var sortedMonths = months.Distinct().OrderBy(x => x).ToArray();
+            var sortedMonthsFromFilter = filters.Select(f => f.StartDate.Month).OrderBy(x => x).ToArray();
+            _output.WriteLine(string.Join(" ", sortedMonths));
+            _output.WriteLine(string.Join(" ", sortedMonthsFromFilter));
+
+            Assert.Equal(sortedMonths, sortedMonthsFromFilter);
         }
     }
-
 }

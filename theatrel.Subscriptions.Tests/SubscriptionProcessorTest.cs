@@ -1,13 +1,15 @@
+using Autofac;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Autofac;
-using Moq;
 using theatrel.Common.Enums;
 using theatrel.DataAccess;
-using theatrel.DataAccess.Entities;
-using theatrel.Interfaces;
+using theatrel.DataAccess.DbService;
+using theatrel.DataAccess.Structures.Entities;
+using theatrel.Interfaces.Subscriptions;
+using theatrel.Subscriptions.Tests.TestSettings;
 using theatrel.TLBot.Interfaces;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,17 +27,15 @@ namespace theatrel.Subscriptions.Tests
             _fixture = fixture;
         }
 
-        private async Task<long[]> ConfigureDb()
+        private async Task<long[]> ConfigureDb(AppDbContext dbContext)
         {
-            AppDbContext dbContext = _fixture.Db;
-
             DateTime dt1 = DateTime.Now.AddDays(-3);
             DateTime dt2 = DateTime.Now.AddDays(-2);
             DateTime dt3 = DateTime.Now.AddDays(-1);
 
             DateTime performanceDateTime = DateTime.Now.AddDays(10);
 
-            var tgUser1 = new TelegramUserEntity { Culture = "ru"};
+            var tgUser1 = new TelegramUserEntity { Culture = "ru" };
             var tgUser2 = new TelegramUserEntity { Culture = "ru" };
             var tgUser3 = new TelegramUserEntity { Culture = "ru" };
 
@@ -75,8 +75,8 @@ namespace theatrel.Subscriptions.Tests
             {
                 TelegramUserId = tgUser1.Id,
                 LastUpdate = dt2,
-                PerformanceFilter = new PerformanceFilterEntity {PerformanceId = playbillEntryWithDecreasedPrice.PerformanceId},
-                TrackingChanges = (int)(ReasonOfChanges.PriceDecreased|ReasonOfChanges.StartSales)
+                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = playbillEntryWithDecreasedPrice.PerformanceId },
+                TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
             });
 
             //subscription user2 for filter by date
@@ -84,7 +84,7 @@ namespace theatrel.Subscriptions.Tests
             {
                 TelegramUserId = tgUser2.Id,
                 LastUpdate = dt2,
-                PerformanceFilter = new PerformanceFilterEntity { StartDate = performanceDateTime.AddDays(-1), EndDate = performanceDateTime.AddDays(2)},
+                PerformanceFilter = new PerformanceFilterEntity { StartDate = performanceDateTime.AddDays(-1), EndDate = performanceDateTime.AddDays(2) },
                 TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
             });
 
@@ -93,33 +93,38 @@ namespace theatrel.Subscriptions.Tests
             {
                 TelegramUserId = tgUser3.Id,
                 LastUpdate = dt2,
-                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = playbillEntryWithDecreasedPrice.PerformanceId},
+                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = playbillEntryWithDecreasedPrice.PerformanceId },
                 TrackingChanges = (int)(ReasonOfChanges.PriceIncreased | ReasonOfChanges.StartSales)
             });
 
             await dbContext.SaveChangesAsync();
 
-            return new[] {tgUser1.Id, tgUser2.Id};
+            return new[] { tgUser1.Id, tgUser2.Id };
         }
 
         [Fact]
         public async Task Test()
         {
-            Mock<ITLBotService> telegramService = new Mock<ITLBotService>();
+            Mock<ITgBotService> telegramService = new Mock<ITgBotService>();
 
             telegramService.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<string>()))
                 .Returns(() => Task.FromResult(true));
 
+            await using AppDbContext db = _fixture.GetDb();
+
+            var dbService = new Mock<IDbService>();
+            dbService.Setup(x => x.GetDbContext()).Returns(db);
+
             await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
             {
-                builder.RegisterInstance(telegramService.Object).As<ITLBotService>().AsImplementedInterfaces().SingleInstance();
+                builder.RegisterInstance(telegramService.Object).As<ITgBotService>().AsImplementedInterfaces().SingleInstance();
+                builder.RegisterInstance(dbService.Object).AsImplementedInterfaces().AsSelf();
                 builder.RegisterModule<SubscriptionModule>();
             });
 
             try
             {
-                var usersWhoShouldGetMessage = await ConfigureDb();
-
+                var usersWhoShouldGetMessage = await ConfigureDb(db);
                 var subscriptionProcessor = scope.Resolve<ISubscriptionProcessor>();
 
                 //test

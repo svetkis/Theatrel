@@ -4,53 +4,57 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using theatrel.Interfaces;
+using theatrel.Interfaces.Filters;
+using theatrel.Interfaces.Playbill;
+using theatrel.Interfaces.TgBot;
+using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
-using IFilterHelper = theatrel.Interfaces.IFilterHelper;
 
 namespace theatrel.TLBot.Commands
 {
     internal class GetPerformancesCommand : DialogCommandBase
     {
         private readonly IPlayBillDataResolver _playBillResolver;
-        private readonly IFilterHelper _filterHelper;
+        private readonly IFilterService _filterService;
+        private readonly ITimeZoneService _timeZoneService;
 
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
 
         public override string Name => "Искать";
 
-        public GetPerformancesCommand(IPlayBillDataResolver playBillResolver, IFilterHelper filterHelper) : base ((int)DialogStep.Final)
+        public GetPerformancesCommand(IPlayBillDataResolver playBillResolver, IFilterService filterService, ITimeZoneService timeZoneService) : base((int)DialogStep.Final)
         {
             _playBillResolver = playBillResolver;
-            _filterHelper = filterHelper;
+            _filterService = filterService;
+            _timeZoneService = timeZoneService;
         }
 
-        public override async Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
-            => new TlOutboundMessage(null);
+        public override Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+            => Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(null));
 
         public override bool IsMessageCorrect(string message) => true;
 
-        public override async Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override async Task<ITgOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
-            IPerformanceFilter filter = _filterHelper.GetFilter(chatInfo);
+            IPerformanceFilter filter = _filterService.GetFilter(chatInfo);
 
             IPerformanceData[] data = await _playBillResolver.RequestProcess(filter, cancellationToken);
 
-            return new TlOutboundMessage(await PerformancesMessage(data, filter, chatInfo.When))
+            return new TgOutboundMessage(await PerformancesMessage(data, filter, chatInfo.When))
             {
                 IsEscaped = true
             };
         }
 
-        private async Task<string> PerformancesMessage(IPerformanceData[] performances, IPerformanceFilter filter, DateTime when)
+        private Task<string> PerformancesMessage(IPerformanceData[] performances, IPerformanceFilter filter, DateTime when)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture("ru");
 
             var stringBuilder = new StringBuilder();
 
             string days = filter.DaysOfWeek != null
-                ? filter.DaysOfWeek.Length == 1 
+                ? filter.DaysOfWeek.Length == 1
                     ? $"день недели: {cultureRu.DateTimeFormat.GetDayName(filter.DaysOfWeek.First())}"
                     : "дни недели: " + string.Join(" или ", filter.DaysOfWeek.Select(d => cultureRu.DateTimeFormat.GetDayName(d)))
                 : string.Empty;
@@ -66,7 +70,11 @@ namespace theatrel.TLBot.Commands
             {
                 string minPrice = item.MinPrice.ToString();
 
-                string performanceString = $"{item.DateTime:ddMMM HH:mm} {item.Location} {item.Type} \"{item.Name}\" от {minPrice}"
+                DateTime dt = item.DateTime.Kind == DateTimeKind.Utc
+                    ? TimeZoneInfo.ConvertTimeFromUtc(item.DateTime, _timeZoneService.TimeZone)
+                    : item.DateTime;
+
+                string performanceString = $"{dt:ddMMM HH:mm} {item.Location} {item.Type} \"{item.Name}\" от {minPrice}"
                     .EscapeMessageForMarkupV2();
 
                 stringBuilder.AppendLine(string.IsNullOrWhiteSpace(item.Url)
@@ -77,9 +85,9 @@ namespace theatrel.TLBot.Commands
             }
 
             if (!performances.Any())
-                return "Увы, я ничего не нашел. Попробуем поискать еще?".EscapeMessageForMarkupV2();
+                return Task.FromResult("Увы, я ничего не нашел. Попробуем поискать еще?".EscapeMessageForMarkupV2());
 
-            return stringBuilder.ToString();
+            return Task.FromResult(stringBuilder.ToString());
         }
     }
 }

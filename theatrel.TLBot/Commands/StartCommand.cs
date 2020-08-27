@@ -1,12 +1,10 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using theatrel.DataAccess;
-using theatrel.DataAccess.Entities;
-using theatrel.Interfaces;
+using theatrel.DataAccess.DbService;
+using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
@@ -17,46 +15,28 @@ namespace theatrel.TLBot.Commands
         private static readonly string[] StartCommandVariants
             = { @"/start", "привет", "hi", "hello", "добрый день", "начать", "давай", "поищи", "да" };
 
-        private readonly AppDbContext _dbContext;
+        private readonly IDbService _dbService;
 
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
 
         public override string Name => "Старт";
 
-        public StartCommand(AppDbContext dbContext) : base((int)DialogStep.Start)
+        public StartCommand(IDbService dbService) : base((int)DialogStep.Start)
         {
-            _dbContext = dbContext;
+            _dbService = dbService;
         }
 
         public override bool IsMessageCorrect(string message) => StartCommandVariants.Any(variant => message.ToLower().StartsWith(variant));
 
-        public override async Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
-            try
-            {
-                if (!_dbContext.TlUsers.AsNoTracking().Any(u => u.Id == chatInfo.ChatId))
-                {
-                    _dbContext.TlUsers.Add(new TelegramUserEntity {Id = chatInfo.ChatId, Culture = chatInfo.Culture});
-                }
-                else
-                {
-                    _dbContext.TlUsers.First(u => u.Id == chatInfo.ChatId).Culture = chatInfo.Culture;
-                }
-
-                await _dbContext.SaveChangesAsync(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceInformation($"DbException {ex.Message}");
-            }
-
             Trace.TraceInformation($"reset chat {chatInfo}");
             chatInfo.Clear();
 
-            return new TlOutboundMessage(null);
+            return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(null));
         }
 
-        public override async Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
-            => new TlOutboundMessage("Вас приветствует экономный театрал.");
+        public override Task<ITgOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+            => Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage("Вас приветствует экономный театрал."));
     }
 }

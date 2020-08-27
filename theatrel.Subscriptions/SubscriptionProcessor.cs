@@ -1,34 +1,38 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using theatrel.Common.Enums;
 using theatrel.DataAccess;
-using theatrel.DataAccess.Entities;
-using theatrel.Interfaces;
+using theatrel.DataAccess.DbService;
+using theatrel.DataAccess.Structures.Entities;
+using theatrel.Interfaces.Filters;
+using theatrel.Interfaces.Subscriptions;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.Subscriptions
 {
     public class SubscriptionProcessor : ISubscriptionProcessor
     {
-        private readonly ITLBotService _telegramService;
-        private readonly AppDbContext _dbContext;
+        private readonly ITgBotService _telegramService;
+        private readonly IDbService _dbService;
         private readonly IFilterChecker _filterChecker;
 
-        public SubscriptionProcessor(ITLBotService telegramService, IFilterChecker filterChecker, AppDbContext dbContext)
+        public SubscriptionProcessor(ITgBotService telegramService, IFilterChecker filterChecker, IDbService dbService)
         {
             _telegramService = telegramService;
-            _dbContext = dbContext;
+            _dbService = dbService;
             _filterChecker = filterChecker;
         }
 
         public async Task<bool> ProcessSubscriptions()
         {
+            await using var dbContext = _dbService.GetDbContext();
+
             Trace.TraceInformation("Process subscriptions started");
-            PlaybillChangeEntity[] changes = _dbContext.PerformanceChanges
+            PlaybillChangeEntity[] changes = dbContext.PerformanceChanges.AsNoTracking()
                 .Include(c => c.PlaybillEntity)
                     .ThenInclude(p => p.Performance)
                     .ThenInclude(p => p.Type)
@@ -38,7 +42,7 @@ namespace theatrel.Subscriptions
                 .ToArray();
 
             bool dbIsDirty = false;
-            foreach (SubscriptionEntity subscription in _dbContext.Subscriptions)
+            foreach (SubscriptionEntity subscription in dbContext.Subscriptions)
             {
                 var filter = subscription.PerformanceFilter;
 
@@ -63,8 +67,9 @@ namespace theatrel.Subscriptions
             }
 
             if (dbIsDirty)
-                await _dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync();
 
+            Trace.TraceInformation("Process subscription finished");
             return true;
         }
 
@@ -80,7 +85,7 @@ namespace theatrel.Subscriptions
         {
             var culture = CultureInfo.CreateSpecificCulture(subscription.TelegramUser.Culture);
 
-            ReasonOfChanges reason = (ReasonOfChanges) change.ReasonOfChanges;
+            ReasonOfChanges reason = (ReasonOfChanges)change.ReasonOfChanges;
             switch (reason)
             {
                 case ReasonOfChanges.Creation:

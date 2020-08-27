@@ -1,6 +1,7 @@
-﻿using System;
-using Moq;
-using theatrel.Interfaces;
+﻿using Moq;
+using System;
+using theatrel.Interfaces.Filters;
+using theatrel.Interfaces.Playbill;
 using Xunit;
 
 namespace theatrel.Lib.Tests
@@ -8,11 +9,11 @@ namespace theatrel.Lib.Tests
     public class FilterCheckerTest
     {
         [Theory]
-        [InlineData( false, new[] { 2020, 03, 23 }, "концерт" , new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }, new[] { "Концерт" } )]
-        [InlineData( false, new [] { 2020, 03, 21}, "балет" , new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }, new[] { "Концерт" })]
-        [InlineData( true, new [] { 2020, 03, 21}, "концерт", new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }, new[] { "Концерт", "Балет" })]
-        [InlineData( false, new [] { 2020, 03, 20}, "опера" , new[] { DayOfWeek.Friday, DayOfWeek.Sunday }, new[] { "Концерт" })]
-        [InlineData( true, new [] { 2020, 03, 20}, "опера" , new[] { DayOfWeek.Friday, DayOfWeek.Sunday }, new[] { "Опера" })]
+        [InlineData(false, new[] { 2020, 03, 23 }, "концерт", new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }, new[] { "Концерт" })]
+        [InlineData(false, new[] { 2020, 03, 21 }, "балет", new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }, new[] { "Концерт" })]
+        [InlineData(true, new[] { 2020, 03, 21 }, "концерт", new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }, new[] { "Концерт", "Балет" })]
+        [InlineData(false, new[] { 2020, 03, 20 }, "опера", new[] { DayOfWeek.Friday, DayOfWeek.Sunday }, new[] { "Концерт" })]
+        [InlineData(true, new[] { 2020, 03, 20 }, "опера", new[] { DayOfWeek.Friday, DayOfWeek.Sunday }, new[] { "Опера" })]
         public void Test(bool expected, int[] performanceDate, string performanceType, DayOfWeek[] filterDays, string[] filterTypes)
         {
             var filterChecker = DIContainerHolder.Resolve<IFilterChecker>();

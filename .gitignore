@@ -33,3 +33,7 @@
 
 /theatrel.Subscriptions.Tests/bin
 /theatrel.Subscriptions.Tests/obj
+/theatrel.Core/bin
+/theatrel.Core/obj
+/theatrel.DataAccess.Structures/bin
+/theatrel.DataAccess.Structures/obj

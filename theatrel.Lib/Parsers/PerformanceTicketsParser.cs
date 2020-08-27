@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using theatrel.Interfaces;
 using theatrel.Interfaces.Parsers;
+using theatrel.Interfaces.Playbill;
+using theatrel.Lib.Tickets;
 
 namespace theatrel.Lib.Parsers
 {
@@ -17,7 +18,7 @@ namespace theatrel.Lib.Parsers
         {
             if (string.IsNullOrEmpty(url) || url == CommonTags.NotDefined)
             {
-                return new PerformanceTickets {Description = CommonTags.NoTickets };
+                return new PerformanceTickets { Description = CommonTags.NoTickets };
             }
 
             var content = await PageRequester.Request(url, cancellationToken);
@@ -38,7 +39,7 @@ namespace theatrel.Lib.Parsers
             IPerformanceTickets performanceTickets = new PerformanceTickets();
 
             var tickets = parsedDoc.All.Where(m => 0 == string.Compare(m.TagName, "ticket", true));
-            foreach(var ticket in tickets)
+            foreach (var ticket in tickets)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -56,7 +57,7 @@ namespace theatrel.Lib.Parsers
                 }
                 else
                 {
-                   performanceTickets.Tickets.Add(ticketData.Region, new Dictionary<int, int> { { ticketData.MinPrice, 1 } });
+                    performanceTickets.Tickets.Add(ticketData.Region, new Dictionary<int, int> { { ticketData.MinPrice, 1 } });
                 }
             }
 

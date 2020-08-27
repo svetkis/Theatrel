@@ -1,13 +1,15 @@
-using System;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
-using theatrel.DataAccess;
-using theatrel.Interfaces;
+using System;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using theatrel.DataAccess.DbService;
+using theatrel.Interfaces.DataUpdater;
+using theatrel.Interfaces.Subscriptions;
+using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.Worker
@@ -15,7 +17,7 @@ namespace theatrel.Worker
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private ITLBotProcessor _tLBotProcessor;
+        private ITgBotProcessor _tLBotProcessor;
 
         public Worker(ILogger<Worker> logger)
         {
@@ -31,11 +33,15 @@ namespace theatrel.Worker
 
             Trace.TraceInformation("Worker.StartAsync");
 
-            var dbContext = Bootstrapper.Resolve<AppDbContext>();
+            var timeZoneService = Bootstrapper.Resolve<ITimeZoneService>();
+            timeZoneService.TimeZone = TimeZoneInfo.CreateCustomTimeZone("Moscow Time", new TimeSpan(03, 00, 00),
+                "(GMT+03:00) Moscow Time", "Moscow Time");
+
+            await using var dbContext = Bootstrapper.Resolve<IDbService>().GetDbContext();
             await dbContext.Database.EnsureCreatedAsync(cancellationToken);
 
-            _tLBotProcessor = Bootstrapper.Resolve<ITLBotProcessor>();
-            var tlBotService = Bootstrapper.Resolve<ITLBotService>();
+            _tLBotProcessor = Bootstrapper.Resolve<ITgBotProcessor>();
+            var tlBotService = Bootstrapper.Resolve<ITgBotService>();
             _tLBotProcessor.Start(tlBotService, cancellationToken);
 
             await ScheduleDataUpdates(cancellationToken);
@@ -45,8 +51,6 @@ namespace theatrel.Worker
         {
             Trace.TraceInformation("Worker.StopAsync");
 
-            var dbContext = Bootstrapper.Resolve<AppDbContext>();
-            dbContext.Dispose();
             _tLBotProcessor.Stop();
             Bootstrapper.Stop();
 
@@ -87,12 +91,9 @@ namespace theatrel.Worker
                 .WithIdentity("startUpdateJob", group)
                 .Build();
 
-
-            TimeZoneInfo moscowCustomTimeZone = TimeZoneInfo.CreateCustomTimeZone("Moscow Time", new TimeSpan(03, 00, 00), "(GMT+03:00) Moscow Time", "Moscow Time");
-
             ITrigger trigger = TriggerBuilder.Create()
                 .WithIdentity("updateJobTrigger", group)
-                .WithCronSchedule("0 10 10-20 * * ?", cron => { cron.InTimeZone(moscowCustomTimeZone); })
+                .WithCronSchedule("0 10 10-20 * * ?", cron => { cron.InTimeZone(Bootstrapper.Resolve<ITimeZoneService>().TimeZone); })
                 .Build();
 
             ITrigger triggerNow = TriggerBuilder.Create()
@@ -113,7 +114,7 @@ namespace theatrel.Worker
                 Trace.TraceInformation("UpdateJob was started");
                 try
                 {
-                    IDataUpdater updater = Bootstrapper.Resolve<IDataUpdater>();
+                    IDbPlaybillUpdater updater = Bootstrapper.Resolve<IDbPlaybillUpdater>();
                     await updater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 9, 30),
                         context.CancellationToken);
 
@@ -124,7 +125,7 @@ namespace theatrel.Worker
                 {
                     if (long.TryParse(Environment.GetEnvironmentVariable("OwnerTelegramgId"), out var ownerId))
                     {
-                        var telegramService = Bootstrapper.Resolve<ITLBotService>();
+                        var telegramService = Bootstrapper.Resolve<ITgBotService>();
                         await telegramService.SendMessageAsync(ownerId, "UpdateJob failed");
                         await telegramService.SendMessageAsync(ownerId, $"{ex.Message}");
                         Trace.TraceError(ex.StackTrace);

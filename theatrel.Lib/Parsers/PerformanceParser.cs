@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
-using theatrel.Interfaces;
 using theatrel.Interfaces.Parsers;
+using theatrel.Interfaces.Playbill;
 
 namespace theatrel.Lib.Parsers
 {
-    public class PerformanceParser: IPerformanceParser
+    public class PerformanceParser : IPerformanceParser
     {
         public IPerformanceData Parse(object element)
         {
             try
             {
-                AngleSharp.Dom.IElement parsedElement = (AngleSharp.Dom.IElement) element;
+                AngleSharp.Dom.IElement parsedElement = (AngleSharp.Dom.IElement)element;
                 AngleSharp.Dom.IElement[] allElementChildren = parsedElement.QuerySelectorAll("*").ToArray();
 
                 var specName = allElementChildren.FirstOrDefault(m => m.ClassName == "spec_name");
@@ -24,10 +25,13 @@ namespace theatrel.Lib.Parsers
                 string location = allElementChildren
                     .FirstOrDefault(m => 0 == string.Compare(m.TagName, "span", true) && m.GetAttribute("itemprop") == "location")?.TextContent;
 
-                return new PerformanceData()
+                string dateString = dtString.Replace("T", " ").Replace("+", " +");
+                var dt = DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss zzz", new CultureInfo("ru")).ToUniversalTime();
+
+                return new PerformanceData
                 {
-                    DateTime = DateTime.Parse(dtString),
-                    Name = specName.Children.Any() ? specName?.Children?.Last()?.TextContent : CommonTags.NotDefined,
+                    DateTime = dt,
+                    Name = specName.Children.Any() ? specName.Children?.Last()?.TextContent : CommonTags.NotDefined,
                     Url = url,
                     Type = GetType(parsedElement.ClassList.ToArray()),
                     Location = location,
@@ -45,7 +49,7 @@ namespace theatrel.Lib.Parsers
             if (!urlData.Any())
                 return CommonTags.NotDefined;
 
-            string url = urlData?.First().GetAttribute("href");
+            string url = urlData.First().GetAttribute("href");
             if (url == CommonTags.JavascriptVoid)
                 return CommonTags.NotDefined;
 
@@ -65,7 +69,7 @@ namespace theatrel.Lib.Parsers
 
         public string GetType(string[] types)
         {
-            foreach(var type in types)
+            foreach (var type in types)
             {
                 if (performanceTypes.Value.ContainsKey(type))
                     return performanceTypes.Value[type];

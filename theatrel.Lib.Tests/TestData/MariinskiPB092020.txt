@@ -1,0 +1,774 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+	<head>
+	<title>Афиша</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<meta http-equiv="x-ua-compatible" content="IE=9">
+		<meta content="Афиша" name="description"/>
+		<meta content="Афиша" name="keywords"/>
+		<meta name="title" content="Афиша"/>
+
+		<link rel="image_src" href="/images/logo_ru.gif"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<!-- <script defer src="https://spb. .ru/start-frame.js"></script>-->
+		<script src="/js/jquery-1.10.2.min.js.pagespeed.jm.ZzSiN_5Whq.js"></script>
+		<script src="/js/site5/scripts_mt.js.pagespeed.jm.cRz-myrP8c.js"></script>	
+<script>$(window).resize(function(){if($(document).scrollTop()>200&&$('body').width()>1300){$('#scroll_top_button').show(100);}else{$('#scroll_top_button').hide(100);}});$(document).scroll(function(){if($(document).scrollTop()>200&&$('body').width()>1300){$('#scroll_top_button').show(100);}else{$('#scroll_top_button').hide(100);}});$(document).ready(function(){if($(document).scrollTop()>200&&$('body').width()>1300){$('#scroll_top_button').show(100);}$('#scroll_top_button').click(function(){var curPos=$(document).scrollTop();var scrollTime=200;$("body,html").animate({"scrollTop":0},scrollTime);});});$(document).ready(function(){if('ru'=='ru'){intervalID=setInterval(function(){vhodnoy_za_chas()},1000);}$('.place_sel').change(function(event){url=$(this).find(" option:selected").attr('rel');document.location.href=url;});$('.type_sel').change(function(event){url=$(this).find(" option:selected").attr('rel');document.location.href=url;});$('.month_sel').change(function(event){url=$(this).find(" option:selected").attr('value');document.location.href=url;});});</script>
+
+		<script src="/bootstrap/3.1.0/js/bootstrap.min.js.pagespeed.jm.XTGl9BQdsF.js"></script>
+		<link href="/A.bootstrap,,_3.1.0,,_css,,_bootstrap.css+bootstrap,,_3.1.0,,_css,,_bootstrap-theme.css+css,,_site5,,_global_style.css+css,,_site5,,_global_style_mt_update.css+css,,_site5,,_playbill.css,Mcc.FTg_nn_1gS.css.pagespeed.cf.zUnz2i42IW.css" rel="stylesheet">
+		
+		
+		
+		
+		
+		<link href='https://fonts.googleapis.com/css?family=PT+Sans:400,700&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css'>
+		<link href='https://fonts.googleapis.com/css?family=PT+Serif+Caption&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css'>
+		<link href='https://fonts.googleapis.com/css?family=Gabriela' rel='stylesheet' type='text/css'>	
+		<link rel="stylesheet" media="print" type="text/css" href="/css/site5/A.print.css.pagespeed.cf.91fP9cI2rg.css"/>
+
+		<link rel="apple-touch-icon" sizes="57x57" href="/images/favicons/xapple-icon-57x57.png.pagespeed.ic.baR1VVD4GC.webp">
+<link rel="apple-touch-icon" sizes="60x60" href="/images/favicons/xapple-icon-60x60.png.pagespeed.ic.2D9QYhI0BZ.webp">
+<link rel="apple-touch-icon" sizes="72x72" href="/images/favicons/xapple-icon-72x72.png.pagespeed.ic.BxMN70R_V2.webp">
+<link rel="apple-touch-icon" sizes="76x76" href="/images/favicons/xapple-icon-76x76.png.pagespeed.ic.qstdUF9mf7.webp">
+<link rel="apple-touch-icon" sizes="114x114" href="/images/favicons/xapple-icon-114x114.png.pagespeed.ic.01dB6WlN0t.webp">
+<link rel="apple-touch-icon" sizes="120x120" href="/images/favicons/xapple-icon-120x120.png.pagespeed.ic.9oduH97GRg.webp">
+<link rel="apple-touch-icon" sizes="144x144" href="/images/favicons/xapple-icon-144x144.png.pagespeed.ic.tDa882jLDC.webp">
+<link rel="apple-touch-icon" sizes="152x152" href="/images/favicons/xapple-icon-152x152.png.pagespeed.ic.05Zcyp3zPO.webp">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/xapple-icon-180x180.png.pagespeed.ic.iLQgsI3eO_.webp">
+<link rel="icon" type="image/png" sizes="192x192" href="/images/favicons/xandroid-icon-192x192.png.pagespeed.ic.KdGGeworbV.webp">
+<link rel="icon" type="image/png" sizes="32x32" href="/images/favicons/xfavicon-32x32.png.pagespeed.ic.fwE_j0kRo6.webp">
+<link rel="icon" type="image/png" sizes="96x96" href="/images/favicons/xfavicon-96x96.png.pagespeed.ic.q2NXacvrD8.webp">
+<link rel="icon" type="image/png" sizes="16x16" href="/images/favicons/xfavicon-16x16.png.pagespeed.ic.8hCT3Ng8l7.webp">
+<link rel="manifest" href="/images/favicons/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/images/favicons/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff"> 
+
+
+
+
+</head>
+<body>
+
+	
+<!--%system getOuterContent('./tpls/content/site5_ssi/get_banner_line_%custom langPrefix()%.tpl')%-->
+
+	
+	<div class="m_level1_cnt" id="ml1" style="z-index:200;">
+	<div class="container mp_content">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="serv_container">
+					<table class="u_serv_menu">
+						<tr>
+							<td><a href="https://www.mariinsky.tv/"><script data-pagespeed-no-defer>(function(){for(var g="function"==typeof Object.defineProperties?Object.defineProperty:function(b,c,a){if(a.get||a.set)throw new TypeError("ES3 does not support getters and setters.");b!=Array.prototype&&b!=Object.prototype&&(b[c]=a.value)},h="undefined"!=typeof window&&window===this?this:"undefined"!=typeof global&&null!=global?global:this,k=["String","prototype","repeat"],l=0;l<k.length-1;l++){var m=k[l];m in h||(h[m]={});h=h[m]}var n=k[k.length-1],p=h[n],q=p?p:function(b){var c;if(null==this)throw new TypeError("The 'this' value for String.prototype.repeat must not be null or undefined");c=this+"";if(0>b||1342177279<b)throw new RangeError("Invalid count value");b|=0;for(var a="";b;)if(b&1&&(a+=c),b>>>=1)c+=c;return a};q!=p&&null!=q&&g(h,n,{configurable:!0,writable:!0,value:q});var t=this;function u(b,c){var a=b.split("."),d=t;a[0]in d||!d.execScript||d.execScript("var "+a[0]);for(var e;a.length&&(e=a.shift());)a.length||void 0===c?d[e]?d=d[e]:d=d[e]={}:d[e]=c};function v(b){var c=b.length;if(0<c){for(var a=Array(c),d=0;d<c;d++)a[d]=b[d];return a}return[]};function w(b){var c=window;if(c.addEventListener)c.addEventListener("load",b,!1);else if(c.attachEvent)c.attachEvent("onload",b);else{var a=c.onload;c.onload=function(){b.call(this);a&&a.call(this)}}};var x;function y(b,c,a,d,e){this.h=b;this.j=c;this.l=a;this.f=e;this.g={height:window.innerHeight||document.documentElement.clientHeight||document.body.clientHeight,width:window.innerWidth||document.documentElement.clientWidth||document.body.clientWidth};this.i=d;this.b={};this.a=[];this.c={}}function z(b,c){var a,d,e=c.getAttribute("data-pagespeed-url-hash");if(a=e&&!(e in b.c))if(0>=c.offsetWidth&&0>=c.offsetHeight)a=!1;else{d=c.getBoundingClientRect();var f=document.body;a=d.top+("pageYOffset"in window?window.pageYOffset:(document.documentElement||f.parentNode||f).scrollTop);d=d.left+("pageXOffset"in window?window.pageXOffset:(document.documentElement||f.parentNode||f).scrollLeft);f=a.toString()+","+d;b.b.hasOwnProperty(f)?a=!1:(b.b[f]=!0,a=a<=b.g.height&&d<=b.g.width)}a&&(b.a.push(e),b.c[e]=!0)}y.prototype.checkImageForCriticality=function(b){b.getBoundingClientRect&&z(this,b)};u("pagespeed.CriticalImages.checkImageForCriticality",function(b){x.checkImageForCriticality(b)});u("pagespeed.CriticalImages.checkCriticalImages",function(){A(x)});function A(b){b.b={};for(var c=["IMG","INPUT"],a=[],d=0;d<c.length;++d)a=a.concat(v(document.getElementsByTagName(c[d])));if(a.length&&a[0].getBoundingClientRect){for(d=0;c=a[d];++d)z(b,c);a="oh="+b.l;b.f&&(a+="&n="+b.f);if(c=!!b.a.length)for(a+="&ci="+encodeURIComponent(b.a[0]),d=1;d<b.a.length;++d){var e=","+encodeURIComponent(b.a[d]);131072>=a.length+e.length&&(a+=e)}b.i&&(e="&rd="+encodeURIComponent(JSON.stringify(B())),131072>=a.length+e.length&&(a+=e),c=!0);C=a;if(c){d=b.h;b=b.j;var f;if(window.XMLHttpRequest)f=new XMLHttpRequest;else if(window.ActiveXObject)try{f=new ActiveXObject("Msxml2.XMLHTTP")}catch(r){try{f=new ActiveXObject("Microsoft.XMLHTTP")}catch(D){}}f&&(f.open("POST",d+(-1==d.indexOf("?")?"?":"&")+"url="+encodeURIComponent(b)),f.setRequestHeader("Content-Type","application/x-www-form-urlencoded"),f.send(a))}}}function B(){var b={},c;c=document.getElementsByTagName("IMG");if(!c.length)return{};var a=c[0];if(!("naturalWidth"in a&&"naturalHeight"in a))return{};for(var d=0;a=c[d];++d){var e=a.getAttribute("data-pagespeed-url-hash");e&&(!(e in b)&&0<a.width&&0<a.height&&0<a.naturalWidth&&0<a.naturalHeight||e in b&&a.width>=b[e].o&&a.height>=b[e].m)&&(b[e]={rw:a.width,rh:a.height,ow:a.naturalWidth,oh:a.naturalHeight})}return b}var C="";u("pagespeed.CriticalImages.getBeaconData",function(){return C});u("pagespeed.CriticalImages.Run",function(b,c,a,d,e,f){var r=new y(b,c,a,e,f);x=r;d&&w(function(){window.setTimeout(function(){A(r)},0)})});})();pagespeed.CriticalImages.Run('/ngx_pagespeed_beacon','https://www.mariinsky.ru/ru/playbill/playbill/?year=2020&month=9','hdJxdiSNG4',true,false,'DnfpWacCQns');</script><img src="/images/site5/ico_tv4.png" data-pagespeed-url-hash="729773192" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a></td>
+							<td><a href="https://mariinsky.fm/"><img src="/images/site5/ico_fm4.png" data-pagespeed-url-hash="1913931679" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a></td>
+							<td><span class="auth_menu"><a href="https://tickets.mariinsky.ru/ru/singinform/" onclick="show_div_login('https://www.mariinsky.ru/playbill/playbill/', 'div_login'); return false;"><img src="/images/site5/not_auth_user.png" data-pagespeed-url-hash="2879841010" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a></span></td>
+							<td><div class="lang_link"><a href="/en/playbill/playbill/?year=2020&month=9"><img src="/images/site5/en_ico_lang1.png" data-pagespeed-url-hash="1928764421" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a></div></td>
+							<td style="width:100px;"><form name="search" action="https://www.mariinsky.ru/ru/searchres/" method="get" target="_blank"><input type="hidden" name="searchid" value="2060906"/><input type="hidden" name="l10n" value="ru"/><input type="hidden" name="reqenc" value=""/><input type="text" name="text" placeholder="Поиск" class="search_input" value=""/></form></td>
+							<!--<td><img src="/images/site5/search_ico.png" onclick="document.forms.search.submit();" /></td>-->
+						</tr>
+					</table>
+				</div>
+				<div align="center" class="ml1_cur_part" onclick="toggle_ml1();"></div>
+				<div id="m_level1" class="list"><div class="active item"><a title="Афиша и билеты" href="/playbill/">Афиша и билеты</a></div><div class=" item"><a title="Детям" href="/kids/">Детям</a></div><div class=" item"><a title="Визит в театр" href="/visit/">Визит в театр</a></div><div class=" item"><a title="Труппа" href="/company/">Труппа</a></div><div class=" item"><a title="О театре" href="/about/">О театре</a></div><div class=" item"><a title="Новости" href="/news1/">Новости</a></div><div class="last item"><a title="Для прессы" href="/press/">Для прессы</a></div></div>
+			</div>
+		</div>
+	</div>
+</div>
+	<div class="m_level2_cnt">
+	<div class="container">
+		<div id="m_level2"><a class="active" href="/playbill/playbill/">Афиша</a><a href="/playbill/special_offer/">Cпециальное предложение</a><a href="/playbill/festivals/">Фестивали</a><a href="/playbill/playbill3/">Открытая среда</a><a href="/playbill/repertoire/">Репертуар</a></div>
+	</div>
+</div>
+	<div class="popup_banner_hidden" style="background-color:#f6f6f6;height:80px;">
+	<div class="container mp_content">
+		<div class="row">
+			<div class="col-md-6 col-sm-8">
+				<a href="/"><img class="logo img-responsive" border="0" src="/images/site5/logo_ru.png" data-pagespeed-url-hash="2955013575" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a>
+			</div>
+			<div class="col-md-6 col-sm-4 hidden-xs" align="right">	
+				<div style="margin:27px 0px 0px 0px;">
+					<div class="season  hidden-sm  hidden-xs"><img src="data:image/webp;base64,UklGRrgBAABXRUJQVlA4TKwBAAAvagAJEH8gEEji299phXEapYlI6DiQQ23bMTn3P/rWip02Vf4+GJaxnZROvtj5J6pt27aNSr1TGevxvNG42i6i/xNAC6TuPKAgzGTngijUmCUqd+b1pXZYuG2ZgRYRcVHb5jS5H1kVWkewhFBn9ovIe6jdvDt3k2zsF2etRZ3FhUAgMBlqx+zI3fkTxiApuW9Re48RQAnUFp3I3X5RHimpclC3Dyd4FMQsUTkz39o8ooBmN8B+g7zVvwyo+uH6Zw75+6ovLHzWjn975NEnOzD4jQKqSvNnUl/+/XgP0CqVTlockN6DXss4DsgKorJW1qV1yfhPUJzwwZkq4go5bhvfBlvd31U9tzUX7x9IyJWO2QkcHgMtCppTmecIzR1IaESxuU7P4nzPoJsmZzqbDVDhcrQ4Ia5SaAv2i4gaJO33uwlODIpIOpP6BQLzVKyM8++hu5Sl5wbo/vZ/bprSaRARUU0GzX3AlMoUnnOgLcxr5UTnzuJ810wa/+NZeGwqQESlIKZ0hx/Ohwe6DnpR9dYWUusnElJpZH+9rOCg9KqKSAcOyHKislbW5UELMg==" data-pagespeed-url-hash="1635428867" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></div>
+					<a target="_blank" title="ВКонтакте" class="vk" href="https://vk.com/mariinskytheatre"><img src="/images/site5/vk_ico_.png" data-pagespeed-url-hash="775452064" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a>
+					<a target="_blank" title="Фейсбук" class="fb" href="https://www.facebook.com/mariinsky.theatre"><img src="/images/site5/fb_ico_.png" data-pagespeed-url-hash="1315139221" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a>
+					<a target="_blank" title="Инстаграм" class="instagram" href="https://instagram.com/mariinsky/"><img src="/images/site5/instagram_ico_.png" data-pagespeed-url-hash="1529830457" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+	<div id="scroll_top_button"></div>
+	<div class="container content gr_top" align="left">
+		<div class="row playbill_filter">
+			<div class="col-md-3" align="center">
+				<div class="playbill_changes">Изменения в афише</div>
+				
+			</div>
+			<div class="col-md-3" align="center">
+				<div class="playbill_sort">
+					<div class="select1_descr">
+					<table style="width:100%"><tr><td align="right" style="width:50%; padding:3px;line-height:1;"><span> Выбрать  сцену</span></td>
+					  <td align="left" style="width:50%; padding:3px;">
+					  <select size="1" style="width:120px;" name="select1" class="place_sel" id="select1">
+						
+<option selected rel="/playbill/playbill/?w=0&year=2020&month=9" value="all">Все площадки</option>
+<option rel="/playbill/playbill/?place=theatre&year=2020&month=9" value="theatre">Мариинский театр</option>
+<option rel="/playbill/playbill/?place=theatre2&year=2020&month=9" value="theatre2">Мариинский-2</option>
+<option rel="/playbill/playbill/?place=hall&year=2020&month=9" value="hall">Концертный зал</option>
+<option rel="/playbill/playbill/?place=chamber_halls&year=2020&month=9" value="chamber_halls">Камерные залы</option>
+		
+					   </select>
+					   </td></tr></table>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3" align="center">
+				<div class="playbill_sort">
+					<div class="select1_descr">
+					<table style="width:100%"><tr><td align="right" style="width:50%; padding:3px;line-height:1;">
+					<span> Выбрать тип представления</span></td>
+					  <td align="left" style="width:50%; padding:3px;">
+					  <select size="1" style="width:120px;" class="type_sel" name="select2" id="select2">
+							
+<option selected rel="/playbill/playbill/?w=0&year=2020&month=9" value="all">Все спектакли</option>
+<option rel="/playbill/playbill/?type=opera&year=2020&month=9" value="opera">Опера</option>
+<option rel="/playbill/playbill/?type=ballet&year=2020&month=9" value="ballet">Балет</option>
+<option rel="/playbill/playbill/?type=concert&year=2020&month=9" value="concert">Концерты</option>
+
+					   </select>
+					   </td></tr></table>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3" align="center">
+				<table style="width:100%"><tr><td align="right" style="width:50%; padding:3px;line-height:1;">
+				<span>Выбрать месяц</span></td>
+				<td align="left" style="width:50%; padding:3px;">
+				<select id="m_sel" size="1" class="month_sel" style="width:120px;">
+					<option value="/ru/playbill/playbill/?w=0">Ближайший</option><option value="/ru/playbill/playbill/?year=2020&month=8">Август</option><option value="/playbill/nextplaybill/?next_playbill_month=show">Сентябрь 2020&nbsp;&mdash;&nbsp;Февраль 2021</option>
+					<option value="/ru/playbill/archive/">Архив афиши</option>
+				</select>
+				</td></tr></table>
+			</div>
+		</div> 
+		<div class="row ">
+			<div class="col-md-12">
+				<p><div id="afisha"><div class="row light day_row">
+	<div class="col-md-2 date"><div class="d">2</div><div class="m">сентября</div><div class="wd">среда</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский театр</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/VGNvT1RjK3p2bWdUcE0zc2tiWk5zUT09/" class="c_theatre">Купить билет</a></div><div class="time2">19:30</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-02T19:30:00+03:00">19:30</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><em>Возвращение легендарной постановки</em> </div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/2/2_1930/" itemprop="url"><span itemprop="summary">Огненный ангел</span></a></div>
+			<div class="descr">опера Сергея Прокофьева  <!--опера в пяти действиях--><br/><p><!--В главных партиях: -->Дирижер &ndash; <a href="/company/conductors/gergiev/">Валерий&nbsp;Гергиев</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row dark day_row">
+	<div class="col-md-2 date"><div class="d">3</div><div class="m">сентября</div><div class="wd">четверг</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre c_concert spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский театр</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/OTA4S1c3bkYxbDFhc29NRzNBVVJldz09/" class="c_theatre">Купить билет</a></div><div class="time2">19:30</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-03T19:30:00+03:00">19:30</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/3/1_1930/" itemprop="url"><span itemprop="summary">Гала-концерт балета</span></a></div>
+			<div class="descr"><p>При участии <a href="/company/ballet_mt_women/kondaurova/">Екатерины&nbsp;Кондауровой</a>, <a href="/company/ballet_mt_men/yermakov/">Андрея&nbsp;Ермакова</a>, <a href="/company/ballet_mt_women/skorik/">Оксаны&nbsp;Скорик</a>, <a href="/company/ballet_mt_men/parish/">Ксандера&nbsp;Париша</a>, <a href="/company/ballet_mt_men/askerov/">Тимура&nbsp;Аскерова</a>, <a href="/company/ballet_mt_men/kimin_kim/">Кимин&nbsp;Кима</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row light day_row">
+	<div class="col-md-2 date"><div class="d">4</div><div class="m">сентября</div><div class="wd">пятница</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre2 c_mt2 c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский-2 </span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/MW5CZG9YNjV0VGo2ci83S2N6eUhMZz09/" class="c_theatre2">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-04T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera">ПРЕМЬЕРА</div>
+			<div class="online_video"></div>
+			<div class="status"></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/4/2_1900/" itemprop="url"><span itemprop="summary">Снегурочка</span></a></div>
+			<div class="descr">опера Николая Римского-Корсакова <br/><p>Дирижер &ndash; <a href="/company/conductors/gergiev/">Валерий&nbsp;Гергиев</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div>	<div class="row c_theatre c_concert spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский театр</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/SWRCSDZnR202dS92ai96NWxXakVzQT09/" class="c_theatre">Купить билет</a></div><div class="time2">19:30</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-04T19:30:00+03:00">19:30</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/4/1_1930/" itemprop="url"><span itemprop="summary">Гала-концерт балета</span></a></div>
+			<div class="descr"><p>При участии <a href="/company/ballet_mt_women/kondaurova/">Екатерины&nbsp;Кондауровой</a>, <a href="/company/ballet_mt_women/skorik/">Оксаны&nbsp;Скорик</a>, <a href="/company/ballet_mt_women/tereshkina/">Виктории&nbsp;Терёшкиной</a>, <a href="/company/ballet_mt_men/parish/">Ксандера&nbsp;Париша</a>, <a href="/company/ballet_mt_men/askerov/">Тимура&nbsp;Аскерова</a>, <a href="/company/ballet_mt_men/kimin_kim/">Кимин&nbsp;Кима</a>, <a href="/company/ballet_mt_men/korsuntsev/">Данилы&nbsp;Корсунцева</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row dark day_row">
+	<div class="col-md-2 date"><div class="d">5</div><div class="m">сентября</div><div class="wd">суббота</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский театр</span></div><div class="t_button"><!-- empty 123964 --></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-05T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/5/1_1900/" itemprop="url"><span itemprop="summary">Дон Кихот</span></a></div>
+			<div class="descr">опера Жюля Массне <!--опера в пяти действиях--><br/><!--<p>В главных партиях: --></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row light day_row">
+	<div class="col-md-2 date"><div class="d">6</div><div class="m">сентября</div><div class="wd">воскресенье</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский театр</span></div><div class="t_button"><!-- empty 123970 --></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-06T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/6/1_1900/" itemprop="url"><span itemprop="summary">Риголетто</span></a></div>
+			<div class="descr">опера Джузеппе Верди <!--опера в трех действиях--><br/><!--<p>В главных партиях: --></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row dark day_row">
+	<div class="col-md-2 date"><div class="d">7</div><div class="m">сентября</div><div class="wd">понедельник</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre2 c_mt2 c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский-2 </span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/RFM0TXEvNFBrbXV2OFY3SkdJZkJ5QT09/" class="c_theatre2">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-07T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera">ПРЕМЬЕРА</div>
+			<div class="online_video"></div>
+			<div class="status">Открытие 238-го сезона</div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/7/2_1900/" itemprop="url"><span itemprop="summary">Снегурочка</span></a></div>
+			<div class="descr">опера Николая Римского-Корсакова <br/><p>Дирижер &ndash; <a href="/company/conductors/gergiev/">Валерий&nbsp;Гергиев</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row light day_row">
+	<div class="col-md-2 date"><div class="d">8</div><div class="m">сентября</div><div class="wd">вторник</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre2 c_mt2 c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский-2 </span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/dVpzdlR2bmRkNnZ2d3RYbUMxNDFHQT09/" class="c_theatre2">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-08T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera">ПРЕМЬЕРА</div>
+			<div class="online_video"></div>
+			<div class="status"></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/8/2_1900/" itemprop="url"><span itemprop="summary">Снегурочка</span></a></div>
+			<div class="descr">опера Николая Римского-Корсакова <br/><p>Дирижер &ndash; <a href="/company/conductors/gergiev/">Валерий&nbsp;Гергиев</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row dark day_row">
+	<div class="col-md-2 date"><div class="d">14</div><div class="m">сентября</div><div class="wd">понедельник</div></div>
+	<div class="col-md-10 spects">	<div class="row c_hall c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/STRNSWFzNnFFUUVNWVFKV2JZMWxRUT09/" class="c_hall">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-14T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос спектакля с 23 марта</strong></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/14/3_1900/" itemprop="url"><span itemprop="summary">Пеллеас и Мелизанда</span></a></div>
+			<div class="descr">опера Клода Дебюсси <!--опера в пяти действиях--><br/><p>В главных партиях: <a href="/company/opera_guest/khismatullina/">Айгуль Хисматуллина</a>, <a href="/company/opera_guest/abdulov_gamid1/">Гамид Абдулов</a>, <a href="/company/opera_men/serov1/">Андрей&nbsp;Серов</a> <br/>Дирижер &ndash; <a href="/company/conductors/gergiev/">Валерий&nbsp;Гергиев</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row light day_row">
+	<div class="col-md-2 date"><div class="d">16</div><div class="m">сентября</div><div class="wd">среда</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre2 c_mt2 c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский-2 </span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/RHNZOXVjd3RaZlZJeWpkS216dG1MQT09/" class="c_theatre2">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-16T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос спектакля с 19 марта</strong></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/16/2_1900/" itemprop="url"><span itemprop="summary">Псковитянка</span></a></div>
+			<div class="descr">oпера Николая Римского-Корсакова (с прологом «Боярыня Вера Шелога»)<br/><p>В главных партиях: <a href="/company/opera_women/irina_churilova/">Ирина&nbsp;Чурилова</a>, <a href="/company/opera_guest/videman/">Олег&nbsp;Видеман</a>, <a href="/company/opera_men/trofimov_stanislav1/">Станислав&nbsp;Трофимов</a>, <a href="/company/opera_men/kit1/">Михаил&nbsp;Кит</a></p></div>
+			<div class="descr">Пятый спектакль 30-го абонемента</div>
+		</div>
+	</div></div>
+</div><div class="row dark day_row">
+	<div class="col-md-2 date"><div class="d">17</div><div class="m">сентября</div><div class="wd">четверг</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre2 c_mt2 c_ballet spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский-2 </span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/YnkycUkxTTFEbmlUcmpRZHovbVQxQT09/" class="c_theatre2">Купить билет</a></div><div class="time2">19:30</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-17T19:30:00+03:00">19:30</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос спектакля с 7&nbsp;апреля</strong></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/17/2_1930/" itemprop="url"><span itemprop="summary">Ромео и Джульетта</span></a></div>
+			<div class="descr"><!--балет в трех действиях, тринадцати картинах-->балет Леонида Лавровского на музыку Сергея Прокофьева <br/><p>В главных партиях: <a href="/company/ballet_mt_women/nagakhisa/">Мей&nbsp;Нагахиса</a>, <a href="/company/ballet_mt_men/caixeta/">Виктор Кайшета</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row light day_row">
+	<div class="col-md-2 date"><div class="d">18</div><div class="m">сентября</div><div class="wd">пятница</div></div>
+	<div class="col-md-10 spects">	<div class="row c_hall c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="javascript:void(0)" onclick="return false;" class="no">Билетов нет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-18T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><b>Перенос спектакля с 17&nbsp;апреля</b></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/18/3_1900/" itemprop="url"><span itemprop="summary">Свадьба Фигаро</span></a></div>
+			<div class="descr">опера Вольфганга Амадея Моцарта<!--опера-буффа в четырех действиях--><br/></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row dark day_row">
+	<div class="col-md-2 date"><div class="d">19</div><div class="m">сентября</div><div class="wd">суббота</div></div>
+	<div class="col-md-10 spects">	<div class="row c_hall c_concert spec_row" style="background:url(/images/site5/kids/playbill_bg_02.jpg) no-repeat bottom right;background-size:cover;min-height:120px" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/RXA5V3Z6N0J2SGxPSStYdHNXTVlTdz09/" class="c_hall">Купить билет</a></div><div class="time2">12:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-19T12:00:00+03:00">12:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><b>Перенос концерта с 21&nbsp;марта</b> </div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/19/3_1200/" itemprop="url"><span itemprop="summary">Маленький Моцарт</span></a></div>
+			<div class="descr"><p>Театрализованный концерт по юношеским сочинениям великого композитора</p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row light day_row">
+	<div class="col-md-2 date"><div class="d">20</div><div class="m">сентября</div><div class="wd">воскресенье</div></div>
+	<div class="col-md-10 spects">	<div class="row c_hall c_concert spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/R1NBZERhcG5DdDZ3N3ZzSkt4VktXdz09/" class="c_hall">Купить билет</a></div><div class="time2">13:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-20T13:00:00+03:00">13:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос спектакля с 22 марта</strong></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/20/3_1300/" itemprop="url"><span itemprop="summary">Шедевры на все времена</span></a></div>
+			<div class="descr"><p>Дебюсси. &laquo;Море&raquo; и&nbsp;&laquo;Послеполуденный отдых фавна&raquo;<br/>Автор и ведущий цикла&nbsp;&ndash; Леонид Гаккель</p></div>
+			<div class="descr">Пятый концерт 43-го абонемента</div>
+		</div>
+	</div>	<div class="row c_hall c_concert spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/UzJ6aFA5dC9BZnpodGx6U0hSMFEyZz09/" class="c_hall">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-20T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><b>Перенос концерта с 21&nbsp;апреля</b> </div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/20/3_1900/" itemprop="url"><span itemprop="summary">Бенжамен Алар (орган)</span></a></div>
+			<div class="descr"><p>В программе: Бах</p></div>
+			<div class="descr">Пятый концерт 47-го абонемента</div>
+		</div>
+	</div></div>
+</div><div class="row dark day_row">
+	<div class="col-md-2 date"><div class="d">22</div><div class="m">сентября</div><div class="wd">вторник</div></div>
+	<div class="col-md-10 spects">	<div class="row c_hall c_concert spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/ZkNpTG83NVhiZkErQW9rWThhaHc2dz09/" class="c_hall">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-22T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><b>Перенос концерта с 4&nbsp;апреля</b></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/22/3_1900/" itemprop="url"><span itemprop="summary">Шуберт. Бетховен</span></a></div>
+			<div class="descr"><p>Солист&nbsp;&ndash; <a href="/company/orchestra/piano/emelianov/">Константин&nbsp;Емельянов</a> (фортепиано), лауреат Международного конкурса им.&nbsp;П.И.&nbsp;Чайковского (2019) <br/>Дирижер &ndash; Бенуа Фроманже</p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row light day_row">
+	<div class="col-md-2 date"><div class="d">24</div><div class="m">сентября</div><div class="wd">четверг</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre c_ballet spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский театр</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/d0t1ZnhLNlMvMU5aVzJ4bnB3cUtUUT09/" class="c_theatre">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-24T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос спектакля с 21 марта</strong><br>Спектакль XIX Международного фестиваля балета «Мариинский»</div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/24/1_1900/" itemprop="url"><span itemprop="summary">Лунный Пьеро. Семь сонат (<em>премьера</em>). Concerto&nbsp;DSCH</span></a></div>
+			<div class="descr"><p>вечер балетов Алексея Ратманского <br/>При участии <a href="/company/ballet_mt_women/tereshkina/">Виктории&nbsp;Терёшкиной</a>, <a href="/company/ballet_mt_men/parish/">Ксандера&nbsp;Париша</a>, <a href="/company/ballet_mt_men/kimin_kim/">Кимин&nbsp;Кима</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div>	<div class="row c_hall c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/akVYV2xqQVNmWVVYNEpraUZyYWVrZz09/" class="c_hall">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-24T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос концерта с 20&nbsp;марта</strong></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/24/3_1900/" itemprop="url"><span itemprop="summary">Беатриче ди Тенда</span></a></div>
+			<div class="descr"><p>лирическая трагедия в двух действиях (концертное исполнение)</p></div>
+			<div class="descr">Третий концерт 213-го абонемента</div>
+		</div>
+	</div></div>
+</div><div class="row dark day_row">
+	<div class="col-md-2 date"><div class="d">25</div><div class="m">сентября</div><div class="wd">пятница</div></div>
+	<div class="col-md-10 spects">	<div class="row c_hall c_concert spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/WlZjaUtoWkl2aVpKckJMSVVGVzVrUT09/" class="c_hall">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-25T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><b>Перенос концерта с 12&nbsp;апреля</b> </div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/25/3_1900/" itemprop="url"><span itemprop="summary">Бетховен. Шуман. Брамс</span></a></div>
+			<div class="descr"><p>Солист&nbsp;&ndash; <a href="/company/orchestra/cello/fung_zlatomir/">Златомир Фанг</a> (виолончель), лауреат Международного конкурса им.&nbsp;П.И.&nbsp;Чайковского (2019)&nbsp; <br/>Дирижер&nbsp;&ndash; <a href="/company/conductors/kochanovsky/">Станислав Кочановский</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row light day_row">
+	<div class="col-md-2 date"><div class="d">26</div><div class="m">сентября</div><div class="wd">суббота</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский театр</span></div><div class="t_button"><a href="javascript:void(0)" onclick="return false;" class="no">Билетов нет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-26T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос спектакля с 22 марта</strong><br> К 90-летию со дня рождения Бориса Штоколова </div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/26/1_1900/" itemprop="url"><span itemprop="summary">Князь Игорь</span></a></div>
+			<div class="descr">опера Александра Бородина <!--опера в двух действиях с прологом--><br/><p>В главных партиях: <a href="/company/opera_men/umerov1/">Эдем&nbsp;Умеров</a>, <a href="/company/opera_women/markarova1/">Анна&nbsp;Маркарова</a>, <a href="/company/opera_women/borodina1/">Ольга&nbsp;Бородина</a>, <a href="/company/opera_men/petrenko1/">Михаил&nbsp;Петренко</a></p></div>
+			<div class="descr">Третий спектакль 206-го абонемента</div>
+		</div>
+	</div>	<div class="row c_hall c_ballet spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/TGU5QWp5TFNsejVyZTVyQjNsQTc5Zz09/" class="c_hall">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-26T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос спектакля с 27 марта</strong></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/26/3_1900/" itemprop="url"><span itemprop="summary">Вечер современной хореографии </span></a></div>
+			<div class="descr"></div>
+			<div class="descr">Четвертый спектакль 49-го абонемента</div>
+		</div>
+	</div>	<div class="row c_theatre2 c_mt2 c_ballet spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский-2 </span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/Q0ZlcldIVEUwTUY1Y21sVE5LSUh3QT09/" class="c_theatre2">Купить билет</a></div><div class="time2">19:30</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-26T19:30:00+03:00">19:30</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос спектакля с 24&nbsp;апреля</strong></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/26/2_1930/" itemprop="url"><span itemprop="summary">Золушка</span></a></div>
+			<div class="descr"><!--балет в трех действиях-->балет Алексея Ратманского на музыку Сергея Прокофьева<br/><p>В главных партиях: <a href="/company/ballet_mt_women/batoeva/">Надежда&nbsp;Батоева</a>, <a href="/company/ballet_mt_men/kimin_kim/">Кимин&nbsp;Ким</a>, <a href="/company/ballet_mt_women/kondaurova/">Екатерина&nbsp;Кондаурова</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row dark day_row">
+	<div class="col-md-2 date"><div class="d">27</div><div class="m">сентября</div><div class="wd">воскресенье</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre c_opera spec_row" style="background:url(/images/site5/kids/playbill_bg_01.jpg) no-repeat bottom right;background-size:cover" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский театр</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/M1c5MmdDc0thZUZxcDA2SHVYSGh3UT09/" class="c_theatre">Купить билет</a></div><div class="time2">12:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-27T12:00:00+03:00">12:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос спектакля с 22 марта</strong>   <br>Академия юных театралов</div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/27/1_1200/" itemprop="url"><span itemprop="summary">Соловей</span></a></div>
+			<div class="descr">опера Игоря Стравинского <!--опера в трех действиях --><br/><p>В главных партиях: <a href="/company/opera_women/trifonova1/">Ольга&nbsp;Трифонова</a>, <a href="/company/opera_men/putilin1/">Николай&nbsp;Путилин</a>, <a href="/company/opera_men/voropaev1/">Дмитрий&nbsp;Воропаев</a></p></div>
+			<div class="descr">Шестой спектакль 41-го абонемента </div>
+		</div>
+	</div>	<div class="row c_hall c_concert spec_row" style="background:url(/images/site5/kids/playbill_bg_02.jpg) no-repeat bottom right;background-size:cover" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/SjBGWU5hVE94ZVlLRWJMOHhIMXlrZz09/" class="c_hall">Купить билет</a></div><div class="time2">12:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-27T12:00:00+03:00">12:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><b>Перенос концерта с 26&nbsp;апреля</b> </div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/27/3_1200/" itemprop="url"><span itemprop="summary">Немецкие сказки</span></a></div>
+			<div class="descr"><p>театрализованный концерт для детей</p></div>
+			<div class="descr"></div>
+		</div>
+	</div>	<div class="row c_theatre2 c_mt2 c_ballet spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский-2 </span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/YnZKTkluR2FORENHaDdPam4zcjNFUT09/" class="c_theatre2">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-27T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><b>Перенос спектакля с 25&nbsp;апреля в Мариинский-2 (билеты подлежат обмену)</b></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/27/2_1900/" itemprop="url"><span itemprop="summary">Дон Кихот</span></a></div>
+			<div class="descr"><!--балет в трех действиях, шести картинах-->балет Александра Горского на музыку Людвига Минкуса<br/><p>В главных партиях: <a href="/company/ballet_mt_women/tereshkina/">Виктория&nbsp;Терёшкина</a>, <a href="/company/ballet_mt_men/shklyarov/">Владимир&nbsp;Шкляров</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div>	<div class="row c_theatre c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский театр</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/MmNST1FGWUNpTkhGWUw2V1VVbll2UT09/" class="c_theatre">Купить билет</a></div><div class="time2">19:30</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-27T19:30:00+03:00">19:30</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос спектакля с 20 марта (замена оперы «Джанни Скикки»)</strong></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/27/1_1930/" itemprop="url"><span itemprop="summary">Паяцы</span></a></div>
+			<div class="descr">опера Руджеро Леонкавалло <!--опера в двух действиях с прологом --><br/><p>В главных партиях: <a href="/company/opera_guest/ayvazyan/">Ованес&nbsp;Айвазян</a>, <a href="/company/opera_guest/ekaterina_sannikova/">Екатерина&nbsp;Санникова</a>, <a href="/company/opera_men/burdenko/">Роман&nbsp;Бурденко</a>, <a href="/company/opera_men/yevgeny_akhmedov2/">Евгений&nbsp;Ахмедов</a>, <a href="/company/opera_guest/vladislav_kupriianov/">Владислав&nbsp;Куприянов</a></p></div>
+			<div class="descr">Шестой спектакль 21-го абонемента</div>
+		</div>
+	</div>	<div class="row c_hall c_concert spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/NGlBWC8rMng1OTFCWS9FTUZQY0NGdz09/" class="c_hall">Купить билет</a></div><div class="time2">20:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-27T20:00:00+03:00">20:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><b>Перенос концерта с 5&nbsp;апреля</b><br>Концерт лауреата Международного конкурса им.&nbsp;П.И.&nbsp;Чайковского</div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/27/3_2000/" itemprop="url"><span itemprop="summary">Сольный концерт Константина Емельянова </span></a></div>
+			<div class="descr"><p>В программе:&nbsp;Бах,&nbsp;Бетховен,&nbsp;Брамс&nbsp;</p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row light day_row">
+	<div class="col-md-2 date"><div class="d">28</div><div class="m">сентября</div><div class="wd">понедельник</div></div>
+	<div class="col-md-10 spects">	<div class="row c_hall c_concert spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/aTk2TFJFYVpVbVVjZUtLK011R2I2UT09/" class="c_hall">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-28T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><b>Перенос концерта с 19&nbsp;апреля</b> </div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/28/3_1900/" itemprop="url"><span itemprop="summary">Академический симфонический оркестр Северо-Кавказской государственной филармонии им.&nbsp;В.И.&nbsp;Сафонова</span></a></div>
+			<div class="descr"><p>Солистка&nbsp;&ndash; <a href="/company/orchestra/organ/berezhnaya/">Светлана Бережная</a> (орган, фортепиано, клавесин) <br/>Дирижер &ndash; <a href="/company/conductors/dimitris_botinis/">Димитрис&nbsp;Ботинис</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div></div>
+</div><div class="row dark day_row">
+	<div class="col-md-2 date"><div class="d">29</div><div class="m">сентября</div><div class="wd">вторник</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre2 c_mt2 c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский-2 </span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/eUpBYTR5Y0llQmpkZ2swMjdiemRmUT09/" class="c_theatre2">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-29T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><b>Перенос спектакля с 21&nbsp;апреля</b></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/29/2_1900/" itemprop="url"><span itemprop="summary">Летучий голландец</span></a></div>
+			<div class="descr">опера Рихарда Вагнера<!--опера в трех действиях--><br/><p>В главных партиях: <a href="/company/opera_men/nikitin1/">Евгений&nbsp;Никитин</a>, <a href="/company/opera_women/stikhina/">Елена&nbsp;Стихина</a>, <a href="/company/opera_men/skorohodov_serg1/">Сергей&nbsp;Скороходов</a>, <a href="/company/opera_men/petrenko1/">Михаил&nbsp;Петренко</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div>	<div class="row c_hall c_concert spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/aElpdVFyNVhRQkg3bWZHT2d4QU43UT09/" class="c_hall">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-29T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><b>Перенос концерта с 14&nbsp;мая</b> </div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/29/3_1900/" itemprop="url"><span itemprop="summary">Екатерина Сергеева (меццо-сопрано) и ансамбль Renaissance&nbsp;Percussion</span></a></div>
+			<div class="descr"></div>
+			<div class="descr"></div>
+		</div>
+	</div>	<div class="row c_theatre c_ballet spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский театр</span></div><div class="t_button"><a href="javascript:void(0)" onclick="return false;" class="no">Билетов нет</a></div><div class="time2">19:30</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-29T19:30:00+03:00">19:30</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос спектакля с 27 марта</strong></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/29/1_1930/" itemprop="url"><span itemprop="summary">Бахчисарайский фонтан</span></a></div>
+			<div class="descr"><!--хореографическая поэма в четырех действиях с прологом и эпилогом-->балет Ростислава Захарова на музыку Бориса Асафьева <br/><p>В главных партиях: <a href="/company/ballet_mt_women/kolegova/">Анастасия&nbsp;Колегова</a>, <a href="/company/ballet_mt_men/korsuntsev/">Данила&nbsp;Корсунцев</a>, <a href="/company/ballet_mt_women/bulanova/">Мария Буланова</a></p></div>
+			<div class="descr">Четвертый спектакль 14-го абонемента</div>
+		</div>
+	</div></div>
+</div><div class="row light day_row">
+	<div class="col-md-2 date"><div class="d">30</div><div class="m">сентября</div><div class="wd">среда</div></div>
+	<div class="col-md-10 spects">	<div class="row c_theatre2 c_mt2 c_ballet spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский-2 </span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/WGlQV09VU0ZlejdkMlYxYVRYYXRPZz09/" class="c_theatre2">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-30T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong> Перенос спектакля с 3&nbsp;апреля в Мариинский-2 (билеты подлежат обмену)</strong></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/30/2_1900/" itemprop="url"><span itemprop="summary">Дон Кихот</span></a></div>
+			<div class="descr"><!--балет в трех действиях, шести картинах-->балет Александра Горского на музыку Людвига Минкуса<br/><p>В главных партиях: <a href="/company/ballet_mt_women/skorik/">Оксана&nbsp;Скорик</a>, <a href="/company/ballet_mt_men/yermakov/">Андрей&nbsp;Ермаков</a></p></div>
+			<div class="descr"></div>
+		</div>
+	</div>	<div class="row c_hall c_concert spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Концертный зал</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/WkNwbmNxQjkyT2dhdnluSE8vM1NNQT09/" class="c_hall">Купить билет</a></div><div class="time2">19:00</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-30T19:00:00+03:00">19:00</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос концерта с 25 марта</strong> <br>К 180-летию со дня смерти Катерино Кавоса</div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/30/3_1900/" itemprop="url"><span itemprop="summary">Иван Сусанин</span></a></div>
+			<div class="descr"><p>концертное исполнение&nbsp;оперы&nbsp;</p></div>
+			<div class="descr"></div>
+		</div>
+	</div>	<div class="row c_theatre c_opera spec_row" style="" itemscope itemtype="http://data-vocabulary.org/Event">
+		<div class="col-md-2 place_col"><div class="place"><span itemprop="location">Мариинский театр</span></div><div class="t_button"><a href="//tickets.mariinsky.ru/ru/performance/OFh3S0lrVXNycFljazlsb3JwR0l3UT09/" class="c_theatre">Купить билет</a></div><div class="time2">19:30</div></div>
+		<div class="col-md-2 time_cnt"><div class="time"><time itemprop="startDate" datetime="2020-09-30T19:30:00+03:00">19:30</time></div></div>		
+		<div class="col-md-8 inf">
+			<div class="premiera"></div>
+			<div class="online_video"></div>
+			<div class="status"><strong>Перенос спектакля с 26 марта</strong></div>
+			<div class="spec_name"><a href="/playbill/playbill/2020/9/30/1_1930/" itemprop="url"><span itemprop="summary">Поворот винта </span></a></div>
+			<div class="descr">опера Бенджамина Бриттена<!--опера в двух действиях с прологом --><br/><p>В главных партиях: <a href="/company/opera_women/soloviova1/">Екатерина&nbsp;Соловьёва</a>, <a href="/company/opera_guest/pelageya_kurennaya/">Пелагея&nbsp;Куренная</a>, <a href="/company/opera_women/gogolevskaya1/">Лариса&nbsp;Гоголевская</a>, <a href="/company/opera_women/shimanovich1/">Екатерина&nbsp;Шиманович</a></p></div>
+			<div class="descr">Пятый спектакль 27-го абонемента</div>
+		</div>
+	</div></div>
+</div></div><!--***2020-08-28 00:00--></p>
+				<div class="row playbill_filter_bottom">
+					<div class="col-md-12" style="padding:7px;" align="center">
+						Выбрать месяц: <a class="m_sel" href="/ru/playbill/playbill/?year=2020&month=8">август</a>&nbsp;&nbsp;<a class="m_sel" href="/playbill/nextplaybill/?next_playbill_month=show">сентябрь 2020&nbsp;&mdash;&nbsp;февраль 2021</a>&nbsp;&nbsp; <a href="/ru/playbill/archive/">архив афиши</a>
+					</div>
+				</div>				
+			</div>
+		</div>	
+	
+	</div>
+	<div class="container foot">
+	<div style="background-color:#f6f6f6; padding-bottom:15px;">
+		<div class="row">
+			<div class="col-md-4 col-sm-12 col-xs-12">
+				<div style="padding-left:15px;">
+					<div style="padding-bottom:16px;">
+						<img src="/images/site5/footer_logo_ru.jpg" data-pagespeed-url-hash="4159901337" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/>
+					</div>
+					<div style="padding-bottom:16px;">
+						
+<div><strong>© 1998 – 2020 </strong></div>
+<div><strong>Мариинский театр</strong></div>
+						<div class="mariinsky_help">
+							<a href="mailto:post@mariinsky.ru">post@mariinsky.ru</a>
+						</div>
+					</div>
+					<div style="padding-bottom:16px;" class="mariinsky_help">	
+						
+Справочная служба<br/>
+ +7&nbsp;812&nbsp;326&nbsp;41&nbsp;41<br/>
+<a href="mailto:tickets@mariinsky.ru">tickets@mariinsky.ru</a><br/>
+					</div>
+					<div style="padding-bottom: 22px;">
+
+						<div class="footer_s_nets">
+							<a target="_blank" href="https://vk.com/mariinskytheatre"><img src="/images/site5/vk_ico_.png" data-pagespeed-url-hash="775452064" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a>
+<a target="_blank" href="https://www.facebook.com/mariinsky.theatre"><img src="/images/site5/fb_ico_26.png" data-pagespeed-url-hash="3000299249" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a>
+<a target="_blank" href="https://youtube.com/mariinsky"><img src="/images/site5/yt_ico_26.png" data-pagespeed-url-hash="2837760634" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a>
+<a target="_blank" href="https://instagram.com/mariinsky/"><img src="/images/site5/instagram_ico_26.png" data-pagespeed-url-hash="2234660277" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a>
+
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4  col-sm-7 col-xs-8 mt_halls" style="margin-top:22px;">
+				<div style="padding-left:15px;">
+				
+				
+
+					<!--<div style="color:#a16d30; font-family:'PT Sans',sans-serif; padding-left:45px;" align="left">%spb%</div>-->
+					
+					<a style="display:block;background:url(//www.mariinsky.ru/images/site5/mt_ico_37.png) no-repeat left top;padding-left:45px;margin:0 0 12px;0px;min-height:37px;width:225px" class="mt_color fs13" href="/about/history/mariinsky_theatre/">Мариинский театр:<br/>Театральная&nbsp;площадь, д.&nbsp;1</a>
+					<a style="display:block;background:url(//www.mariinsky.ru/images/site5/mt2_ico_37.png) no-repeat left top;padding-left:45px;margin:0 0 12px;0px;min-height:37px;width:225px" class="mt2_color fs13" href="/about/history/mariinsky_ii/">Мариинский-2:<br/>ул.&nbsp;Декабристов, д.&nbsp;34 </a>
+					<a style="display:block;background:url(//www.mariinsky.ru/images/site5/mt2_ico_37_2.png) no-repeat left top;padding-left:45px;margin:0 0 12px;0px;min-height:37px;width:225px" class="mt2_color fs13" href="/about/history/chamber_venues/">Камерные залы Мариинского-2</a>			
+					<a style="display:block;background:url(//www.mariinsky.ru/images/site5/kz_ico_37.png) no-repeat left top;padding-left:45px;margin:0 0 12px;0px;min-height:37px;width:225px;line-height:1.2" class="kz_color fs13" href="/about/history/concert_hall/">Концертный зал:<br/> ул.&nbsp;Писарева, д.&nbsp;20  (вход с&nbsp;ул.&nbsp;Декабристов,&nbsp;д.&nbsp;37) </a>
+					
+
+					<div style="color:#a16d30; font-family:'PT Sans',sans-serif; padding-left:45px;" align="left">Приморский филиал (Владивосток)</div>
+					
+					<a style="display:block;background:url(//www.mariinsky.ru/images/site5/primorsky_ico_37.png) no-repeat left top;padding-left:45px;margin:0 0 12px;0px;min-height:37px;width:225px" class="kz_color fs13" href="https://prim.mariinsky.ru/">Приморская&nbsp;сцена:<br/>г.&nbsp;Владивосток,&nbsp;ул.&nbsp;Фастовская,&nbsp;д.&nbsp;20</a>
+					
+					
+					
+					<div style="padding-left:45px;  font-family:'PT Sans',sans-serif; color:#a16d30;" align="left">Филиал в РСО−Алания (Владикавказ)</div>
+
+					<a style="display:block;background:url(//alania.mariinsky.ru/images/kavkaz/kavkaz1_37_ico.png) no-repeat left top;padding-left:45px;margin:0 0 12px;0px;min-height:37px;line-height:1.1" href="https://alania.mariinsky.ru/">Национальный государственный театр оперы и балета Республики Северная Осетия - Алания<br/>г.&nbsp;Владикавказ, ул.&nbsp;Тхапсаева, д.&nbsp;18</a>
+					
+					<a style="display:block;background:url(//alania.mariinsky.ru/images/kavkaz/kavkaz2_37_ico.png) no-repeat left top;padding-left:45px;margin:0 0 17px;0px;min-height:37px;line-height:1.1" href="https://alania.mariinsky.ru/">Северо-Осетинская государственная филармония<br/>г.&nbsp;Владикавказ, ул.&nbsp;Миллера, д.&nbsp;34</a>
+					
+				</div>
+			</div>
+
+			<div class="col-md-4 col-sm-5 col-xs-4" style="margin-top:22px;">
+				<div style="padding-left:15px;">
+					<div class="mariinsky"><a target="_blank" class="tv" href="https://mariinsky.tv/"><span class="hidden-exs">mariinsky.tv</span></a>
+<a target="_blank" class="fm" href="https://www.mariinsky.ru/fm/"><span class="hidden-exs">mariinsky.fm</span></a>
+<a target="_blank" class="us" href="http://mariinsky.us"><span class="hidden-exs">mariinsky.us</span></a>
+<a target="_blank" class="cn" href="http://www.mariinsky.cn"><span class="hidden-exs">mariinsky.cn</span></a>
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12" style="color:#9f9f9f; font-size:13px;">
+				<div style="padding:0px 15px;">
+Любое использование либо копирование материалов сайта, элементов дизайна и оформления запрещено без разрешения правообладателя.</div>
+			</div>
+		</div>
+	</div>
+</div>	
+		<div id="div_login" style="display:none; width:90%;">
+		<div align="right"><div align="center" style="width:60px; cursor:pointer;" onclick="hide_popup('div_login');"><img src="//www.mariinsky.ru/images/site5/close.png" data-pagespeed-url-hash="1937717236" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/><br/>Закрыть</div></div>
+		<div id="div_login_title">Вход в личный кабинет</div>
+		<div id="div_login_msg" align="center"></div>
+		<div align="center" class="login_fields">
+			<form action="//tickets.mariinsky.ru/login.php" method="post">
+				<input type="text" id="login" name="login" placeholder="Логин" class="textinputs" value="" style=""/><br/>
+				<input type="password" id="password" name="password" placeholder="Пароль" class="textinputs" value=""/><br/>
+				<div align="center" style="padding-top:10px;">
+					<table cellpadding="10" cellspacing="0">
+						<tr>
+							<td valign="top" align="right">
+								<a href="//tickets.mariinsky.ru/ru/client/recoverypwd/" style="font-size:14px; color:#ffffff; text-decoration:underline;">Забыли пароль?</a> &nbsp; &nbsp;</td>
+								<td valign="top" align="center">
+								<button id="login_btn">Вход</button>
+							</td>
+							<td valign="top" align="left"> &nbsp; &nbsp;
+								<a style="font-size:14px; color:#ffffff; text-decoration:underline;" href="//tickets.mariinsky.ru/ru/client/">Регистрация</a>
+							</td>
+						</tr>		
+					</table>
+				</div>
+				<input style="display:none;" class="from_page" type="hidden" id="from_page_input" name="from_page" value="//www.mariinsky.ru/playbill/playbill/"/>
+			</form>
+		</div>
+		<div align="center">
+			<div style="color: #ffffff; font-size:16px;" align="center">Войти через:</div>
+			<!--<div style="width:30px; height:30px; padding:5px; display:inline-block;">
+					<form action="//tickets.mariinsky.ru/auth/login_fb.php?lang=ru" method="post">
+						<input type="hidden" value="//www.mariinsky.ru/playbill/playbill/" name="from_page" />
+						<input type="image" name="submit" src="/images/site5/fb_login_ico.png" />
+					</form>
+			</div>
+			<div style="width:30px; height:30px; padding:5px; display:inline-block;">
+				<form action="//tickets.mariinsky.ru/auth/login_tw.php?lang=ru" method="post">
+					<input type="hidden" value="//www.mariinsky.ru/playbill/playbill/" name="from_page" />
+					<input type="image" name="submit" src="/images/site5/tw_login_ico.png" />
+				</form>
+			</div>-->
+			<div style="width:30px; height:30px; padding:5px; display:inline-block;">
+				<form action="//tickets.mariinsky.ru/auth/login_vk.php?lang=ru" method="post">
+					<input type="hidden" value="//www.mariinsky.ru/playbill/playbill/" name="from_page"/>
+					<input type="image" name="submit" src="/images/site5/vk_login_ico.png"/>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+	<div id="tickets_menu">
+		<div class="arr"></div>
+		<div class="m_cnt">
+			<div align="right" style="height:13px; cursor:pointer;"> 
+				<img src="//www.mariinsky.ru/images/site5/site5_popup_close.jpg" onclick="show_tickets_menu(); return false;" data-pagespeed-url-hash="3115390168" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/>
+			</div>
+			<div>
+				<table><tr><td class="user_name">user_name</td><td class="exit">|&nbsp;<em><a onclick="user_logout(); return false;" href="//tickets.mariinsky.ru/auth/check_auth.php?action=logout">Выход</a></em></td></tr></table>
+			</div>
+			<div align="left" class="t_menu_top">
+				<a href="//tickets.mariinsky.ru/ru/client/">Профиль</a> | 
+				<a href="//tickets.mariinsky.ru/ru/ticket/">Корзина</a> | 
+				<a href="//tickets.mariinsky.ru/ru/orders/">История заказов</a>
+			</div>
+		</div>
+	</div>
+
+	<div id="playbill_changes" style="display:none; position:absolute; width:350px; padding:7px; background-color:#ffffff; border-radius: 5px;  box-shadow: 0 0 2px 2px #E1E1E1 inset;"> <!--
+*********************8
+<p>ВНИМАНИЕ! ПРИ ВОЗВРАТЕ БИЛЕТОВ ОБЯЗАТЕЛЬНО УКАЗЫВАТЬ КАССЫ, В КОТОРЫХ ВОЗВРАТ ОСУЩЕСТВЛЯЕТСЯ: <span id="CmCaReT"></span>Билеты подлежат возврату в кассы театра в Мариинском-1, Мариинском-2 и Концертном зале</p>
+***************************
+-->
+<p>Уважаемые зрители, <br/><strong>cпектакли и&nbsp;концерты, запланированные ранее на период с&nbsp;18&nbsp;марта по&nbsp;17 июля 2020&nbsp;года, переносятся на более поздние даты</strong> в&nbsp;течение текущего и будущего сезонов согласно <strong><a href="https://www.mariinsky.ru/playbill/postponed">следующему графику</a>.</strong> <br/>Билеты на перенесенные спектакли и концерты действительны.</p>
+<p><em>Администрация приносит свои извинения</em> <!--<p><strong>5 мая</strong> концерт Государственного симфонического оркестра Республики Татарстан <strong>отменен</strong>.</p>
+<p><strong>Изменения в рамках 37-го абонемента:</strong> <br />Спектакль «Сказание о невидимом граде Китеже и деве Февронии» перенесен с 14 января на 13 мая. <br /><em> Билеты действительны</em></p>
+<p> </p>
+<p>Начало <strong>концертов Рудольфа Бухбиндера</strong> <strong>11 и 12 июля переносится на 21.00</strong> вместо объявленного ранее времени 19.00. <br /><em> Билеты действительны</em>
+<p><em>Администрация приносит свои извинения</em></p>--></p></div>
+	<div id="fb-root"></div>
+<script>window.fbAsyncInit=function(){FB.init({status:true,cookie:true,xfbml:true});};(function(){var e=document.createElement('script');e.async=true;e.src=document.location.protocol+'//connect.facebook.net/ru_RU/all.js';document.getElementById('fb-root').appendChild(e);}());</script>
+
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-17018922-1','mariinsky.ru');ga('send','pageview');</script>
+
+<!-- Facebook Pixel Code -->
+<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','627654057998402');fbq('track','PageView');</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=627654057998402&ev=PageView&noscript=1" data-pagespeed-url-hash="2643321691"/></noscript>
+<!-- End Facebook Pixel Code -->
+
+	
+</body>
+</html><!-- This page generated in 0.770086 secs by TPL, SITE MODE -->

@@ -4,16 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using theatrel.Interfaces;
 using theatrel.Interfaces.Parsers;
+using theatrel.Interfaces.Playbill;
 
 namespace theatrel.Lib.Parsers
 {
-    public class PlayBillParser : IPlayBillParser
+    public class PlaybillParser : IPlaybillParser
     {
         public IPerformanceParser PerformanceParser { get; set; }
 
-        public PlayBillParser(IPerformanceParser performanceParser)
+        public PlaybillParser(IPerformanceParser performanceParser)
         {
             PerformanceParser = performanceParser;
         }
@@ -37,7 +37,7 @@ namespace theatrel.Lib.Parsers
                 if (spects == null)
                     continue;
 
-                Parallel.ForEach(spects.Children, new ParallelOptions {CancellationToken = cancellationToken},
+                Parallel.ForEach(spects.Children, new ParallelOptions { CancellationToken = cancellationToken },
                     performance =>
                     {
                         var parsed = PerformanceParser.Parse(performance);

@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using theatrel.Interfaces;
+using theatrel.Interfaces.TgBot;
 
 namespace theatrel.TLBot.Interfaces
 {
@@ -9,8 +9,8 @@ namespace theatrel.TLBot.Interfaces
         int Label { get; }
         string Name { get; }
 
-        Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);
-        Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken);
+        Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);
+        Task<ITgOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken);
 
         bool IsMessageCorrect(string message);
         bool IsReturnCommand(string message);

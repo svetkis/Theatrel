@@ -1,4 +1,6 @@
 ﻿using System.Threading;
+using theatrel.Interfaces.Autofac;
+using theatrel.Interfaces.Playbill;
 
 namespace theatrel.Interfaces.Parsers
 {

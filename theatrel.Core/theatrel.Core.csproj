@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\theatrel.DataAccess.Structures\theatrel.DataAccess.Structures.csproj" />
+    <ProjectReference Include="..\theatrel.Data\theatrel.DataAccess.csproj" />
+    <ProjectReference Include="..\theatrel.Interfaces\theatrel.Interfaces.csproj" />
+  </ItemGroup>
+</Project>

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
-using theatrel.Interfaces;
+using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
@@ -40,9 +40,9 @@ namespace theatrel.TLBot.Commands
         private static readonly DayOfWeek[] AllDays = { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
         private static readonly DayOfWeek[] WeekDays = { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday };
 
-        private static readonly string[] WeekendsNames = {"Выходные"};
+        private static readonly string[] WeekendsNames = { "Выходные" };
         private static readonly string[] WeekDaysNames = { "Будни" };
-        private static readonly string[] AllDaysNames = { "Любой", "не важно", "все"};
+        private static readonly string[] AllDaysNames = { "Любой", "не важно", "все" };
 
         private readonly IDictionary<string, DayOfWeek[]> _daysDictionary = new Dictionary<string, DayOfWeek[]>();
 
@@ -93,7 +93,7 @@ namespace theatrel.TLBot.Commands
         }
 
         private const string YouSelected = "Вы выбрали";
-        public override async Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             var days = ParseMessage(message);
             chatInfo.Days = days;
@@ -101,17 +101,21 @@ namespace theatrel.TLBot.Commands
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
 
             if (days.SequenceEqual(WeekDays))
-                return new TlOutboundMessage($"{YouSelected} {WeekDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage);
+                return Task.FromResult<ITgOutboundMessage>(
+                    new TgOutboundMessage($"{YouSelected} {WeekDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage));
 
             if (days.SequenceEqual(Weekends))
-                return new TlOutboundMessage($"{YouSelected} {WeekendsNames.First()}. {ReturnMsg}", ReturnCommandMessage);
+                return Task.FromResult<ITgOutboundMessage>(
+                    new TgOutboundMessage($"{YouSelected} {WeekendsNames.First()}. {ReturnMsg}", ReturnCommandMessage));
 
             if (days.SequenceEqual(AllDays))
-                return new TlOutboundMessage($"{YouSelected} {AllDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage);
+                return Task.FromResult<ITgOutboundMessage>(
+                    new TgOutboundMessage($"{YouSelected} {AllDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage));
 
-            return new TlOutboundMessage(
+            return Task.FromResult<ITgOutboundMessage>(
+                new TgOutboundMessage(
                 $"{YouSelected} {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. {ReturnMsg}",
-                ReturnCommandMessage);
+                ReturnCommandMessage));
         }
 
         public override bool IsMessageCorrect(string message)
@@ -120,17 +124,17 @@ namespace theatrel.TLBot.Commands
             return days.Any();
         }
 
-        public override async Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("В какой день недели Вы хотели бы посетить театр? Вы можете выбрать несколько дней.");
-            return new TlOutboundMessage(stringBuilder.ToString(), CommandKeyboardMarkup);
+            return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(stringBuilder.ToString(), CommandKeyboardMarkup));
         }
 
         private DayOfWeek[] ParseMessage(string message)
         {
             List<DayOfWeek> days = new List<DayOfWeek>();
-            foreach(var daysArray in SplitMessage(message).Select(ParseMessagePart).Where(arr => arr != null && arr.Any()))
+            foreach (var daysArray in SplitMessage(message).Select(ParseMessagePart).Where(arr => arr != null && arr.Any()))
             {
                 days.AddRange(daysArray);
             }

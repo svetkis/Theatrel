@@ -21,7 +21,7 @@ namespace theatrel.Worker
 
             builder.RegisterModule<TheatrelLibModule>();
             builder.RegisterModule<TlBotModule>();
-            builder.RegisterModule<DataAccessModule>();
+            builder.RegisterModule<TheatrelDataAccessModule>();
             builder.RegisterModule<DataUpdaterModule>();
             builder.RegisterModule<SubscriptionModule>();
 

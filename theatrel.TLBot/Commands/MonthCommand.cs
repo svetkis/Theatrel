@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
-using theatrel.Interfaces;
+using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
@@ -60,7 +60,7 @@ namespace theatrel.TLBot.Commands
             return numAbr;
         }
 
-        public override async Task<ITlOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             int month = GetMonth(message.Trim().ToLower());
 
@@ -69,18 +69,18 @@ namespace theatrel.TLBot.Commands
             chatInfo.When = new DateTime(year, month, 1);
 
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
-            return new TlOutboundMessage(
-                $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}", ReturnKeyboardMarkup);
+            return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(
+                $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}", ReturnKeyboardMarkup));
         }
 
-        public override async Task<ITlOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             switch (chatInfo.DialogState)
             {
                 case DialogStateEnum.DialogReturned:
-                    return new TlOutboundMessage(Msg, CommandKeyboardMarkup);
+                    return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(Msg, CommandKeyboardMarkup));
                 case DialogStateEnum.DialogStarted:
-                    return new TlOutboundMessage($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup);
+                    return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup));
                 default:
                     throw new NotImplementedException();
             }
@@ -89,7 +89,7 @@ namespace theatrel.TLBot.Commands
         private int CheckEnumerable(string[] checkedData, string msg)
         {
             var monthData = checkedData.Select((month, idx) => new { idx, month })
-                .FirstOrDefault(data => msg.Equals(data.month, StringComparison.OrdinalIgnoreCase ));
+                .FirstOrDefault(data => msg.Equals(data.month, StringComparison.OrdinalIgnoreCase));
 
             return monthData?.idx + 1 ?? 0;
         }

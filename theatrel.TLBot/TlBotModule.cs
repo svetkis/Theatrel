@@ -1,6 +1,6 @@
 ﻿using Autofac;
 using System.Reflection;
-using theatrel.Interfaces;
+using theatrel.Interfaces.Autofac;
 
 namespace theatrel.TLBot
 {

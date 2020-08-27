@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces.Parsers;
@@ -28,17 +27,7 @@ namespace theatrel.Lib.Tests
 
             var parser = DIContainerHolder.Resolve<ITicketsParser>();
 
-            bool wasCancelled = false;
-            try
-            {
-                var tickets = await parser.Parse(text, new CancellationTokenSource(10).Token);
-            }
-            catch (OperationCanceledException e)
-            {
-                wasCancelled = true;
-            }
-
-            Assert.True(wasCancelled);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await parser.Parse(text, new CancellationTokenSource(10).Token));
         }
     }
 }

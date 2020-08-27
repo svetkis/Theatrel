@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Net;
-using theatrel.Interfaces;
+using theatrel.Interfaces.Playbill;
 
 namespace theatrel.Lib
 {
-    public class PerformanceData : IPerformanceData
+    internal class PerformanceData : IPerformanceData
     {
         public string Location { get; set; }
         public string Name { get; set; }
