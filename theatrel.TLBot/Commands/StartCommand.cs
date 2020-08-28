@@ -30,7 +30,7 @@ namespace theatrel.TLBot.Commands
 
         public override Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
-            Trace.TraceInformation($"reset chat {chatInfo}");
+            Trace.TraceInformation($"Reset chat {chatInfo.ChatId}");
             chatInfo.Clear();
 
             return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(null));

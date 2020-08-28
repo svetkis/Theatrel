@@ -1,6 +1,7 @@
 using Autofac;
 using Moq;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,18 +23,17 @@ namespace theatrel.TLBot.Tests
         {
             _fixture = fixture;
             _output = output;
+            Trace.Listeners.Add(new Trace2TestOutputListener(output));
         }
 
-        private static Random _idRandom = new Random();
-
         [Theory]
-        [InlineData(5, new[] { DayOfWeek.Monday }, "концерт", "пр»вет", "апрель", "Ќет!", "май", "—уббота", "нет", "понедельник", "кќнцерт")]
-        [InlineData(5, new[] { DayOfWeek.Monday }, "концерт", "пр»вет", "апрель", "¬ыбрать другой мес€ц", "май", "—уббота", "нет", "понедельник", "кќнцерт")]
-        [InlineData(4, new[] { DayOfWeek.Saturday }, "концерт", "пр»вет", "апрель", "—уббота", "кќнцерт")]
-        [InlineData(6, new[] { DayOfWeek.Sunday }, "ќпера", "Hi", "июнь", "вс", "опера")]
-        [InlineData(7, new[] { DayOfWeek.Friday }, "балет", "ƒобрый деЌь!", "июль", "5", "Ѕалет")]
-        [InlineData(5, new[] { DayOfWeek.Friday }, "балет", "ƒобрый деЌь!", "июль", "привет!", "май", "5", "Ѕалет")]
-        public async Task DialogTest(int month, DayOfWeek[] dayOfWeeks, string performanceType, params string[] commands)
+        [InlineData(1, 5, new[] { DayOfWeek.Monday }, "концерт", "пр»вет", "апрель", "Ќет!", "май", "—уббота", "нет", "понедельник", "кќнцерт")]
+        [InlineData(2, 5, new[] { DayOfWeek.Monday }, "концерт", "пр»вет", "апрель", "¬ыбрать другой мес€ц", "май", "—уббота", "нет", "понедельник", "кќнцерт")]
+        [InlineData(3, 4, new[] { DayOfWeek.Saturday }, "концерт", "пр»вет", "апрель", "—уббота", "кќнцерт")]
+        [InlineData(4, 6, new[] { DayOfWeek.Sunday }, "ќпера", "Hi", "июнь", "вс", "опера")]
+        [InlineData(5, 7, new[] { DayOfWeek.Friday }, "балет", "ƒобрый деЌь!", "июль", "5", "Ѕалет")]
+        [InlineData(6, 5, new[] { DayOfWeek.Friday }, "балет", "ƒобрый деЌь!", "июль", "привет!", "май", "5", "Ѕалет")]
+        public async Task DialogTest(long chatId, int month, DayOfWeek[] dayOfWeeks, string performanceType, params string[] commands)
         {
             IPerformanceFilter filter = null;
 
@@ -44,9 +44,11 @@ namespace theatrel.TLBot.Tests
                     filter = filterResult;
                 }).Returns(() => Task.FromResult(new IPerformanceData[0]));
 
+            bool sent = false;
             var tgBotServiceMock = new Mock<ITgBotService>();
             tgBotServiceMock.Setup(x => x.Start(CancellationToken.None)).Verifiable();
-            tgBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgOutboundMessage>())).Verifiable();
+            tgBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgOutboundMessage>()))
+                .Callback(() => { sent = true; });
 
             await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
             {
@@ -59,12 +61,15 @@ namespace theatrel.TLBot.Tests
             //test
             tgProcessor.Start(tgBotServiceMock.Object, CancellationToken.None);
 
-            long chatId = _idRandom.Next(1, 999);
-
             foreach (var cmd in commands)
             {
                 tgBotServiceMock.Raise(x => x.OnMessage += null, null,
                     Mock.Of<ITgInboundMessage>(m => m.Message == cmd && m.ChatId == chatId));
+
+                while (!sent)
+                    await Task.Delay(5);
+
+                sent = false;
             }
 
             playBillResolverMock.Verify(lw => lw.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()),
@@ -77,12 +82,19 @@ namespace theatrel.TLBot.Tests
             Assert.Equal(month, filter.StartDate.Month);
             Assert.Equal(performanceType.ToLower(), filter.PerformanceTypes.First().ToLower());
 
-            tgBotServiceMock.Verify();
+            tgBotServiceMock.Verify(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgOutboundMessage>()), Times.AtLeastOnce);
 
             //second dialog after first
             foreach (var cmd in commands)
+            {
                 tgBotServiceMock.Raise(x => x.OnMessage += null, null,
                     Mock.Of<ITgInboundMessage>(m => m.Message == cmd && m.ChatId == 1));
+
+                while (!sent)
+                    await Task.Delay(5);
+
+                sent = false;
+            }
 
             tgProcessor.Stop();
 

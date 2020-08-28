@@ -50,7 +50,7 @@ namespace theatrel.TLBot.Tests
 
             var exception = Record.Exception(() => Parallel.ForEach(ids4Test, id =>
                 tgBotServiceMock.Raise(x => x.OnMessage += null, null,
-                    Mock.Of<ITgInboundMessage>(m => m.Message == "привет!" && m.ChatId == id))));
+                    Mock.Of<ITgInboundMessage>(m => m.Message == "Привет" && m.ChatId == id))));
 
             Assert.Null(exception);
 

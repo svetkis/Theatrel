@@ -26,7 +26,8 @@ namespace theatrel.Lib.Parsers
                     .FirstOrDefault(m => 0 == string.Compare(m.TagName, "span", true) && m.GetAttribute("itemprop") == "location")?.TextContent;
 
                 string dateString = dtString.Replace("T", " ").Replace("+", " +");
-                var dt = DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss zzz", new CultureInfo("ru")).ToUniversalTime();
+                var dt = DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture)
+                    .ToUniversalTime();
 
                 return new PerformanceData
                 {
@@ -59,7 +60,7 @@ namespace theatrel.Lib.Parsers
             return url;
         }
 
-        private static Lazy<IDictionary<string, string>> performanceTypes
+        private static readonly Lazy<IDictionary<string, string>> performanceTypes
             = new Lazy<IDictionary<string, string>>(() => new Dictionary<string, string>()
         {
             {"c_opera", "Опера"},
