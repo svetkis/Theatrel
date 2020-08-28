@@ -67,7 +67,7 @@ namespace theatrel.TLBot.Tests
                     Mock.Of<ITgInboundMessage>(m => m.Message == cmd && m.ChatId == chatId));
 
                 while (!sent)
-                    await Task.Delay(5);
+                    await Task.Delay(10);
 
                 sent = false;
             }
@@ -91,7 +91,7 @@ namespace theatrel.TLBot.Tests
                     Mock.Of<ITgInboundMessage>(m => m.Message == cmd && m.ChatId == 1));
 
                 while (!sent)
-                    await Task.Delay(5);
+                    await Task.Delay(10);
 
                 sent = false;
             }

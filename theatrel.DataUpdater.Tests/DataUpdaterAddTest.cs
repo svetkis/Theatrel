@@ -65,7 +65,6 @@ namespace theatrel.DataUpdater.Tests
             await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
                 CancellationToken.None);
 
-            await Task.Delay(1000);
             // nothing changed
             await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
                 CancellationToken.None);

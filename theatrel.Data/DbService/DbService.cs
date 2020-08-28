@@ -16,5 +16,7 @@ namespace theatrel.DataAccess.DbService
 
         public ITgChatsRepository GetChatsRepository() => new TgChatsRepository(GetDbContext());
         public ITgUsersRepository GetUsersRepository() => new TgUsersRepository(GetDbContext());
+
+        public IPlaybillRepository GetPlaybillRepository() => new PlaybillRepository(GetDbContext());
     }
 }

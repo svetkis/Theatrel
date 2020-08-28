@@ -8,5 +8,6 @@ namespace theatrel.DataAccess.DbService
         AppDbContext GetDbContext();
         ITgChatsRepository GetChatsRepository();
         ITgUsersRepository GetUsersRepository();
+        IPlaybillRepository GetPlaybillRepository();
     }
 }
