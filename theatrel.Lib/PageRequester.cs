@@ -38,8 +38,8 @@ namespace theatrel.Lib
                         return response.Content;
                     }
 
-                    Trace.TraceInformation($"{url} {response.StatusCode}");
-                    Trace.TraceInformation($"status:{response.ResponseStatus} message:\"{response.ErrorMessage}\"");
+//                    Trace.TraceInformation($"{url} {response.StatusCode}");
+//                    Trace.TraceInformation($"status: {response.ResponseStatus} message:\"{response.ErrorMessage}\"");
 
                     if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
                         throw new HttpRequestException();

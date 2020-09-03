@@ -29,7 +29,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Subscriptions.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.Interfaces", "theatrel.Interfaces\theatrel.Interfaces.csproj", "{D36576CD-D155-4FCD-B4E5-ADD92870596E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "theatrel.DataAccess.Structures", "theatrel.DataAccess.Structures\theatrel.DataAccess.Structures.csproj", "{830C066F-45CF-4B73-B71D-0CA8FF7C4901}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.DataAccess.Structures", "theatrel.DataAccess.Structures\theatrel.DataAccess.Structures.csproj", "{830C066F-45CF-4B73-B71D-0CA8FF7C4901}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "theatrel.DataAccess.Tests", "theatrel.DataAccess.Tests\theatrel.DataAccess.Tests.csproj", "{59BD325A-AF6C-4AEA-B6DE-AC95223305AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,6 +95,10 @@ Global
 		{830C066F-45CF-4B73-B71D-0CA8FF7C4901}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{830C066F-45CF-4B73-B71D-0CA8FF7C4901}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{830C066F-45CF-4B73-B71D-0CA8FF7C4901}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59BD325A-AF6C-4AEA-B6DE-AC95223305AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59BD325A-AF6C-4AEA-B6DE-AC95223305AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59BD325A-AF6C-4AEA-B6DE-AC95223305AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59BD325A-AF6C-4AEA-B6DE-AC95223305AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -20,70 +20,102 @@ namespace theatrel.DataAccess.Repositories
             _dbContext = dbContext;
         }
 
-        private PerformanceEntity GetPerformanceEntity(IPerformanceData data) => GetPerformanceEntity(data, out _, out _);
+        private int GetPerformanceEntityId(IPerformanceData data) => GetPerformanceEntityId(data, out _, out _);
 
-        private PerformanceEntity GetPerformanceEntity(IPerformanceData data, out LocationsEntity location, out PerformanceTypeEntity type)
+        private int GetPerformanceEntityId(IPerformanceData data, out int locationId, out int typeId)
         {
             LocationsEntity l = _dbContext.PerformanceLocations.AsNoTracking()
                 .FirstOrDefault(x => x.Name == data.Location);
-            location = l;
+            locationId = l?.Id ?? -1;
 
             PerformanceTypeEntity t = _dbContext.PerformanceTypes.AsNoTracking().FirstOrDefault(x => x.TypeName == data.Type);
-            type = t;
+            typeId = t?.Id ?? -1;
 
             if (l == null || t == null)
-                return null;
+                return -1;
 
-            return _dbContext.Performances.AsNoTracking()
-                .FirstOrDefault(p => p.Location == l && p.Type == t && p.Name == data.Name);
+            var performanceId = _dbContext.Performances.AsNoTracking()
+                .FirstOrDefault(p => p.Location == l && p.Type == t && p.Name == data.Name)?.Id ?? -1;
+
+            Trace.TraceInformation($"GetPerformanceEntityId returns {data.Name} {data.DateTime:g} {performanceId}");
+            return performanceId;
         }
 
-        private PerformanceEntity AddPerformanceEntity(IPerformanceData data, LocationsEntity location, PerformanceTypeEntity type)
+        private PerformanceEntity AddPerformanceEntity(IPerformanceData data, int locationId, int typeId)
         {
-            var performance = new PerformanceEntity
+            try
             {
-                Name = data.Name,
-                Location = location ?? new LocationsEntity { Name = data.Location },
-                Type = type ?? new PerformanceTypeEntity { TypeName = data.Type },
-            };
+                LocationsEntity location = locationId != -1
+                    ? _dbContext.PerformanceLocations.FirstOrDefault(l => l.Id == locationId)
+                    : new LocationsEntity { Name = data.Location };
 
-            _dbContext.Performances.Add(performance);
+                PerformanceTypeEntity type = typeId != -1
+                    ? _dbContext.PerformanceTypes.FirstOrDefault(t => t.Id == typeId)
+                    : new PerformanceTypeEntity {TypeName = data.Type};
 
-            return performance;
+                PerformanceEntity performance = new PerformanceEntity
+                {
+                    Name = data.Name,
+                    Location = location,
+                    Type = type,
+                };
+
+                _dbContext.Performances.Add(performance);
+
+                return performance;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"AddPerformanceEntity DbException: {e.Message}");
+                throw;
+            }
         }
 
         public async Task<PlaybillEntity> AddPlaybill(IPerformanceData data)
         {
             try
             {
-                var performance = GetPerformanceEntity(data, out var location, out var type)
-                                  ?? AddPerformanceEntity(data, location, type);
-
-                var change = new PlaybillChangeEntity
-                {
-                    LastUpdate = DateTime.Now,
-                    MinPrice = data.MinPrice,
-                    ReasonOfChanges = (int)ReasonOfChanges.Creation,
-                };
+                var performanceId = GetPerformanceEntityId(data, out var location, out var type);
+                var performance = -1 == performanceId
+                    ? AddPerformanceEntity(data, location, type)
+                    : _dbContext.Performances
+                        .Include(p => p.Location)
+                        .Include(p => p.Type)
+                        .FirstOrDefault(p => p.Id == performanceId);
 
                 var playBillEntry = new PlaybillEntity
                 {
                     Performance = performance,
                     Url = data.Url,
                     When = data.DateTime,
-                    Changes = new List<PlaybillChangeEntity> { change }
+                    Changes = new List<PlaybillChangeEntity>
+                    {
+                        new PlaybillChangeEntity
+                        {
+                            LastUpdate = DateTime.Now,
+                            MinPrice = data.MinPrice,
+                            ReasonOfChanges = (int) ReasonOfChanges.Creation,
+                        }
+                    }  
                 };
 
                 _dbContext.Playbill.Add(playBillEntry);
-                _dbContext.Add(change);
+                _dbContext.Add(playBillEntry.Changes.First());
 
                 await _dbContext.SaveChangesAsync();
+
+                if (performance != null)
+                {
+                    _dbContext.Entry(performance.Location).State = EntityState.Detached;
+                    _dbContext.Entry(performance.Type).State = EntityState.Detached;
+                    _dbContext.Entry(performance).State = EntityState.Detached;
+                }
 
                 return playBillEntry;
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"DbException {ex.Message}");
+                Trace.TraceInformation($"AddPlaybill DbException {ex.Message} InnerException {ex.InnerException?.Message}");
             }
 
             return null;
@@ -93,17 +125,19 @@ namespace theatrel.DataAccess.Repositories
         {
             try
             {
-                var performance = GetPerformanceEntity(data);
-                if (performance == null)
+                var performanceId = GetPerformanceEntityId(data);
+                if (-1 == performanceId)
                     return null;
 
-                return _dbContext.Playbill.AsNoTracking()
+                return _dbContext.Playbill
                     .Include(x => x.Changes)
-                    .FirstOrDefault(x => x.When == data.DateTime && x.PerformanceId == performance.Id);
+                    .Where(x => x.When == data.DateTime && x.PerformanceId == performanceId)
+                    .AsNoTracking()
+                    .FirstOrDefault();
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"DbException {ex.Message}");
+                Trace.TraceInformation($"Get PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
             }
 
             return null;
@@ -131,7 +165,7 @@ namespace theatrel.DataAccess.Repositories
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"DbException {ex.Message}");
+                Trace.TraceInformation($"AddChange DbException {ex.Message} InnerException {ex.InnerException?.Message}");
                 return false;
             }
         }
@@ -146,17 +180,44 @@ namespace theatrel.DataAccess.Repositories
             if (oldValue == null)
                 return false;
 
-            _dbContext.Entry(entity).State = EntityState.Modified;
-
+            PlaybillEntity playbillEntity = null;
             try
             {
+                playbillEntity = _dbContext.Playbill
+                    .Include(p => p.Performance)
+                    .ThenInclude(p => p.Type)
+                    .Include(p => p.Performance)
+                    .ThenInclude(p => p.Location)
+                    .Include(p => p.Changes)
+                    .FirstOrDefault(p => p.Id == entity.PlaybillEntityId);
+
+                var updatedChange = playbillEntity?.Changes.FirstOrDefault(ch => ch.Id == entity.Id);
+                if (updatedChange == null)
+                    return false;
+
+                updatedChange.LastUpdate = entity.LastUpdate;
+
                 await _dbContext.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"DbException {ex.Message}");
+                Trace.TraceInformation(
+                    $"Update Change entity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
                 return false;
+            }
+            finally
+            {
+                if (playbillEntity != null)
+                {
+                    _dbContext.Entry(playbillEntity.Performance.Location).State = EntityState.Detached;
+                    _dbContext.Entry(playbillEntity.Performance.Type).State = EntityState.Detached;
+                    _dbContext.Entry(playbillEntity.Performance).State = EntityState.Detached;
+                    foreach (var change in playbillEntity.Changes)
+                        _dbContext.Entry(change).State = EntityState.Detached;
+
+                    _dbContext.Entry(playbillEntity).State = EntityState.Detached;
+                }
             }
         }
 

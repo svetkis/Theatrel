@@ -47,6 +47,9 @@ namespace theatrel.DataUpdater
 
         private async Task ProcessData(IPerformanceData data, IPlaybillRepository playbillRepository)
         {
+            if (data.DateTime < DateTime.Now)
+                return;
+
             var playbillEntry = playbillRepository.Get(data);
             if (null == playbillEntry)
             {
