@@ -110,21 +110,16 @@ namespace theatrel.Subscriptions.Tests
             telegramService.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<string>()))
                 .Returns(() => Task.FromResult(true));
 
-            await using AppDbContext db = _fixture.GetDb();
-
-            var dbService = new Mock<IDbService>();
-            dbService.Setup(x => x.GetDbContext()).Returns(db);
 
             await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
             {
                 builder.RegisterInstance(telegramService.Object).As<ITgBotService>().AsImplementedInterfaces().SingleInstance();
-                builder.RegisterInstance(dbService.Object).AsImplementedInterfaces().AsSelf();
                 builder.RegisterModule<SubscriptionModule>();
             });
 
             try
             {
-                var usersWhoShouldGetMessage = await ConfigureDb(db);
+                var usersWhoShouldGetMessage = await ConfigureDb(_fixture.GetDbService().GetDbContext());
                 var subscriptionProcessor = scope.Resolve<ISubscriptionProcessor>();
 
                 //test

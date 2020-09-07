@@ -6,6 +6,7 @@
         SelectMonth,
         SelectDays,
         SelectType,
-        Final
+        GetPerformances,
+        Subscribe
     }
 }

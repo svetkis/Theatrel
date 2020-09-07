@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
-using theatrel.Interfaces.TimeZoneService;
 using Xunit;
 
 namespace theatrel.Lib.Tests

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Autofac;
 using Moq;
 using theatrel.DataAccess.DbService;
-using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Tests.TestSettings;
 using theatrel.Interfaces.Playbill;
 using Xunit;

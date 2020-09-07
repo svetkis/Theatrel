@@ -9,6 +9,7 @@ namespace theatrel.DataAccess.Structures.Interfaces
     public interface IPlaybillRepository : IDisposable, IDIRegistrable
     {
         PlaybillEntity Get(IPerformanceData data);
+        PlaybillEntity Get(int id);
         Task<PlaybillEntity> AddPlaybill(IPerformanceData data);
         Task<bool> AddChange(PlaybillEntity entity, PlaybillChangeEntity change);
         Task<bool> Update(PlaybillChangeEntity entity);

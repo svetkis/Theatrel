@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
+using theatrel.DataAccess.DbService;
 using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
@@ -23,7 +24,7 @@ namespace theatrel.TLBot.Commands
 
         public override string Name => "Выбрать месяц";
 
-        public MonthCommand() : base((int)DialogStep.SelectMonth)
+        public MonthCommand(IDbService dbService) : base((int)DialogStep.SelectMonth, dbService)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture("ru");
 

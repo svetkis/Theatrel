@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
+using theatrel.Interfaces.Filters;
 
 namespace theatrel.DataAccess.Repositories
 {
@@ -48,17 +49,30 @@ namespace theatrel.DataAccess.Repositories
         private Task<SubscriptionEntity> GetById(int id)
             => _dbContext.Subscriptions.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
 
-        public async Task<SubscriptionEntity> Create(SubscriptionEntity entity, CancellationToken cancellationToken)
+        public async Task<SubscriptionEntity> Create(long userId, IPerformanceFilter filter, CancellationToken cancellationToken)
         {
             try
             {
+                PerformanceFilterEntity filterEntity = AddFilter(filter);
+                TelegramUserEntity userEntity = await _dbContext.TlUsers.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken: cancellationToken);
+
+                SubscriptionEntity entity = new SubscriptionEntity
+                {
+                    TelegramUser = userEntity,
+                    PerformanceFilter = filterEntity,
+                    LastUpdate = DateTime.Now
+
+                };
+
                 _dbContext.Subscriptions.Add(entity);
+                _dbContext.Add(filterEntity);
+
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 return entity;
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"Create subscription DbException {ex.Message}");
+                Trace.TraceInformation($"Create subscription DbException {ex.Message} inner exception {ex.InnerException?.Message}");
                 return null;
             }
         }
@@ -99,6 +113,32 @@ namespace theatrel.DataAccess.Repositories
                 return false;
             }
         }
+
+        private PerformanceFilterEntity AddFilter(IPerformanceFilter filterData)
+        {
+            try
+            {
+                var filter = new PerformanceFilterEntity
+                {
+                    StartDate = filterData.StartDate,
+                    EndDate = filterData.EndDate,
+                    DaysOfWeek = filterData.DaysOfWeek,
+                    Locations = filterData.Locations,
+                    PerformanceTypes = filterData.PerformanceTypes,
+                    PartOfDay = filterData.PartOfDay
+                };
+
+                _dbContext.Filters.Add(filter);
+
+                return filter;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Failed to AddFilter {ex.Message}, inner exception {ex.InnerException?.Message}");
+                return null;
+            }
+        }
+
 
         public void Dispose()
         {

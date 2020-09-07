@@ -1,12 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Common.Enums;
-using theatrel.DataAccess;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;

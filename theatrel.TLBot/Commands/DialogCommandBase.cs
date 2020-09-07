@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
+using theatrel.DataAccess.DbService;
 using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 
@@ -23,9 +24,12 @@ namespace theatrel.TLBot.Commands
         protected readonly ReplyKeyboardMarkup ReturnKeyboardMarkup;
         protected ReplyKeyboardMarkup CommandKeyboardMarkup;
 
-        protected DialogCommandBase(int label)
+        protected readonly IDbService DbService;
+
+        protected DialogCommandBase(int label, IDbService dbService)
         {
             Label = label;
+            DbService = dbService;
 
             if (!string.IsNullOrWhiteSpace(ReturnCommandMessage))
             {

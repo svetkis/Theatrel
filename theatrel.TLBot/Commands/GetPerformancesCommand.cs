@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Telegram.Bot.Types.ReplyMarkups;
+using theatrel.DataAccess.DbService;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Playbill;
 using theatrel.Interfaces.TgBot;
@@ -19,21 +21,51 @@ namespace theatrel.TLBot.Commands
         private readonly IFilterService _filterService;
         private readonly ITimeZoneService _timeZoneService;
 
+        private const string DecreasePriceSubscription = "Подписаться на снижение цены";
+        private const string No = "Спасибо, не надо";
+
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
 
         public override string Name => "Искать";
 
-        public GetPerformancesCommand(IPlayBillDataResolver playBillResolver, IFilterService filterService, ITimeZoneService timeZoneService) : base((int)DialogStep.Final)
+        public GetPerformancesCommand(IPlayBillDataResolver playBillResolver, IFilterService filterService,
+            ITimeZoneService timeZoneService, IDbService dbService) : base((int)DialogStep.GetPerformances, dbService)
         {
             _playBillResolver = playBillResolver;
             _filterService = filterService;
             _timeZoneService = timeZoneService;
+
+            CommandKeyboardMarkup = new ReplyKeyboardMarkup
+            {
+                Keyboard = GroupKeyboardButtons(new[]
+                {
+                    new KeyboardButton(DecreasePriceSubscription),
+                    new KeyboardButton(No),
+                }, 1),
+                OneTimeKeyboard = true,
+                ResizeKeyboard = true
+            };
         }
 
-        public override Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
-            => Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(null));
+        public override async Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        {
+            if (!string.Equals(message, DecreasePriceSubscription, StringComparison.CurrentCultureIgnoreCase))
+                return new TgOutboundMessage("Приятно было пообщаться. Обращайтесь еще.");
 
-        public override bool IsMessageCorrect(string message) => true;
+            var subscriptionRepository = DbService.GetSubscriptionRepository();
+
+            var subscription = await subscriptionRepository.Create(chatInfo.ChatId, _filterService.GetFilter(chatInfo), cancellationToken);
+
+            return subscription == null
+                ? new TgOutboundMessage("Простите, но я не смог добавить подписку.")
+                : new TgOutboundMessage("Подписка добавлена.");
+        }
+
+        public override bool IsMessageCorrect(string message)
+        {
+            return string.Equals(message, DecreasePriceSubscription, StringComparison.InvariantCultureIgnoreCase)
+                   || string.Equals(message, No, StringComparison.InvariantCultureIgnoreCase);
+        }
 
         public override async Task<ITgOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
@@ -41,10 +73,7 @@ namespace theatrel.TLBot.Commands
 
             IPerformanceData[] data = await _playBillResolver.RequestProcess(filter, cancellationToken);
 
-            return new TgOutboundMessage(await PerformancesMessage(data, filter, chatInfo.When))
-            {
-                IsEscaped = true
-            };
+            return new TgOutboundMessage(await PerformancesMessage(data, filter, chatInfo.When), CommandKeyboardMarkup) {IsEscaped = true};
         }
 
         private Task<string> PerformancesMessage(IPerformanceData[] performances, IPerformanceFilter filter, DateTime when)

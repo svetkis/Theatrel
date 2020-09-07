@@ -22,12 +22,15 @@ namespace theatrel.Subscriptions
 
         public IPerformanceFilter[] GetUpdateFilters()
         {
-            using var dbContext = _dbService.GetDbContext();
-            if (!dbContext.Subscriptions.Any())
+            using var subscriptionRepository = _dbService.GetSubscriptionRepository();
+            using var playbillRepository = _dbService.GetPlaybillRepository();
+
+            var subscriptions = subscriptionRepository.GetAllWithFilter().ToArray();
+            if (!subscriptions.Any())
                 return null;
 
             List<IPerformanceFilter> mergedFilters = new List<IPerformanceFilter>();
-            foreach (var subscription in dbContext.Subscriptions.Include(s => s.PerformanceFilter).AsNoTracking())
+            foreach (var subscription in subscriptions)
             {
                 PerformanceFilterEntity newFilter = subscription.PerformanceFilter;
 
@@ -43,12 +46,11 @@ namespace theatrel.Subscriptions
                     year = newFilter.StartDate.Year;
                     month = newFilter.StartDate.Month;
                     startDate = new DateTime(year, month, 1);
-                    endDate = startDate.AddMonths(1).AddDays(-1);
+                    endDate = new DateTime(newFilter.EndDate.Year, newFilter.EndDate.Month, 1).AddMonths(1).AddDays(-1);
                 }
                 else
                 {
-                    var playbillEntry = dbContext.Playbill.AsNoTracking()
-                        .FirstOrDefault(entity => entity.Id == newFilter.PerformanceId);
+                    var playbillEntry = playbillRepository.Get(newFilter.PerformanceId);
 
                     if (null == playbillEntry)
                         continue;

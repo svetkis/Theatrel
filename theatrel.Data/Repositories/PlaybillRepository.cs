@@ -142,6 +142,20 @@ namespace theatrel.DataAccess.Repositories
             return null;
         }
 
+        public PlaybillEntity Get(int id)
+        {
+            try
+            {
+                return _dbContext.Playbill.Where(x => x.Id == id).AsNoTracking().FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation($"Get PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            }
+
+            return null;
+        }
+
         private Task<PlaybillEntity> GetById(long id)
             => _dbContext.Playbill.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
 

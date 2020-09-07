@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Common.Enums;
-using theatrel.DataAccess;
 using theatrel.DataAccess.DbService;
 using theatrel.DataUpdater.Tests.TestSettings;
 using theatrel.Interfaces.DataUpdater;

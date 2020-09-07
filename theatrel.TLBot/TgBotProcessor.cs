@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
-using theatrel.DataAccess;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
@@ -36,10 +35,10 @@ namespace theatrel.TLBot
             _dbService = dbService;
 
             _commands.Add(new StartCommand(dbService));
-            _commands.Add(new MonthCommand());
-            _commands.Add(new DaysOfWeekCommand());
-            _commands.Add(new PerformanceTypesCommand());
-            _commands.Add(new GetPerformancesCommand(playBillResolver, filterService, timeZoneService));
+            _commands.Add(new MonthCommand(dbService));
+            _commands.Add(new DaysOfWeekCommand(dbService));
+            _commands.Add(new PerformanceTypesCommand(dbService));
+            _commands.Add(new GetPerformancesCommand(playBillResolver, filterService, timeZoneService, dbService));
         }
 
         public void Start(ITgBotService botService, CancellationToken cancellationToken)
@@ -158,9 +157,6 @@ namespace theatrel.TLBot
 
             var nextCommand = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
             await CommandAskQuestion(nextCommand, chatInfo, acknowledgement);
-
-            if (null == GetNextCommand(chatInfo))
-                await chatsRepository.Delete(chatInfo);
         }
 
         private IDialogCommand GetPreviousCommand(IChatDataInfo chatInfo)

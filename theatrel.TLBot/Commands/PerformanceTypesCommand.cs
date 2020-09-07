@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
+using theatrel.DataAccess.DbService;
 using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
@@ -18,7 +19,7 @@ namespace theatrel.TLBot.Commands
         protected override string ReturnCommandMessage { get; set; } = "Выбрать другое";
 
         public override string Name => "Выбрать тип представления";
-        public PerformanceTypesCommand() : base((int)DialogStep.SelectType)
+        public PerformanceTypesCommand(IDbService dbService) : base((int)DialogStep.SelectType, dbService)
         {
             var buttons = _types.Select(m => new KeyboardButton(m)).Concat(new[] { new KeyboardButton(_every.First()) }).ToArray();
 

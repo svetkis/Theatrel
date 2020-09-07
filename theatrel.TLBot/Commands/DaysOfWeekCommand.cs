@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
+using theatrel.DataAccess.DbService;
 using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
@@ -50,7 +51,7 @@ namespace theatrel.TLBot.Commands
 
         public override string Name => "Выберите день недели";
 
-        public DaysOfWeekCommand() : base((int)DialogStep.SelectDays)
+        public DaysOfWeekCommand(IDbService dbService) : base((int)DialogStep.SelectDays, dbService)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture("ru");
             List<KeyboardButton> buttons = new List<KeyboardButton>();

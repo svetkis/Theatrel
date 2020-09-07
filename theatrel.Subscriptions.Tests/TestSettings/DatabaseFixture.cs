@@ -28,7 +28,7 @@ namespace theatrel.Subscriptions.Tests.TestSettings
             RootScope = containerBuilder.Build();
         }
 
-        public AppDbContext GetDb() => RootScope.Resolve<IDbService>().GetDbContext();
+        public IDbService GetDbService() => RootScope.Resolve<IDbService>();
 
         public void Dispose()
         {

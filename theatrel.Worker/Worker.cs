@@ -121,6 +121,7 @@ namespace theatrel.Worker
 
                     foreach (var filter in filters)
                     {
+                        Trace.TraceInformation($"Update playbill for interval {filter.StartDate:D} {filter.EndDate:D}");
                         await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, context.CancellationToken);
                     }
 
