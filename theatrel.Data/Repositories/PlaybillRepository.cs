@@ -37,7 +37,6 @@ namespace theatrel.DataAccess.Repositories
             var performanceId = _dbContext.Performances.AsNoTracking()
                 .FirstOrDefault(p => p.Location == l && p.Type == t && p.Name == data.Name)?.Id ?? -1;
 
-            Trace.TraceInformation($"GetPerformanceEntityId returns {data.Name} {data.DateTime:g} {performanceId}");
             return performanceId;
         }
 
@@ -75,8 +74,8 @@ namespace theatrel.DataAccess.Repositories
         {
             try
             {
-                var performanceId = GetPerformanceEntityId(data, out var location, out var type);
-                var performance = -1 == performanceId
+                int performanceId = GetPerformanceEntityId(data, out int location, out int type);
+                PerformanceEntity performance = -1 == performanceId
                     ? AddPerformanceEntity(data, location, type)
                     : _dbContext.Performances
                         .Include(p => p.Location)
@@ -185,9 +184,9 @@ namespace theatrel.DataAccess.Repositories
             {
                 playbillEntity = _dbContext.Playbill
                     .Include(p => p.Performance)
-                    .ThenInclude(p => p.Type)
+                        .ThenInclude(p => p.Type)
                     .Include(p => p.Performance)
-                    .ThenInclude(p => p.Location)
+                        .ThenInclude(p => p.Location)
                     .Include(p => p.Changes)
                     .FirstOrDefault(p => p.Id == entity.PlaybillEntityId);
 

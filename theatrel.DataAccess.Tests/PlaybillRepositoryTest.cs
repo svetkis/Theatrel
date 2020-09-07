@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using Moq;
@@ -19,7 +20,7 @@ namespace theatrel.DataAccess.Tests
         }
 
         [Fact]
-        public async Task Test1()
+        public async Task AddTest()
         {
             await ConfigureDb();
 
@@ -38,6 +39,27 @@ namespace theatrel.DataAccess.Tests
 
             Assert.Null(exceptions);
         }
+
+        [Fact]
+        public async Task UpdateTest()
+        {
+            await ConfigureDb();
+
+            using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
+
+            var performance4 = GetPerformanceMock("TestPerformance4", 800, "url4", DateTime.Now, TestLocationName, TestTypeName);
+
+            var pb4 = await pbRepository.AddPlaybill(performance4);
+            var change = pb4.Changes.Last();
+            var dt = DateTime.Now;
+            change.LastUpdate = dt;
+            bool updateResult = await pbRepository.Update(change);
+
+            Assert.Equal(dt, pbRepository.Get(performance4).Changes.Last().LastUpdate);
+            Assert.NotNull(pb4);
+            Assert.True(updateResult);
+        }
+
 
         private const string TestLocationName = "TestLocation";
         private const string TestTypeName = "TestType";
