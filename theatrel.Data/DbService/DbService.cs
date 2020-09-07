@@ -18,5 +18,7 @@ namespace theatrel.DataAccess.DbService
         public ITgUsersRepository GetUsersRepository() => new TgUsersRepository(GetDbContext());
 
         public IPlaybillRepository GetPlaybillRepository() => new PlaybillRepository(GetDbContext());
+
+        public ISubscriptionsRepository GetSubscriptionRepository() => new SubscriptionsRepository(GetDbContext());
     }
 }

@@ -8,6 +8,7 @@ using theatrel.Common.Enums;
 using theatrel.DataAccess;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
+using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
 using theatrel.TLBot.Interfaces;
@@ -31,18 +32,20 @@ namespace theatrel.Subscriptions
         {
             await using var dbContext = _dbService.GetDbContext();
 
+            var subscriptionRepository = _dbService.GetSubscriptionRepository();
+
             Trace.TraceInformation("Process subscriptions started");
-            PlaybillChangeEntity[] changes = dbContext.PerformanceChanges.AsNoTracking()
+            PlaybillChangeEntity[] changes = dbContext.PerformanceChanges
                 .Include(c => c.PlaybillEntity)
                     .ThenInclude(p => p.Performance)
-                    .ThenInclude(p => p.Type)
+                        .ThenInclude(p => p.Type)
                 .Include(c => c.PlaybillEntity)
                     .ThenInclude(p => p.Performance)
-                    .ThenInclude(p => p.Location)
+                        .ThenInclude(p => p.Location)
+                .AsNoTracking()
                 .ToArray();
 
-            bool dbIsDirty = false;
-            foreach (SubscriptionEntity subscription in dbContext.Subscriptions)
+            foreach (SubscriptionEntity subscription in subscriptionRepository.GetAllWithFilter())
             {
                 var filter = subscription.PerformanceFilter;
 
@@ -59,15 +62,14 @@ namespace theatrel.Subscriptions
                                     && (subscription.TrackingChanges & p.ReasonOfChanges) != 0)
                         .OrderBy(p => p.LastUpdate).ToArray();
 
+                Trace.TraceInformation($"Subscription for {subscription.TelegramUserId} found {performanceChanges.Length} changes.");
+
                 if (!performanceChanges.Any() || !await SendMessages(subscription, performanceChanges))
                     continue;
 
                 subscription.LastUpdate = performanceChanges.Last().LastUpdate;
-                dbIsDirty = true;
+                await subscriptionRepository.Update(subscription);
             }
-
-            if (dbIsDirty)
-                await dbContext.SaveChangesAsync();
 
             Trace.TraceInformation("Process subscription finished");
             return true;

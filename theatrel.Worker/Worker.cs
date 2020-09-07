@@ -114,9 +114,15 @@ namespace theatrel.Worker
                 Trace.TraceInformation("UpdateJob was started");
                 try
                 {
+                    ISubscriptionService subscriptionServices = Bootstrapper.Resolve<ISubscriptionService>();
+                    var filters = subscriptionServices.GetUpdateFilters();
+
                     IDbPlaybillUpdater updater = Bootstrapper.Resolve<IDbPlaybillUpdater>();
-                    await updater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 9, 30),
-                        context.CancellationToken);
+
+                    foreach (var filter in filters)
+                    {
+                        await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, context.CancellationToken);
+                    }
 
                     ISubscriptionProcessor subscriptionProcessor = Bootstrapper.Resolve<ISubscriptionProcessor>();
                     await subscriptionProcessor.ProcessSubscriptions();
