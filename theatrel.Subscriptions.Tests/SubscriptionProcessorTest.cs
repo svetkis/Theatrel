@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using theatrel.Common.Enums;
 using theatrel.DataAccess;
-using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Subscriptions;
 using theatrel.Subscriptions.Tests.TestSettings;

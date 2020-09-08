@@ -87,7 +87,11 @@ namespace theatrel.DataUpdater
                 return freshMinPrice == 0 ? ReasonOfChanges.NoReason : ReasonOfChanges.StartSales;
 
             if (lastChange.MinPrice > freshMinPrice)
-                return ReasonOfChanges.PriceDecreased;
+            {
+                // we skip cases when price was not zero, and then becomes zero because it some technical
+                // things and it produces a lot of DB records without useful information
+                return freshMinPrice != 0 ? ReasonOfChanges.PriceDecreased : ReasonOfChanges.NoReason;
+            }
 
             if (lastChange.MinPrice < freshMinPrice)
                 return ReasonOfChanges.PriceIncreased;

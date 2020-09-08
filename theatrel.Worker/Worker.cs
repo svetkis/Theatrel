@@ -127,6 +127,9 @@ namespace theatrel.Worker
 
                     ISubscriptionProcessor subscriptionProcessor = Bootstrapper.Resolve<ISubscriptionProcessor>();
                     await subscriptionProcessor.ProcessSubscriptions();
+
+                    IPlaybillCleanUpService cleanUpService = Bootstrapper.Resolve<IPlaybillCleanUpService>();
+                    await cleanUpService.CleanUp();
                 }
                 catch (Exception ex)
                 {

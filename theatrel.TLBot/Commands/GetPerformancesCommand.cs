@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -49,16 +50,27 @@ namespace theatrel.TLBot.Commands
 
         public override async Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
-            if (!string.Equals(message, DecreasePriceSubscription, StringComparison.CurrentCultureIgnoreCase))
-                return new TgOutboundMessage("Приятно было пообщаться. Обращайтесь еще.");
+            Trace.TraceInformation($"Get performance command ApplyResultAsync");
+            try
+            {
+                if (!string.Equals(message, DecreasePriceSubscription, StringComparison.CurrentCultureIgnoreCase))
+                    return new TgOutboundMessage("Приятно было пообщаться. Обращайтесь еще.");
 
-            var subscriptionRepository = DbService.GetSubscriptionRepository();
+                var subscriptionRepository = DbService.GetSubscriptionRepository();
 
-            var subscription = await subscriptionRepository.Create(chatInfo.ChatId, _filterService.GetFilter(chatInfo), cancellationToken);
+                var subscription = await subscriptionRepository.Create(chatInfo.ChatId,
+                    _filterService.GetFilter(chatInfo), cancellationToken);
 
-            return subscription == null
-                ? new TgOutboundMessage("Простите, но я не смог добавить подписку.")
-                : new TgOutboundMessage("Подписка добавлена.");
+                return subscription == null
+                    ? new TgOutboundMessage("Простите, но я не смог добавить подписку.")
+                    : new TgOutboundMessage("Подписка добавлена.");
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation($"Get performance command ApplyResultAsync exception : {ex.Message}");
+            }
+
+            return null;
         }
 
         public override bool IsMessageCorrect(string message)
@@ -73,12 +85,12 @@ namespace theatrel.TLBot.Commands
 
             IPerformanceData[] data = await _playBillResolver.RequestProcess(filter, cancellationToken);
 
-            return new TgOutboundMessage(await PerformancesMessage(data, filter, chatInfo.When), CommandKeyboardMarkup) {IsEscaped = true};
+            return new TgOutboundMessage(await PerformancesMessage(data, filter, chatInfo.When, chatInfo.Culture), CommandKeyboardMarkup) {IsEscaped = true};
         }
 
-        private Task<string> PerformancesMessage(IPerformanceData[] performances, IPerformanceFilter filter, DateTime when)
+        private Task<string> PerformancesMessage(IPerformanceData[] performances, IPerformanceFilter filter, DateTime when, string culture)
         {
-            var cultureRu = CultureInfo.CreateSpecificCulture("ru");
+            var cultureRu = CultureInfo.CreateSpecificCulture(culture);
 
             var stringBuilder = new StringBuilder();
 
@@ -95,7 +107,7 @@ namespace theatrel.TLBot.Commands
             stringBuilder.AppendLine(
                 $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}.".EscapeMessageForMarkupV2());
 
-            foreach (var item in performances.OrderBy(item => item.DateTime))
+            foreach (var item in performances.OrderBy(item => item.DateTime).Where(item => item.DateTime > DateTime.Now))
             {
                 string minPrice = item.MinPrice.ToString();
 

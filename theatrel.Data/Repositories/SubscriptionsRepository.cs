@@ -26,7 +26,7 @@ namespace theatrel.DataAccess.Repositories
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"Get subscription dbException {ex.Message}");
+                Trace.TraceInformation($"GetList subscription dbException {ex.Message}");
             }
 
             return Task.FromResult<SubscriptionEntity>(null);
@@ -40,7 +40,7 @@ namespace theatrel.DataAccess.Repositories
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"Get subscription with filter DbException {ex.Message}");
+                Trace.TraceInformation($"GetList subscription with filter DbException {ex.Message}");
             }
 
             return new SubscriptionEntity[0];

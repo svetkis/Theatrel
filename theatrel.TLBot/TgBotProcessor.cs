@@ -153,10 +153,16 @@ namespace theatrel.TLBot
 
             chatInfo.PreviousStepId = chatInfo.CurrentStepId;
             ++chatInfo.CurrentStepId;
-            await chatsRepository.Update(chatInfo);
-
             var nextCommand = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
-            await CommandAskQuestion(nextCommand, chatInfo, acknowledgement);
+            if (nextCommand != null)
+            {
+                await chatsRepository.Update(chatInfo);
+                await CommandAskQuestion(nextCommand, chatInfo, acknowledgement);
+            }
+            else
+            {
+                await chatsRepository.Delete(chatInfo);
+            }
         }
 
         private IDialogCommand GetPreviousCommand(IChatDataInfo chatInfo)

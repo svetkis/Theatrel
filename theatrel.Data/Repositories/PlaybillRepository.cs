@@ -120,6 +120,20 @@ namespace theatrel.DataAccess.Repositories
             return null;
         }
 
+        public IEnumerable<PlaybillEntity> GetOutdatedList()
+        {
+            try
+            {
+                return _dbContext.Playbill.Where(x => x.When < DateTime.Now).AsNoTracking().ToArray();
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            }
+
+            return null;
+        }
+
         public PlaybillEntity Get(IPerformanceData data)
         {
             try
@@ -136,7 +150,7 @@ namespace theatrel.DataAccess.Repositories
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"Get PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+                Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
             }
 
             return null;
@@ -150,7 +164,7 @@ namespace theatrel.DataAccess.Repositories
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"Get PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+                Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
             }
 
             return null;
@@ -231,6 +245,25 @@ namespace theatrel.DataAccess.Repositories
 
                     _dbContext.Entry(playbillEntity).State = EntityState.Detached;
                 }
+            }
+        }
+
+        public async Task<bool> Delete(PlaybillEntity entity)
+        {
+            try
+            {
+                /*_dbContext.PerformanceChanges.RemoveRange(
+                    _dbContext.PerformanceChanges.Where(u => u.PlaybillEntityId == entity.Id));*/
+
+                _dbContext.Playbill.Remove(entity);
+
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation($"Delete PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+                return false;
             }
         }
 

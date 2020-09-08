@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using theatrel.Common.Enums;
-using theatrel.DataAccess;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
@@ -28,67 +27,44 @@ namespace theatrel.Subscriptions.Tests
             _fixture = fixture;
         }
 
-        private void ConfigureDb(AppDbContext dbContext, params int[] months)
+        public IDbService ConfigureDbService(params int[] months)
         {
-            var tgUser1 = new TelegramUserEntity { Culture = "ru" };
-            var tgUser2 = new TelegramUserEntity { Culture = "ru" };
-
-            dbContext.TlUsers.Add(tgUser1);
-            dbContext.TlUsers.Add(tgUser2);
-
-            var playBillEntry = new PlaybillEntity
+            List<SubscriptionEntity> subscriptionEntities = new List<SubscriptionEntity>{new SubscriptionEntity
             {
-                Performance = new PerformanceEntity
-                {
-                    Name = "TestBallet",
-                    Location = new LocationsEntity("Room2"),
-                    Type = new PerformanceTypeEntity("Ballet")
-                },
-                Url = "TestUrl",
-                When = new DateTime(2020, months.First(), 1),
-                Changes = new List<PlaybillChangeEntity>{
-                    new PlaybillChangeEntity
-                    {
-                        LastUpdate = DateTime.Now,
-                        MinPrice = 800,
-                        ReasonOfChanges = 8
-                    },
-                    new PlaybillChangeEntity
-                    {
-                        LastUpdate = DateTime.Now,
-                        MinPrice = 500,
-                        ReasonOfChanges = 2
-                    }
-                }
-            };
-
-            dbContext.Playbill.Add(playBillEntry);
-
-            //subscription for tgUser1 for particular performance
-            dbContext.Subscriptions.Add(new SubscriptionEntity
-            {
-                TelegramUserId = tgUser1.Id,
+                TelegramUserId = 1,
                 LastUpdate = DateTime.Now.AddDays(-1),
-                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = playBillEntry.PerformanceId },
+                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = 100 },
                 TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
-            });
+            }};
 
             foreach (var month in months.Skip(1))
             {
                 DateTime startDate = new DateTime(2020, month, 1);
                 DateTime endDateTime = startDate.AddMonths(1).AddDays(-1);
 
-                //subscription user2 for filter by date
-                dbContext.Subscriptions.Add(new SubscriptionEntity
+                subscriptionEntities.Add(new SubscriptionEntity
                 {
-                    TelegramUserId = tgUser2.Id,
+                    TelegramUserId = 2,
                     LastUpdate = DateTime.Now,
                     PerformanceFilter = new PerformanceFilterEntity { StartDate = startDate, EndDate = endDateTime },
                     TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
                 });
             }
 
-            dbContext.SaveChanges();
+            var subscriptionRepo = new Mock<ISubscriptionsRepository>();
+            subscriptionRepo.Setup(x => x.GetAllWithFilter()).Returns(subscriptionEntities);
+
+            var playbillRepo = new Mock<IPlaybillRepository>();
+            playbillRepo.Setup(x => x.Get(It.IsAny<int>())).Returns(new PlaybillEntity()
+            {
+                When = new DateTime(2020, months.First(), 1)
+            });
+
+            var dbService = new Mock<IDbService>();
+            dbService.Setup(x => x.GetSubscriptionRepository()).Returns(subscriptionRepo.Object);
+            dbService.Setup(x => x.GetPlaybillRepository()).Returns(playbillRepo.Object);
+
+            return dbService.Object;
         }
 
         [Theory]
@@ -96,10 +72,9 @@ namespace theatrel.Subscriptions.Tests
         [InlineData(3, 6, 9)]
         public async Task SubscriptionServiceTest(params int[] months)
         {
-            ConfigureDb(_fixture.GetDbService().GetDbContext(), months);
-
             await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
             {
+                builder.RegisterInstance(ConfigureDbService(months)).As<IDbService>().AsImplementedInterfaces().SingleInstance();
                 builder.RegisterModule<SubscriptionModule>();
             });
 
@@ -141,7 +116,6 @@ namespace theatrel.Subscriptions.Tests
 
             var dbService = new Mock<IDbService>();
             dbService.Setup(x => x.GetSubscriptionRepository()).Returns(subscriptionRepo.Object);
-
 
             await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
             {
