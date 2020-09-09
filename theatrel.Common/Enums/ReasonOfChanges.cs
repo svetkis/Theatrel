@@ -9,6 +9,7 @@ namespace theatrel.Common.Enums
         Creation = 1,
         PriceDecreased = 2,
         PriceIncreased = 4,
-        StartSales = 8
+        StartSales = 8,
+        PriceBecameZero = 16,
     }
 }

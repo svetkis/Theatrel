@@ -16,7 +16,7 @@ namespace theatrel.Lib.Tests
         [InlineData(true, new[] { 2020, 03, 20 }, "опера", new[] { DayOfWeek.Friday, DayOfWeek.Sunday }, new[] { "Опера" })]
         public void Test(bool expected, int[] performanceDate, string performanceType, DayOfWeek[] filterDays, string[] filterTypes)
         {
-            var filterChecker = DIContainerHolder.Resolve<IFilterChecker>();
+            var filterChecker = DIContainerHolder.Resolve<IFilterService>();
 
             var filter = new Mock<IPerformanceFilter>();
             filter.SetupGet(x => x.DaysOfWeek).Returns(filterDays);

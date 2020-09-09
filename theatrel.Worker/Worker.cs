@@ -6,9 +6,8 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using theatrel.Common;
 using theatrel.DataAccess.DbService;
-using theatrel.Interfaces.DataUpdater;
-using theatrel.Interfaces.Subscriptions;
 using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Interfaces;
 
@@ -44,6 +43,8 @@ namespace theatrel.Worker
             var tlBotService = Bootstrapper.Resolve<ITgBotService>();
             _tLBotProcessor.Start(tlBotService, cancellationToken);
 
+            MemoryHelper.LogMemoryUsage();
+
             await ScheduleDataUpdates(cancellationToken);
         }
 
@@ -61,6 +62,8 @@ namespace theatrel.Worker
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                //Trace.TraceInformation($"Current threads count is: {Process.GetCurrentProcess().Threads.Count}");
+
                 await Task.Delay(1000, stoppingToken);
             }
         }
@@ -75,77 +78,24 @@ namespace theatrel.Worker
             }
 
             string group = "updateJobGroup";
-            string group2 = "updateJobOnceWhenStart";
 
             ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
 
             IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
             await scheduler.Start(cancellationToken);
-            _logger.LogInformation("Scheduler started");
 
-            IJobDetail job = JobBuilder.Create<UpdateSeptemberJob>()
+            IJobDetail job = JobBuilder.Create<UpdateJob>()
                 .WithIdentity("updateJob", group)
-                .Build();
-
-            IJobDetail startUpdateJob = JobBuilder.Create<UpdateSeptemberJob>()
-                .WithIdentity("startUpdateJob", group)
                 .Build();
 
             ITrigger trigger = TriggerBuilder.Create()
                 .WithIdentity("updateJobTrigger", group)
-                .WithCronSchedule("0 10 10-20 * * ?", cron => { cron.InTimeZone(Bootstrapper.Resolve<ITimeZoneService>().TimeZone); })
-                .Build();
-
-            ITrigger triggerNow = TriggerBuilder.Create()
-                .WithIdentity("triggerNow", group2)
-                .StartNow()
+                .WithCronSchedule(upgradeJobCron, cron => { cron.InTimeZone(Bootstrapper.Resolve<ITimeZoneService>().TimeZone); })
                 .Build();
 
             await scheduler.ScheduleJob(job, trigger, cancellationToken);
-            await scheduler.ScheduleJob(startUpdateJob, triggerNow, cancellationToken);
 
-            _logger.LogInformation("Job was scheduled");
-        }
-
-        public class UpdateSeptemberJob : IJob
-        {
-            public async Task Execute(IJobExecutionContext context)
-            {
-                Trace.TraceInformation("UpdateJob was started");
-                try
-                {
-                    ISubscriptionService subscriptionServices = Bootstrapper.Resolve<ISubscriptionService>();
-                    var filters = subscriptionServices.GetUpdateFilters();
-
-                    IDbPlaybillUpdater updater = Bootstrapper.Resolve<IDbPlaybillUpdater>();
-
-                    foreach (var filter in filters)
-                    {
-                        Trace.TraceInformation($"Update playbill for interval {filter.StartDate:D} {filter.EndDate:D}");
-                        await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, context.CancellationToken);
-                    }
-
-                    ISubscriptionProcessor subscriptionProcessor = Bootstrapper.Resolve<ISubscriptionProcessor>();
-                    await subscriptionProcessor.ProcessSubscriptions();
-
-                    IPlaybillCleanUpService cleanUpService = Bootstrapper.Resolve<IPlaybillCleanUpService>();
-                    await cleanUpService.CleanUp();
-                }
-                catch (Exception ex)
-                {
-                    if (long.TryParse(Environment.GetEnvironmentVariable("OwnerTelegramgId"), out var ownerId))
-                    {
-                        var telegramService = Bootstrapper.Resolve<ITgBotService>();
-                        await telegramService.SendMessageAsync(ownerId, "UpdateJob failed");
-                        await telegramService.SendMessageAsync(ownerId, $"{ex.Message}");
-                        Trace.TraceError(ex.StackTrace);
-                    }
-
-                    Trace.TraceError($"Job failed {ex.Message}");
-                }
-
-                Trace.TraceInformation("UpdateJob was finished");
-            }
+            _logger.LogInformation($"Update job {upgradeJobCron} was scheduled");
         }
     }
 }

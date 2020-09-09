@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using theatrel.Interfaces.Autofac;
 
 namespace theatrel.Interfaces.DataUpdater
 {
-    public interface IPlaybillCleanUpService : IDIRegistrable
+    public interface IPlaybillCleanUpService : IDIRegistrable, IDisposable
     {
         Task<bool> CleanUp();
     }

@@ -10,7 +10,7 @@ namespace theatrel.DataAccess.Repositories
 {
     internal class TgChatsRepository : ITgChatsRepository
     {
-        private readonly AppDbContext _dbContext;
+        private AppDbContext _dbContext;
         public TgChatsRepository(AppDbContext dbContext)
         {
             _dbContext = dbContext;
@@ -40,6 +40,8 @@ namespace theatrel.DataAccess.Repositories
                 var entity = new ChatInfoEntity { ChatId = chatId, Culture = culture };
                 _dbContext.TlChats.Add(entity);
                 await _dbContext.SaveChangesAsync(cancellationToken);
+
+                _dbContext.Entry(entity).State = EntityState.Detached;
                 return entity;
             }
             catch (Exception ex)
@@ -77,6 +79,8 @@ namespace theatrel.DataAccess.Repositories
             try
             {
                 await _dbContext.SaveChangesAsync();
+                _dbContext.Entry(newValue).State = EntityState.Detached;
+
                 return true;
             }
             catch (Exception ex)
@@ -88,7 +92,13 @@ namespace theatrel.DataAccess.Repositories
 
         public void Dispose()
         {
+            if (_dbContext == null)
+                return;
+
+            Trace.TraceInformation("TgChatsRepository was disposed");
             _dbContext?.Dispose();
+
+            _dbContext = null;
         }
     }
 }

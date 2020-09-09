@@ -28,13 +28,17 @@ namespace theatrel.DataUpdater.Tests
             string performanceLocation = "locAdd";
             string performanceType = "operaTestTypeAdd";
 
+            DateTime performanceWhen = DateTime.Now.AddMonths(1);
+            DateTime filterFrom = new DateTime(performanceWhen.Year, performanceWhen.Month, 1);
+            DateTime filterTo = filterFrom.AddMonths(1).AddDays(-1);
+
             Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
             playBillResolverMock.Setup(h =>
                     h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new[]
                 {
-                    GetPerformanceMock(performanceName,0, performanceUrl, new DateTime(2020, 9, 10), performanceLocation, performanceType),
-                    GetPerformanceMock("TestOpera2",0, "op2", new DateTime(2020, 9, 11), performanceLocation, performanceType)
+                    GetPerformanceMock(performanceName,0, performanceUrl, performanceWhen, performanceLocation, performanceType),
+                    GetPerformanceMock("TestOpera2",0, "op2", DateTime.Now.AddDays(-2), performanceLocation, performanceType)
                 }));
 
             await using var db = Fixture.RootScope.Resolve<IDbService>().GetDbContext();
@@ -48,11 +52,10 @@ namespace theatrel.DataUpdater.Tests
 
             var dataUpdater = scope.Resolve<IDbPlaybillUpdater>();
 
-            await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
-                CancellationToken.None);
+            await dataUpdater.UpdateAsync(1, filterFrom, filterTo, CancellationToken.None);
 
             var minPrice500 = GetPerformanceMock(
-                performanceName, 500, performanceUrl, new DateTime(2020, 9, 10), performanceLocation, performanceType);
+                performanceName, 500, performanceUrl, performanceWhen, performanceLocation, performanceType);
 
             playBillResolverMock.Setup(h =>
                     h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
@@ -70,12 +73,13 @@ namespace theatrel.DataUpdater.Tests
 
             var changes = db.PerformanceChanges
                 .Where(c => c.PlaybillEntity.Url == performanceUrl)
-                .OrderBy(d => d.LastUpdate);
+                .OrderBy(d => d.LastUpdate).ToArray();
 
-            Assert.Equal(2, changes.Count());
+            Assert.Equal(3, changes.Count());
             Assert.Equal(1, db.PerformanceLocations.Count(l => l.Name == performanceLocation));
             Assert.Equal(1, db.PerformanceTypes.Count(t => t.TypeName == performanceType));
-            Assert.Equal((int)ReasonOfChanges.StartSales, changes.Last().ReasonOfChanges);
+            Assert.Equal((int)ReasonOfChanges.NoReason, changes.Last().ReasonOfChanges);
+            Assert.Equal((int)ReasonOfChanges.StartSales, changes[1].ReasonOfChanges);
             Assert.Equal((int)ReasonOfChanges.Creation, changes.First().ReasonOfChanges);
         }
 

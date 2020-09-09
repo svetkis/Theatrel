@@ -9,6 +9,7 @@ namespace theatrel.DataAccess.Structures.Interfaces
 {
     public interface IPlaybillRepository : IDisposable, IDIRegistrable
     {
+        IEnumerable<PlaybillEntity> GetList(DateTime from, DateTime to);
         PlaybillEntity Get(IPerformanceData data);
         PlaybillEntity Get(int id);
         public IEnumerable<PlaybillEntity> GetOutdatedList();

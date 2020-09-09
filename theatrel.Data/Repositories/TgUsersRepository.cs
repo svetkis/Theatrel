@@ -10,7 +10,7 @@ namespace theatrel.DataAccess.Repositories
 {
     internal class TgUsersRepository : ITgUsersRepository
     {
-        private readonly AppDbContext _dbContext;
+        private AppDbContext _dbContext;
         public TgUsersRepository(AppDbContext dbContext)
         {
             _dbContext = dbContext;
@@ -41,6 +41,9 @@ namespace theatrel.DataAccess.Repositories
             {
                 _dbContext.TlUsers.Add(entity);
                 await _dbContext.SaveChangesAsync(cancellationToken);
+
+                _dbContext.Entry(entity).State = EntityState.Detached;
+
                 return entity;
             }
             catch (Exception ex)
@@ -89,7 +92,13 @@ namespace theatrel.DataAccess.Repositories
 
         public void Dispose()
         {
+            if (_dbContext == null)
+                return;
+
+            Trace.TraceInformation("TgUsersRepository was disposed");
             _dbContext?.Dispose();
+
+            _dbContext = null;
         }
     }
 }

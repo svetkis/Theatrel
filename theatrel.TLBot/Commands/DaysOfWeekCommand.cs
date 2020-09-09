@@ -94,7 +94,7 @@ namespace theatrel.TLBot.Commands
         }
 
         private const string YouSelected = "Вы выбрали";
-        public override Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             var days = ParseMessage(message);
             chatInfo.Days = days;
@@ -125,7 +125,7 @@ namespace theatrel.TLBot.Commands
             return days.Any();
         }
 
-        public override Task<ITgOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("В какой день недели Вы хотели бы посетить театр? Вы можете выбрать несколько дней.");

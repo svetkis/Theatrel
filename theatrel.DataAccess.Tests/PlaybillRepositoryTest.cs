@@ -16,13 +16,12 @@ namespace theatrel.DataAccess.Tests
         public PlaybillRepositoryTest(DatabaseFixture fixture)
         {
             Fixture = fixture;
+            Task.WaitAll(ConfigureDb());
         }
 
         [Fact]
         public async Task AddTest()
         {
-            await ConfigureDb();
-
             using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
 
             var performance2 = GetPerformanceMock("TestPerformance2", 800, "url2", DateTime.Now,  TestLocationName, TestTypeName);
@@ -42,8 +41,6 @@ namespace theatrel.DataAccess.Tests
         [Fact]
         public async Task UpdateTest()
         {
-            await ConfigureDb();
-
             using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
 
             var performance4 = GetPerformanceMock("TestPerformance4", 800, "url4", DateTime.Now, TestLocationName, TestTypeName);
@@ -57,6 +54,21 @@ namespace theatrel.DataAccess.Tests
             Assert.Equal(dt, pbRepository.Get(performance4).Changes.Last().LastUpdate);
             Assert.NotNull(pb4);
             Assert.True(updateResult);
+        }
+
+        [Fact]
+        public async Task GetListTest()
+        {
+            using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
+
+            var performance2 = GetPerformanceMock("TestPerformance2", 500, "url2", DateTime.Now.AddDays(50), TestLocationName, TestTypeName);
+
+            await pbRepository.AddPlaybill(performance2);
+
+            var list = pbRepository.GetList(DateTime.Now.AddDays(49), DateTime.Now.AddDays(51));
+
+            Assert.NotNull(list);
+            Assert.Single(list);
         }
 
 

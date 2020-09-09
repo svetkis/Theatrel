@@ -34,16 +34,16 @@ namespace theatrel.Subscriptions.Tests
 
             DateTime performanceDateTime = DateTime.Now.AddDays(10);
 
-            var tgUser1 = new TelegramUserEntity { Culture = "ru" };
-            var tgUser2 = new TelegramUserEntity { Culture = "ru" };
-            var tgUser3 = new TelegramUserEntity { Culture = "ru" };
+            var tgUser1 = new TelegramUserEntity { Culture = "ru", Id = 103};
+            var tgUser2 = new TelegramUserEntity { Culture = "ru", Id = 205 };
+            var tgUser3 = new TelegramUserEntity { Culture = "ru", Id = 1008 };
 
             dbContext.TlUsers.Add(tgUser1);
             dbContext.TlUsers.Add(tgUser2);
 
             var playbillEntryWithDecreasedPrice = new PlaybillEntity()
             {
-                Performance = new PerformanceEntity()
+                Performance = new PerformanceEntity
                 {
                     Name = "TestOpera",
                     Location = new LocationsEntity("TestLocation"),

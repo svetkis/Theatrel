@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace theatrel.Worker
+namespace theatrel.Common
 {
-    internal class Trace2StdoutLogger : TraceListener
+    public class Trace2StdoutLogger : TraceListener
     {
         public override void Write(string message)
         {

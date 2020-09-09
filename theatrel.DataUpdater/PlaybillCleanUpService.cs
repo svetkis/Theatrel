@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using theatrel.DataAccess.DbService;
 using theatrel.Interfaces.DataUpdater;
 
@@ -26,6 +25,10 @@ namespace theatrel.DataUpdater
             }
 
             return result;
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

@@ -13,7 +13,7 @@ namespace theatrel.DataAccess.Structures.Entities
         [NotMapped]
         public DayOfWeek[] DaysOfWeek
         {
-            get => DbDaysOfWeek?.Split(',').Select(d => (DayOfWeek)int.Parse(d)).ToArray();
+            get => string.IsNullOrEmpty(DbDaysOfWeek) ? null : DbDaysOfWeek?.Split(',').Select(d => (DayOfWeek)int.Parse(d)).ToArray();
             set => DbDaysOfWeek = value != null
                 ? string.Join(",", value.OrderBy(d => d).Select(d => ((int)d).ToString()))
                 : null;

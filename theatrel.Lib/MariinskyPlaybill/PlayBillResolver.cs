@@ -15,9 +15,9 @@ namespace theatrel.Lib.MariinskyPlaybill
     {
         private readonly IPlaybillParser _playbillParser;
         private readonly ITicketsParser _ticketParser;
-        private readonly IFilterChecker _filterChecker;
+        private readonly IFilterService _filterChecker;
 
-        public PlayBillResolver(IPlaybillParser playbillParser, ITicketsParser ticketParser, IFilterChecker filterChecker)
+        public PlayBillResolver(IPlaybillParser playbillParser, ITicketsParser ticketParser, IFilterService filterChecker)
         {
             _playbillParser = playbillParser;
             _ticketParser = ticketParser;

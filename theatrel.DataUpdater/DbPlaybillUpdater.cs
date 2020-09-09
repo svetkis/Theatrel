@@ -59,14 +59,18 @@ namespace theatrel.DataUpdater
                 .FirstOrDefault();
 
             var compareResult = ComparePerformanceData(lastChange, data);
-            if (compareResult == ReasonOfChanges.NoReason && lastChange != null)
+            if (compareResult == ReasonOfChanges.NoReason
+                && lastChange != null && lastChange.ReasonOfChanges == (int)ReasonOfChanges.NoReason)
             {
                 lastChange.LastUpdate = DateTime.Now;
                 await playbillRepository.Update(lastChange);
                 return;
             }
 
-            Trace.TraceInformation($"{data.Name} {data.DateTime:g} was changed. MinPrice is {data.MinPrice}");
+            Trace.TraceInformation($"Reason of changes {compareResult} {data.Name} {data.DateTime:g} price: {data.MinPrice}");
+
+            if (compareResult == ReasonOfChanges.PriceBecameZero)
+                return;
 
             await playbillRepository.AddChange(playbillEntry, new PlaybillChangeEntity
             {
@@ -90,13 +94,17 @@ namespace theatrel.DataUpdater
             {
                 // we skip cases when price was not zero, and then becomes zero because it some technical
                 // things and it produces a lot of DB records without useful information
-                return freshMinPrice != 0 ? ReasonOfChanges.PriceDecreased : ReasonOfChanges.NoReason;
+                return freshMinPrice != 0 ? ReasonOfChanges.PriceDecreased : ReasonOfChanges.PriceBecameZero;
             }
 
             if (lastChange.MinPrice < freshMinPrice)
                 return ReasonOfChanges.PriceIncreased;
 
             return ReasonOfChanges.NoReason;
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

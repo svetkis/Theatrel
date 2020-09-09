@@ -61,7 +61,7 @@ namespace theatrel.TLBot.Commands
             return numAbr;
         }
 
-        public override Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             int month = GetMonth(message.Trim().ToLower());
 
@@ -74,7 +74,7 @@ namespace theatrel.TLBot.Commands
                 $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}", ReturnKeyboardMarkup));
         }
 
-        public override Task<ITgOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             switch (chatInfo.DialogState)
             {

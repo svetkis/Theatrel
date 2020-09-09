@@ -31,7 +31,7 @@ namespace theatrel.TLBot.Commands
             };
         }
 
-        public override Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             chatInfo.Types = ParseMessage(message);
 
@@ -40,7 +40,7 @@ namespace theatrel.TLBot.Commands
 
         public override bool IsMessageCorrect(string message) => SplitMessage(message).Any();
 
-        public override Task<ITgOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("Какие представления Вас интересуют?");

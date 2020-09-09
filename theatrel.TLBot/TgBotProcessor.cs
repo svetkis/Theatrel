@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
+using theatrel.Common;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
@@ -38,7 +39,7 @@ namespace theatrel.TLBot
             _commands.Add(new MonthCommand(dbService));
             _commands.Add(new DaysOfWeekCommand(dbService));
             _commands.Add(new PerformanceTypesCommand(dbService));
-            _commands.Add(new GetPerformancesCommand(playBillResolver, filterService, timeZoneService, dbService));
+            _commands.Add(new GetPerformancesCommand(filterService, timeZoneService, dbService));
         }
 
         public void Start(ITgBotService botService, CancellationToken cancellationToken)
@@ -65,36 +66,41 @@ namespace theatrel.TLBot
 
         ~TgBotProcessor() => Stop();
 
-        private readonly string[] _adminCommands = { "update" };
-        private bool IsAdminCommand(ITgInboundMessage tLInboundMessage)
+        private async Task EnsureDbUserExists(long userId, string culture)
         {
-            if (BotSettings.AdminIds == null)
-                return false;
+            using var usersRepository = _dbService.GetUsersRepository();
 
-            if (BotSettings.AdminIds.All(id => id != tLInboundMessage.ChatId))
-                return false;
-
-            return _adminCommands.Any(command => tLInboundMessage.Message.ToLower().StartsWith(command));
+            var userEntity = usersRepository.Get(userId);
+            if (null == userEntity)
+                await usersRepository.Create(userId, culture, _cancellationTokenSource.Token);
         }
 
-        private Task<bool> ProcessAdminCommand(ITgInboundMessage tLInboundMessage)
+        private async Task ProcessOneStepBack(ITgChatsRepository chatsRepository, ChatInfoEntity chatInfo)
         {
-            foreach (var VARIABLE in tLInboundMessage.Message.Split(" ").Skip(1))
-            {
-                //                int 
-            }
+            var prevCommand = GetPreviousCommand(chatInfo);
 
-            return Task.FromResult(true);
+            if (prevCommand == null)
+                return;
+
+            chatInfo.DialogState = DialogStateEnum.DialogReturned;
+            chatInfo.CurrentStepId -= 1;
+            chatInfo.PreviousStepId -= 1;
+
+            await CommandAskQuestion(prevCommand, chatInfo, null);
+
+            if (null == GetNextCommand(chatInfo))
+                await chatsRepository.Delete(chatInfo);
+            else
+                await chatsRepository.Update(chatInfo);
         }
 
         private async void OnMessage(object sender, ITgInboundMessage tLInboundMessage)
         {
             Trace.TraceInformation($"{tLInboundMessage.ChatId} {tLInboundMessage.Message}");
+            MemoryHelper.LogMemoryUsage();
+
             string message = tLInboundMessage.Message;
             long chatId = tLInboundMessage.ChatId;
-
-            if (IsAdminCommand(tLInboundMessage))
-                return;
 
             using ITgChatsRepository chatsRepository = _dbService.GetChatsRepository();
 
@@ -103,44 +109,31 @@ namespace theatrel.TLBot
 
             chatInfo.LastMessage = DateTime.Now;
 
-            //check if user wants to return at first
+            //check if user wants to return to first step
             var startCmd = _commands.First();
             if (startCmd.IsMessageCorrect(message))
             {
-                using (var usersRepository = _dbService.GetUsersRepository())
-                {
-                    var userEntity = usersRepository.Get(chatInfo.ChatId);
-                    if (null == userEntity)
-                        await usersRepository.Create(chatInfo.ChatId, chatInfo.Culture, _cancellationTokenSource.Token);
-                }
-
+                await EnsureDbUserExists(chatInfo.ChatId, chatInfo.Culture);
                 chatInfo.Clear();
             }
 
             var prevCmd = GetPreviousCommand(chatInfo);
 
+            //check if user wants to return one step back
             if (message.ToLower().StartsWith("нет") || (prevCmd?.IsReturnCommand(message) ?? false))
             {
-                var prevCommand = GetPreviousCommand(chatInfo);
-
-                if (prevCommand == null)
-                    return;
-
-                chatInfo.DialogState = DialogStateEnum.DialogReturned;
-                chatInfo.CurrentStepId -= 1;
-                chatInfo.PreviousStepId -= 1;
-
-                await CommandAskQuestion(prevCommand, chatInfo, null);
-
-                if (null == GetNextCommand(chatInfo))
-                    await chatsRepository.Delete(chatInfo);
-                else
-                    await chatsRepository.Update(chatInfo);
-
+                await ProcessOneStepBack(chatsRepository, chatInfo);
                 return;
             }
 
             IDialogCommand command = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
+            if (command == null)
+            {
+                Trace.TraceError($"Current command not found {chatInfo.CurrentStepId}");
+                SendErrorMessage(chatId, message, chatInfo.CurrentStepId);
+                await chatsRepository.Delete(chatInfo);
+                return;
+            }
 
             if (!command.IsMessageCorrect(message))
             {
@@ -148,8 +141,8 @@ namespace theatrel.TLBot
                 return;
             }
 
-            ITgOutboundMessage acknowledgement =
-                await command.ApplyResultAsync(chatInfo, message, _cancellationTokenSource.Token);
+            Trace.TraceInformation($"Command {command.Name} ApplyResult");
+            ITgOutboundMessage acknowledgement = await command.ApplyResult(chatInfo, message, _cancellationTokenSource.Token);
 
             chatInfo.PreviousStepId = chatInfo.CurrentStepId;
             ++chatInfo.CurrentStepId;
@@ -161,26 +154,26 @@ namespace theatrel.TLBot
             }
             else
             {
+                await Task.Run(() => _botService.SendMessageAsync(chatInfo.ChatId, acknowledgement),
+                    _cancellationTokenSource.Token);
                 await chatsRepository.Delete(chatInfo);
             }
         }
 
-        private IDialogCommand GetPreviousCommand(IChatDataInfo chatInfo)
-        {
-            return chatInfo.PreviousStepId == -1
+        private IDialogCommand GetPreviousCommand(IChatDataInfo chatInfo) =>
+            chatInfo.PreviousStepId == -1
                 ? null
                 : _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.PreviousStepId);
-        }
 
-        private IDialogCommand GetNextCommand(IChatDataInfo chatInfo)
-            => _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId + 1);
+        private IDialogCommand GetNextCommand(IChatDataInfo chatInfo) =>
+            _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId + 1);
 
         private async Task CommandAskQuestion(IDialogCommand cmd, ChatInfoEntity chatInfo, ITgOutboundMessage previousCmdAcknowledgement)
         {
             if (cmd == null)
                 return;
 
-            ITgOutboundMessage nextDlgQuestion = await cmd.AscUserAsync(chatInfo, _cancellationTokenSource.Token);
+            ITgOutboundMessage nextDlgQuestion = await cmd.AscUser(chatInfo, _cancellationTokenSource.Token);
             ITgOutboundMessage botResponse = nextDlgQuestion;
             if (!string.IsNullOrWhiteSpace(previousCmdAcknowledgement?.Message))
                 botResponse.Message = $"{previousCmdAcknowledgement.Message}{Environment.NewLine}{nextDlgQuestion.Message}";
@@ -205,5 +198,12 @@ namespace theatrel.TLBot
             Trace.TraceInformation($"Wrong command: {chatId} {chatLevel} {message}");
             _botService.SendMessageAsync(chatId, new TgOutboundMessage("Простите, я вас не понял. Попробуйте еще раз."));
         }
+
+        private void SendErrorMessage(long chatId, string message, int chatLevel)
+        {
+            Trace.TraceInformation($"Wrong command: {chatId} {chatLevel} {message}");
+            _botService.SendMessageAsync(chatId, new TgOutboundMessage("Простите, что то пошло не так. Попробуйте еще раз."));
+        }
+
     }
 }

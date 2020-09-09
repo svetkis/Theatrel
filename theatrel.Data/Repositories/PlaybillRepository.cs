@@ -13,7 +13,7 @@ namespace theatrel.DataAccess.Repositories
 {
     internal class PlaybillRepository : IPlaybillRepository
     {
-        private readonly AppDbContext _dbContext;
+        private AppDbContext _dbContext;
 
         public PlaybillRepository(AppDbContext dbContext)
         {
@@ -110,6 +110,9 @@ namespace theatrel.DataAccess.Repositories
                     _dbContext.Entry(performance).State = EntityState.Detached;
                 }
 
+                _dbContext.Entry(playBillEntry).State = EntityState.Detached;
+                _dbContext.Entry(playBillEntry.Changes.First()).State = EntityState.Detached;
+
                 return playBillEntry;
             }
             catch (Exception ex)
@@ -125,6 +128,27 @@ namespace theatrel.DataAccess.Repositories
             try
             {
                 return _dbContext.Playbill.Where(x => x.When < DateTime.Now).AsNoTracking().ToArray();
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            }
+
+            return null;
+        }
+
+        public IEnumerable<PlaybillEntity> GetList(DateTime from, DateTime to)
+        {
+            try
+            {
+                return _dbContext.Playbill
+                    .Where(x => x.When <= to && x.When >= from)
+                    .Include(x => x.Performance)
+                        .ThenInclude(x => x.Location)
+                    .Include(x => x.Performance)
+                        .ThenInclude(x => x.Type)
+                    .Include(x => x.Changes)
+                    .AsNoTracking().ToArray();
             }
             catch (Exception ex)
             {
@@ -188,6 +212,10 @@ namespace theatrel.DataAccess.Repositories
             try
             {
                 await _dbContext.SaveChangesAsync();
+
+                _dbContext.Entry(entity).State = EntityState.Detached;
+                _dbContext.Entry(change).State = EntityState.Detached;
+
                 return true;
             }
             catch (Exception ex)
@@ -252,9 +280,6 @@ namespace theatrel.DataAccess.Repositories
         {
             try
             {
-                /*_dbContext.PerformanceChanges.RemoveRange(
-                    _dbContext.PerformanceChanges.Where(u => u.PlaybillEntityId == entity.Id));*/
-
                 _dbContext.Playbill.Remove(entity);
 
                 await _dbContext.SaveChangesAsync();
@@ -269,7 +294,13 @@ namespace theatrel.DataAccess.Repositories
 
         public void Dispose()
         {
+            if (_dbContext == null)
+                return;
+
+            Trace.TraceInformation("PlaybillRepository was disposed");
             _dbContext?.Dispose();
+
+            _dbContext = null;
         }
     }
 }

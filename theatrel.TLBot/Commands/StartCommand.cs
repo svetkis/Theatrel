@@ -24,7 +24,7 @@ namespace theatrel.TLBot.Commands
 
         public override bool IsMessageCorrect(string message) => StartCommandVariants.Any(variant => message.ToLower().StartsWith(variant));
 
-        public override Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             Trace.TraceInformation($"Reset chat {chatInfo.ChatId}");
             chatInfo.Clear();
@@ -32,7 +32,7 @@ namespace theatrel.TLBot.Commands
             return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(null));
         }
 
-        public override Task<ITgOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
             => Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage("Вас приветствует экономный театрал."));
     }
 }

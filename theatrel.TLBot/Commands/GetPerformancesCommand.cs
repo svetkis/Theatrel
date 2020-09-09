@@ -7,8 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.DataAccess.DbService;
+using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Filters;
-using theatrel.Interfaces.Playbill;
 using theatrel.Interfaces.TgBot;
 using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Interfaces;
@@ -18,7 +18,6 @@ namespace theatrel.TLBot.Commands
 {
     internal class GetPerformancesCommand : DialogCommandBase
     {
-        private readonly IPlayBillDataResolver _playBillResolver;
         private readonly IFilterService _filterService;
         private readonly ITimeZoneService _timeZoneService;
 
@@ -29,10 +28,9 @@ namespace theatrel.TLBot.Commands
 
         public override string Name => "Искать";
 
-        public GetPerformancesCommand(IPlayBillDataResolver playBillResolver, IFilterService filterService,
-            ITimeZoneService timeZoneService, IDbService dbService) : base((int)DialogStep.GetPerformances, dbService)
+        public GetPerformancesCommand(IFilterService filterService, ITimeZoneService timeZoneService, IDbService dbService)
+            : base((int)DialogStep.GetPerformances, dbService)
         {
-            _playBillResolver = playBillResolver;
             _filterService = filterService;
             _timeZoneService = timeZoneService;
 
@@ -48,17 +46,18 @@ namespace theatrel.TLBot.Commands
             };
         }
 
-        public override async Task<ITgOutboundMessage> ApplyResultAsync(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override async Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
-            Trace.TraceInformation($"Get performance command ApplyResultAsync");
+            Trace.TraceInformation("GetPerformancesCommand.ApplyResult");
+
             try
             {
                 if (!string.Equals(message, DecreasePriceSubscription, StringComparison.CurrentCultureIgnoreCase))
                     return new TgOutboundMessage("Приятно было пообщаться. Обращайтесь еще.");
 
-                var subscriptionRepository = DbService.GetSubscriptionRepository();
+                using var subscriptionRepository = DbService.GetSubscriptionRepository();
 
-                var subscription = await subscriptionRepository.Create(chatInfo.ChatId,
+                SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.ChatId,
                     _filterService.GetFilter(chatInfo), cancellationToken);
 
                 return subscription == null
@@ -67,10 +66,13 @@ namespace theatrel.TLBot.Commands
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"Get performance command ApplyResultAsync exception : {ex.Message}");
+                Trace.TraceInformation($"GetPerformancesCommand.ApplyResult exception : {ex.Message}");
+                return new TgOutboundMessage("Простите, но я не смог добавить подписку.");
             }
-
-            return null;
+            finally
+            {
+                Trace.TraceInformation($"GetPerformancesCommand.ApplyResult finished");
+            }
         }
 
         public override bool IsMessageCorrect(string message)
@@ -79,16 +81,18 @@ namespace theatrel.TLBot.Commands
                    || string.Equals(message, No, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        public override async Task<ITgOutboundMessage> AscUserAsync(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override async Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             IPerformanceFilter filter = _filterService.GetFilter(chatInfo);
+            using var playbillRepo = DbService.GetPlaybillRepository();
+            PlaybillEntity[] performances = playbillRepo.GetList(filter.StartDate, filter.EndDate).ToArray();
+            PlaybillEntity[] filteredPerformances = performances.Where(x => _filterService.IsDataSuitable(x.Performance.Location.Name, x.Performance.Type.TypeName,
+                    x.When, filter)).ToArray();
 
-            IPerformanceData[] data = await _playBillResolver.RequestProcess(filter, cancellationToken);
-
-            return new TgOutboundMessage(await PerformancesMessage(data, filter, chatInfo.When, chatInfo.Culture), CommandKeyboardMarkup) {IsEscaped = true};
+            return new TgOutboundMessage(await PerformancesMessage(filteredPerformances, filter, chatInfo.When, chatInfo.Culture), CommandKeyboardMarkup) {IsEscaped = true};
         }
 
-        private Task<string> PerformancesMessage(IPerformanceData[] performances, IPerformanceFilter filter, DateTime when, string culture)
+        private Task<string> PerformancesMessage(PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture(culture);
 
@@ -107,15 +111,15 @@ namespace theatrel.TLBot.Commands
             stringBuilder.AppendLine(
                 $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}.".EscapeMessageForMarkupV2());
 
-            foreach (var item in performances.OrderBy(item => item.DateTime).Where(item => item.DateTime > DateTime.Now))
+            foreach (var item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.Now))
             {
-                string minPrice = item.MinPrice.ToString();
+                string minPrice = item.Changes.OrderBy(ch => ch.LastUpdate).Last().MinPrice.ToString();
 
-                DateTime dt = item.DateTime.Kind == DateTimeKind.Utc
-                    ? TimeZoneInfo.ConvertTimeFromUtc(item.DateTime, _timeZoneService.TimeZone)
-                    : item.DateTime;
+                DateTime dt = item.When.Kind == DateTimeKind.Utc
+                    ? TimeZoneInfo.ConvertTimeFromUtc(item.When, _timeZoneService.TimeZone)
+                    : item.When.AddHours(3);
 
-                string performanceString = $"{dt:ddMMM HH:mm} {item.Location} {item.Type} \"{item.Name}\" от {minPrice}"
+                string performanceString = $"{dt:ddMMM HH:mm} {item.Performance.Location.Name} {item.Performance.Type.TypeName} \"{item.Performance.Name}\" от {minPrice}"
                     .EscapeMessageForMarkupV2();
 
                 stringBuilder.AppendLine(string.IsNullOrWhiteSpace(item.Url)
@@ -125,10 +129,10 @@ namespace theatrel.TLBot.Commands
                 stringBuilder.AppendLine("");
             }
 
-            if (!performances.Any())
-                return Task.FromResult("Увы, я ничего не нашел. Попробуем поискать еще?".EscapeMessageForMarkupV2());
-
-            return Task.FromResult(stringBuilder.ToString());
+            return Task.FromResult(
+                !performances.Any()
+                    ? "Увы, я ничего не нашел. Попробуем поискать еще?".EscapeMessageForMarkupV2()
+                    : stringBuilder.ToString());
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ namespace theatrel.DataAccess.Repositories
 {
     internal class SubscriptionsRepository : ISubscriptionsRepository
     {
-        private readonly AppDbContext _dbContext;
+        private AppDbContext _dbContext;
         public SubscriptionsRepository(AppDbContext dbContext)
         {
             _dbContext = dbContext;
@@ -36,7 +37,7 @@ namespace theatrel.DataAccess.Repositories
         {
             try
             {
-                return _dbContext.Subscriptions.Include(s => s.PerformanceFilter).AsNoTracking();
+                return _dbContext.Subscriptions.Include(s => s.PerformanceFilter).AsNoTracking().ToArray();
             }
             catch (Exception ex)
             {
@@ -53,15 +54,29 @@ namespace theatrel.DataAccess.Repositories
         {
             try
             {
-                PerformanceFilterEntity filterEntity = AddFilter(filter);
+                PerformanceFilterEntity filterEntity = new PerformanceFilterEntity
+                {
+                    StartDate = filter.StartDate,
+                    EndDate = filter.EndDate,
+                    DaysOfWeek = filter.DaysOfWeek,
+                    Locations = filter.Locations,
+                    PerformanceTypes = filter.PerformanceTypes,
+                    PartOfDay = filter.PartOfDay
+                };
+
                 TelegramUserEntity userEntity = await _dbContext.TlUsers.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken: cancellationToken);
+                if (null == userEntity)
+                {
+                    var tlUser = new TelegramUserEntity {Culture = "ru", Id = userId};
+                    _dbContext.TlUsers.Add(tlUser);
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                }
 
                 SubscriptionEntity entity = new SubscriptionEntity
                 {
                     TelegramUser = userEntity,
                     PerformanceFilter = filterEntity,
                     LastUpdate = DateTime.Now
-
                 };
 
                 _dbContext.Subscriptions.Add(entity);
@@ -114,36 +129,15 @@ namespace theatrel.DataAccess.Repositories
             }
         }
 
-        private PerformanceFilterEntity AddFilter(IPerformanceFilter filterData)
-        {
-            try
-            {
-                var filter = new PerformanceFilterEntity
-                {
-                    StartDate = filterData.StartDate,
-                    EndDate = filterData.EndDate,
-                    DaysOfWeek = filterData.DaysOfWeek,
-                    Locations = filterData.Locations,
-                    PerformanceTypes = filterData.PerformanceTypes,
-                    PartOfDay = filterData.PartOfDay
-                };
-
-                _dbContext.Filters.Add(filter);
-
-                return filter;
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceError($"Failed to AddFilter {ex.Message}, inner exception {ex.InnerException?.Message}");
-                return null;
-            }
-        }
-
-
         public void Dispose()
         {
+            if (_dbContext == null)
+                return;
+
+            Trace.TraceInformation("SubscriptionRepository was disposed");
             _dbContext?.Dispose();
+
+            _dbContext = null;
         }
     }
-
 }

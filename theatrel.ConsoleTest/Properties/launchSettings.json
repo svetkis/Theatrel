@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "theatrel.ConsoleTest": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DATABASE_URL": "postgres://postgres:ads171@localhost:5432/postgres"
+      }
+    }
+  }
+}
