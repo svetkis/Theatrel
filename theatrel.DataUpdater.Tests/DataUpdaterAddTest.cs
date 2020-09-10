@@ -71,14 +71,14 @@ namespace theatrel.DataUpdater.Tests
             await dataUpdater.UpdateAsync(1, new DateTime(2020, 9, 1), new DateTime(2020, 10, 1),
                 CancellationToken.None);
 
-            var changes = db.PerformanceChanges
+            var changes = db.PlaybillChanges
                 .Where(c => c.PlaybillEntity.Url == performanceUrl)
                 .OrderBy(d => d.LastUpdate).ToArray();
 
             Assert.Equal(3, changes.Count());
             Assert.Equal(1, db.PerformanceLocations.Count(l => l.Name == performanceLocation));
             Assert.Equal(1, db.PerformanceTypes.Count(t => t.TypeName == performanceType));
-            Assert.Equal((int)ReasonOfChanges.NoReason, changes.Last().ReasonOfChanges);
+            Assert.Equal((int)ReasonOfChanges.NothingChanged, changes.Last().ReasonOfChanges);
             Assert.Equal((int)ReasonOfChanges.StartSales, changes[1].ReasonOfChanges);
             Assert.Equal((int)ReasonOfChanges.Creation, changes.First().ReasonOfChanges);
         }

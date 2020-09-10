@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using theatrel.Common.Enums;
 using theatrel.DataAccess;
@@ -30,7 +29,7 @@ namespace theatrel.Subscriptions
         }
 
         private PlaybillChangeEntity[] GetChanges(AppDbContext dbContext) =>
-            dbContext.PerformanceChanges
+            dbContext.PlaybillChanges
                 .Include(c => c.PlaybillEntity)
                 .ThenInclude(p => p.Performance)
                 .ThenInclude(p => p.Type)

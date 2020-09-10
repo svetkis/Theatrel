@@ -15,7 +15,6 @@ namespace theatrel.DataUpdater.Tests.TestSettings
         }
     }
 
-
     internal class TestDbContextConfigurator
     {
         public static void Configure(DbContextOptionsBuilder<AppDbContext> builder)

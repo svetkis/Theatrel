@@ -91,7 +91,7 @@ namespace theatrel.DataUpdater.Tests
             await dataUpdater.UpdateAsync(1, performanceDateTime, performanceDateTime, CancellationToken.None);
 
             //check
-            var changes = db.PerformanceChanges
+            var changes = db.PlaybillChanges
                 .Where(c => c.PlaybillEntityId == playbillEntryId)
                 .OrderBy(d => d.LastUpdate);
 

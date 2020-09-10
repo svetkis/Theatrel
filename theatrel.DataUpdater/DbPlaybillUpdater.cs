@@ -28,7 +28,7 @@ namespace theatrel.DataUpdater
 
         public async Task<bool> UpdateAsync(int theaterId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken)
         {
-            Trace.TraceInformation(" PlaybillUpdater started.");
+            Trace.TraceInformation("PlaybillUpdater started.");
 
             using var dbRepository = _dbService.GetPlaybillRepository();
 
@@ -59,15 +59,16 @@ namespace theatrel.DataUpdater
                 .FirstOrDefault();
 
             var compareResult = ComparePerformanceData(lastChange, data);
-            if (compareResult == ReasonOfChanges.NoReason
-                && lastChange != null && lastChange.ReasonOfChanges == (int)ReasonOfChanges.NoReason)
+            if (compareResult == ReasonOfChanges.NothingChanged
+                && lastChange != null && lastChange.ReasonOfChanges == (int)ReasonOfChanges.NothingChanged)
             {
                 lastChange.LastUpdate = DateTime.Now;
                 await playbillRepository.Update(lastChange);
                 return;
             }
 
-            Trace.TraceInformation($"Reason of changes {compareResult} {data.Name} {data.DateTime:g} price: {data.MinPrice}");
+            if (compareResult != ReasonOfChanges.NothingChanged)
+                Trace.TraceInformation($"Reason of changes {compareResult} {data.Name} {data.DateTime:M} price: {data.MinPrice}");
 
             if (compareResult == ReasonOfChanges.PriceBecameZero)
                 return;
@@ -88,7 +89,7 @@ namespace theatrel.DataUpdater
                 return freshMinPrice == 0 ? ReasonOfChanges.Creation : ReasonOfChanges.StartSales;
 
             if (lastChange.MinPrice == 0)
-                return freshMinPrice == 0 ? ReasonOfChanges.NoReason : ReasonOfChanges.StartSales;
+                return freshMinPrice == 0 ? ReasonOfChanges.NothingChanged : ReasonOfChanges.StartSales;
 
             if (lastChange.MinPrice > freshMinPrice)
             {
@@ -100,7 +101,7 @@ namespace theatrel.DataUpdater
             if (lastChange.MinPrice < freshMinPrice)
                 return ReasonOfChanges.PriceIncreased;
 
-            return ReasonOfChanges.NoReason;
+            return ReasonOfChanges.NothingChanged;
         }
 
         public void Dispose()

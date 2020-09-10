@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
+using theatrel.Common.Enums;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Filters;
@@ -57,7 +58,7 @@ namespace theatrel.TLBot.Commands
 
                 using var subscriptionRepository = DbService.GetSubscriptionRepository();
 
-                SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.ChatId,
+                SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.ChatId, (int)ReasonOfChanges.PriceDecreased,
                     _filterService.GetFilter(chatInfo), cancellationToken);
 
                 return subscription == null

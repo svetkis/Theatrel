@@ -50,7 +50,8 @@ namespace theatrel.DataAccess.Repositories
         private Task<SubscriptionEntity> GetById(int id)
             => _dbContext.Subscriptions.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
 
-        public async Task<SubscriptionEntity> Create(long userId, IPerformanceFilter filter, CancellationToken cancellationToken)
+        public async Task<SubscriptionEntity> Create(long userId, int reasonOfChange, IPerformanceFilter filter,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -65,22 +66,26 @@ namespace theatrel.DataAccess.Repositories
                 };
 
                 TelegramUserEntity userEntity = await _dbContext.TlUsers.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken: cancellationToken);
-                if (null == userEntity)
+                bool newUserEntity = null == userEntity;
+
+                if (newUserEntity)
                 {
-                    var tlUser = new TelegramUserEntity {Culture = "ru", Id = userId};
-                    _dbContext.TlUsers.Add(tlUser);
-                    await _dbContext.SaveChangesAsync(cancellationToken);
+                    Trace.TraceInformation($"User {userId} not found, we will create item");
+                    userEntity = new TelegramUserEntity {Culture = "ru", Id = userId};
                 }
 
                 SubscriptionEntity entity = new SubscriptionEntity
                 {
                     TelegramUser = userEntity,
                     PerformanceFilter = filterEntity,
-                    LastUpdate = DateTime.Now
+                    LastUpdate = DateTime.Now,
+                    TrackingChanges = reasonOfChange
                 };
 
                 _dbContext.Subscriptions.Add(entity);
                 _dbContext.Add(filterEntity);
+                if (newUserEntity)
+                    _dbContext.Add(userEntity);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 return entity;

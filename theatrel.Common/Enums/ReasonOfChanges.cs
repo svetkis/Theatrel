@@ -5,7 +5,7 @@ namespace theatrel.Common.Enums
     [Flags]
     public enum ReasonOfChanges
     {
-        NoReason = 0,
+        NothingChanged = 0,
         Creation = 1,
         PriceDecreased = 2,
         PriceIncreased = 4,

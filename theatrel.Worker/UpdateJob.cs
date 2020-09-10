@@ -6,6 +6,7 @@ using Autofac;
 using Quartz;
 using theatrel.Common;
 using theatrel.Interfaces.DataUpdater;
+using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
 using theatrel.TLBot.Interfaces;
 
@@ -45,6 +46,9 @@ namespace theatrel.Worker
             {
                 ISubscriptionService subscriptionServices = Bootstrapper.Resolve<ISubscriptionService>();
                 var filters = subscriptionServices.GetUpdateFilters();
+
+                if (filters == null)
+                    return false;
 
                 foreach (var filter in filters)
                 {

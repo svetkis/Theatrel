@@ -226,7 +226,7 @@ namespace theatrel.DataAccess.Repositories
         }
 
         private Task<PlaybillChangeEntity> GetChangeById(long id)
-            => _dbContext.PerformanceChanges.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
+            => _dbContext.PlaybillChanges.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
 
         public async Task<bool> Update(PlaybillChangeEntity entity)
         {
