@@ -10,8 +10,10 @@ namespace theatrel.Interfaces.TgBot
 
     public interface IChatDataInfo
     {
-        long ChatId { get; set; }
+        long UserId { get; set; }
         string Culture { get; set; }
+
+        int CommandLine { get; set; }
         int CurrentStepId { get; set; }
         int PreviousStepId { get; set; }
         DateTime When { get; set; }

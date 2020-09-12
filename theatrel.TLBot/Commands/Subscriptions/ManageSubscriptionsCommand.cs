@@ -9,9 +9,9 @@ using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands
+namespace theatrel.TLBot.Commands.Subscriptions
 {
-    internal class MonthCommand : DialogCommandBase
+    internal class ManageSubscriptionsCommand : DialogCommandBase
     {
         private string GoodDay = "Добрый день! ";
         private string IWillHelpYou = "Я помогу вам подобрать билеты в Мариинский театр. ";
@@ -24,7 +24,7 @@ namespace theatrel.TLBot.Commands
 
         public override string Name => "Выбрать месяц";
 
-        public MonthCommand(IDbService dbService) : base((int)DialogStep.SelectMonth, dbService)
+        public ManageSubscriptionsCommand(IDbService dbService) : base((int)DialogStep.SelectMonth, dbService)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture("ru");
 

@@ -31,13 +31,13 @@ namespace theatrel.DataAccess.Repositories
         }
 
         private Task<ChatInfoEntity> GetChatInfoById(long chatId)
-            => _dbContext.TlChats.AsNoTracking().SingleOrDefaultAsync(u => u.ChatId == chatId);
+            => _dbContext.TlChats.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == chatId);
 
         public async Task<ChatInfoEntity> Create(long chatId, string culture, CancellationToken cancellationToken)
         {
             try
             {
-                var entity = new ChatInfoEntity { ChatId = chatId, Culture = culture };
+                var entity = new ChatInfoEntity { UserId = chatId, Culture = culture };
                 _dbContext.TlChats.Add(entity);
                 await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -69,7 +69,7 @@ namespace theatrel.DataAccess.Repositories
 
         public async Task<bool> Update(ChatInfoEntity newValue)
         {
-            ChatInfoEntity oldValue = await GetChatInfoById(newValue.ChatId);
+            ChatInfoEntity oldValue = await GetChatInfoById(newValue.UserId);
 
             if (oldValue == null)
                 return false;

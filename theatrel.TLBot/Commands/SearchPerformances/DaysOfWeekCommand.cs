@@ -11,7 +11,7 @@ using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands
+namespace theatrel.TLBot.Commands.SearchPerformances
 {
     internal class DaysOfWeekCommand : DialogCommandBase
     {

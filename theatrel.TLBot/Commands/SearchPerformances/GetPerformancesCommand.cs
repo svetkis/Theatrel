@@ -15,7 +15,7 @@ using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands
+namespace theatrel.TLBot.Commands.SearchPerformances
 {
     internal class GetPerformancesCommand : DialogCommandBase
     {
@@ -63,7 +63,7 @@ namespace theatrel.TLBot.Commands
 
                     using var subscriptionRepository = DbService.GetSubscriptionRepository();
 
-                    SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.ChatId, trackingChanges,
+                    SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.UserId, trackingChanges,
                         _filterService.GetFilter(chatInfo), cancellationToken);
 
                     return subscription == null

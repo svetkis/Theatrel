@@ -10,10 +10,11 @@ namespace theatrel.DataAccess.Structures.Entities
     public class ChatInfoEntity : IChatDataInfo
     {
         [Key]
-        public long ChatId { get; set; }
+        public long UserId { get; set; }
 
         public string Culture { get; set; }
 
+        public int CommandLine { get; set; }
         public int CurrentStepId { get; set; }
         public int PreviousStepId { get; set; }
 
@@ -44,6 +45,8 @@ namespace theatrel.DataAccess.Structures.Entities
 
         public void Clear()
         {
+            CommandLine = 0;
+
             CurrentStepId = 0;
             PreviousStepId = -1;
 

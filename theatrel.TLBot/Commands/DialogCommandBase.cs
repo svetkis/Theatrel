@@ -10,7 +10,7 @@ using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot.Commands
 {
-    public abstract class DialogCommandBase : IDialogCommand
+    internal abstract class DialogCommandBase : IDialogCommand
     {
         protected const string ReturnMsg = "Для того что бы выбрать другой вариант напишите Нет.";
 

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using theatrel.DataAccess.DbService;
@@ -7,9 +6,9 @@ using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands
+namespace theatrel.TLBot.Commands.SearchPerformances
 {
-    internal class StartCommand : DialogCommandBase
+    internal class StartSearchCommand : DialogCommandBase
     {
         private static readonly string[] StartCommandVariants
             = { @"/start", "привет", "hi", "hello", "добрый день", "начать", "давай", "поищи", "да" };
@@ -18,19 +17,14 @@ namespace theatrel.TLBot.Commands
 
         public override string Name => "Старт";
 
-        public StartCommand(IDbService dbService) : base((int)DialogStep.Start, dbService)
+        public StartSearchCommand(IDbService dbService) : base((int)DialogStep.Start, dbService)
         {
         }
 
         public override bool IsMessageCorrect(string message) => StartCommandVariants.Any(variant => message.ToLower().StartsWith(variant));
 
         public override Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
-        {
-            Trace.TraceInformation($"Reset chat {chatInfo.ChatId}");
-            chatInfo.Clear();
-
-            return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(null));
-        }
+            => Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(null));
 
         public override Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
             => Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage("Вас приветствует экономный театрал."));

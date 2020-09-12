@@ -11,10 +11,10 @@ namespace theatrel.Worker
 {
     public static class Bootstrapper
     {
-        private static ILifetimeScope _rootScope;
+        public static ILifetimeScope RootScope;
         public static void Start()
         {
-            if (_rootScope != null)
+            if (RootScope != null)
                 return;
 
             ContainerBuilder builder = new ContainerBuilder();
@@ -25,37 +25,37 @@ namespace theatrel.Worker
             builder.RegisterModule<DataUpdaterModule>();
             builder.RegisterModule<SubscriptionModule>();
 
-            _rootScope = builder.Build();
+            RootScope = builder.Build();
         }
 
         public static void Stop()
         {
-            _rootScope?.Dispose();
-            _rootScope = null;
+            RootScope?.Dispose();
+            RootScope = null;
         }
 
         public static ILifetimeScope BeginLifetimeScope()
         {
-            if (_rootScope == null)
+            if (RootScope == null)
                 throw new Exception("Bootstrapper hasn't been started!");
 
-            return _rootScope.BeginLifetimeScope();
+            return RootScope.BeginLifetimeScope();
         }
 
         public static T Resolve<T>()
         {
-            if (_rootScope == null)
+            if (RootScope == null)
                 throw new Exception("Bootstrapper hasn't been started!");
 
-            return _rootScope.Resolve<T>(new Parameter[0]);
+            return RootScope.Resolve<T>(new Parameter[0]);
         }
 
         public static T Resolve<T>(Parameter[] parameters)
         {
-            if (_rootScope == null)
+            if (RootScope == null)
                 throw new Exception("Bootstrapper hasn't been started!");
 
-            return _rootScope.Resolve<T>(parameters);
+            return RootScope.Resolve<T>(parameters);
         }
     }
 }

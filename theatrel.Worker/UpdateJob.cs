@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Quartz;
-using Telegram.Bot.Types;
 using theatrel.Common;
 using theatrel.Interfaces.DataUpdater;
 using theatrel.Interfaces.Filters;
@@ -82,19 +81,20 @@ namespace theatrel.Worker
             IFilterService filterService = Bootstrapper.Resolve<IFilterService>();
 
             List<int> addedMonths = new List<int>();
+            var performanceFilters = filters as IPerformanceFilter[] ?? filters.ToArray();
             foreach (var month in Enumerable.Range(0, monthsCount).Select(n => DateTime.Now.Month + n))
             {
                 int m = NormalizeMonth(month);
                 int y = month > 12 ? DateTime.Now.Year + 1 : DateTime.Now.Year;
                 var date = new DateTime(y, m, 1);
-                if (filters.All(f => f.StartDate != date))
+                if (performanceFilters.All(f => f.StartDate != date))
                     addedMonths.Add(month);
             }
 
             if (!addedMonths.Any())
-                return filters.ToArray();
+                return performanceFilters.ToArray();
 
-            List<IPerformanceFilter> newFilters = new List<IPerformanceFilter>(filters);
+            List<IPerformanceFilter> newFilters = new List<IPerformanceFilter>(performanceFilters);
 
             foreach (var month in addedMonths)
             {

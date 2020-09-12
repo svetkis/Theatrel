@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -9,11 +8,7 @@ using theatrel.Common;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
-using theatrel.Interfaces.Filters;
-using theatrel.Interfaces.Playbill;
 using theatrel.Interfaces.TgBot;
-using theatrel.Interfaces.TimeZoneService;
-using theatrel.TLBot.Commands;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
@@ -26,20 +21,14 @@ namespace theatrel.TLBot
 
         private readonly IDbService _dbService;
 
-        private readonly List<IDialogCommand> _commands = new List<IDialogCommand>();
+        private IDialogCommand[][] _commands;
 
-        public TgBotProcessor(IDbService dbService, IPlayBillDataResolver playBillResolver,
-            IFilterService filterService, ITimeZoneService timeZoneService)
+        public TgBotProcessor(IDbService dbService, ITgCommandsConfigurator configurator)
         {
             _cancellationTokenSource = new CancellationTokenSource();
 
             _dbService = dbService;
-
-            _commands.Add(new StartCommand(dbService));
-            _commands.Add(new MonthCommand(dbService));
-            _commands.Add(new DaysOfWeekCommand(dbService));
-            _commands.Add(new PerformanceTypesCommand(dbService));
-            _commands.Add(new GetPerformancesCommand(filterService, timeZoneService, dbService));
+            _commands = configurator.GetDialogCommands();
         }
 
         public void Start(ITgBotService botService, CancellationToken cancellationToken)
@@ -94,6 +83,8 @@ namespace theatrel.TLBot
                 await chatsRepository.Update(chatInfo);
         }
 
+
+
         private async void OnMessage(object sender, ITgInboundMessage tLInboundMessage)
         {
             Trace.TraceInformation($"{tLInboundMessage.ChatId} {tLInboundMessage.Message}");
@@ -110,11 +101,12 @@ namespace theatrel.TLBot
             chatInfo.LastMessage = DateTime.Now;
 
             //check if user wants to return to first step
-            var startCmd = _commands.First();
-            if (startCmd.IsMessageCorrect(message))
+            int idxFirstCorrectBlock = _commands.IndexWhere(commandBlock => commandBlock.First().IsMessageCorrect(message));
+            if (-1 != idxFirstCorrectBlock)
             {
-                await EnsureDbUserExists(chatInfo.ChatId, chatInfo.Culture);
+                await EnsureDbUserExists(chatInfo.UserId, chatInfo.Culture);
                 chatInfo.Clear();
+                chatInfo.CommandLine = idxFirstCorrectBlock;
             }
 
             var prevCmd = GetPreviousCommand(chatInfo);
@@ -126,7 +118,7 @@ namespace theatrel.TLBot
                 return;
             }
 
-            IDialogCommand command = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
+            IDialogCommand command = _commands[chatInfo.CommandLine].FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
             if (command == null)
             {
                 Trace.TraceError($"Current command not found {chatInfo.CurrentStepId}");
@@ -146,7 +138,7 @@ namespace theatrel.TLBot
 
             chatInfo.PreviousStepId = chatInfo.CurrentStepId;
             ++chatInfo.CurrentStepId;
-            var nextCommand = _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
+            var nextCommand = _commands[chatInfo.CommandLine].FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
             if (nextCommand != null)
             {
                 await chatsRepository.Update(chatInfo);
@@ -154,7 +146,7 @@ namespace theatrel.TLBot
             }
             else
             {
-                await Task.Run(() => _botService.SendMessageAsync(chatInfo.ChatId, acknowledgement),
+                await Task.Run(() => _botService.SendMessageAsync(chatInfo.UserId, acknowledgement),
                     _cancellationTokenSource.Token);
                 await chatsRepository.Delete(chatInfo);
             }
@@ -163,10 +155,10 @@ namespace theatrel.TLBot
         private IDialogCommand GetPreviousCommand(IChatDataInfo chatInfo) =>
             chatInfo.PreviousStepId == -1
                 ? null
-                : _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.PreviousStepId);
+                : _commands[chatInfo.CommandLine].FirstOrDefault(cmd => cmd.Label == chatInfo.PreviousStepId);
 
         private IDialogCommand GetNextCommand(IChatDataInfo chatInfo) =>
-            _commands.FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId + 1);
+            _commands[chatInfo.CommandLine].FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId + 1);
 
         private async Task CommandAskQuestion(IDialogCommand cmd, ChatInfoEntity chatInfo, ITgOutboundMessage previousCmdAcknowledgement)
         {
@@ -190,7 +182,7 @@ namespace theatrel.TLBot
                 };
             }
 
-            await Task.Run(() => _botService.SendMessageAsync(chatInfo.ChatId, botResponse), _cancellationTokenSource.Token);
+            await Task.Run(() => _botService.SendMessageAsync(chatInfo.UserId, botResponse), _cancellationTokenSource.Token);
         }
 
         private void SendWrongCommandMessage(long chatId, string message, int chatLevel)
