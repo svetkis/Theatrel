@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Quartz;
+using Telegram.Bot.Types;
 using theatrel.Common;
 using theatrel.Interfaces.DataUpdater;
 using theatrel.Interfaces.Filters;
@@ -47,19 +51,19 @@ namespace theatrel.Worker
                 ISubscriptionService subscriptionServices = Bootstrapper.Resolve<ISubscriptionService>();
                 var filters = subscriptionServices.GetUpdateFilters();
 
-                if (filters == null)
-                    return false;
-
-                foreach (var filter in filters)
+                var culture = CultureInfo.CreateSpecificCulture("ru");
+                foreach (var filter in AddFiltersForNearestMonths(filters, 4))
                 {
                     await using var scope = Bootstrapper.BeginLifetimeScope();
                     {
                         IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
-                        Trace.TraceInformation($"Update playbill for interval {filter.StartDate:g} {filter.EndDate:g}");
+                        Trace.TraceInformation($"Update playbill for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
                         await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, cToken);
                     }
 
+                    //we need to be care with memory because heroku has memory limit for free app
+                    GC.Collect();
                     MemoryHelper.LogMemoryUsage();
                 }
 
@@ -71,6 +75,44 @@ namespace theatrel.Worker
                 Trace.TraceError($"UpdatePlaybill failed {ex.Message}");
                 return false;
             }
+        }
+
+        private IPerformanceFilter[] AddFiltersForNearestMonths(IEnumerable<IPerformanceFilter> filters, int monthsCount)
+        {
+            IFilterService filterService = Bootstrapper.Resolve<IFilterService>();
+
+            List<int> addedMonths = new List<int>();
+            foreach (var month in Enumerable.Range(0, monthsCount).Select(n => DateTime.Now.Month + n))
+            {
+                int m = NormalizeMonth(month);
+                int y = month > 12 ? DateTime.Now.Year + 1 : DateTime.Now.Year;
+                var date = new DateTime(y, m, 1);
+                if (filters.All(f => f.StartDate != date))
+                    addedMonths.Add(month);
+            }
+
+            if (!addedMonths.Any())
+                return filters.ToArray();
+
+            List<IPerformanceFilter> newFilters = new List<IPerformanceFilter>(filters);
+
+            foreach (var month in addedMonths)
+            {
+                int m = NormalizeMonth(month);
+
+                int y = month > 12 ? DateTime.Now.Year + 1 : DateTime.Now.Year;
+                var date = new DateTime(y, m, 1);
+
+                newFilters.Add(filterService.GetFilter(date, date.AddMonths(1).AddDays(-1)));
+            }
+
+            return newFilters.ToArray();
+        }
+
+        private int NormalizeMonth(int month)
+        {
+            int m = month % 12;
+            return m == 0 ? 12 : m;
         }
 
         public async Task<bool> SubscriptionsCleanup(CancellationToken cToken)

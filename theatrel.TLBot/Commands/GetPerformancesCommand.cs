@@ -23,6 +23,7 @@ namespace theatrel.TLBot.Commands
         private readonly ITimeZoneService _timeZoneService;
 
         private const string DecreasePriceSubscription = "Подписаться на снижение цены";
+        private const string NewInPlaybillSubscription = "Подписаться на появление билетов в продаже цены";
         private const string No = "Спасибо, не надо";
 
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
@@ -51,36 +52,30 @@ namespace theatrel.TLBot.Commands
         {
             Trace.TraceInformation("GetPerformancesCommand.ApplyResult");
 
-            try
+            switch(message)
             {
-                if (!string.Equals(message, DecreasePriceSubscription, StringComparison.CurrentCultureIgnoreCase))
+                case DecreasePriceSubscription:
+                case NewInPlaybillSubscription:
+                {
+                    int trackingChanges = message == DecreasePriceSubscription
+                        ? (int) ReasonOfChanges.PriceDecreased
+                        : (int) (ReasonOfChanges.StartSales | ReasonOfChanges.Creation);
+
+                    using var subscriptionRepository = DbService.GetSubscriptionRepository();
+
+                    SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.ChatId, trackingChanges,
+                        _filterService.GetFilter(chatInfo), cancellationToken);
+
+                    return subscription == null
+                        ? new TgOutboundMessage("Простите, но я не смог добавить подписку.")
+                        : new TgOutboundMessage("Подписка добавлена.");
+                }
+                default:
                     return new TgOutboundMessage("Приятно было пообщаться. Обращайтесь еще.");
-
-                using var subscriptionRepository = DbService.GetSubscriptionRepository();
-
-                SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.ChatId, (int)ReasonOfChanges.PriceDecreased,
-                    _filterService.GetFilter(chatInfo), cancellationToken);
-
-                return subscription == null
-                    ? new TgOutboundMessage("Простите, но я не смог добавить подписку.")
-                    : new TgOutboundMessage("Подписка добавлена.");
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceInformation($"GetPerformancesCommand.ApplyResult exception : {ex.Message}");
-                return new TgOutboundMessage("Простите, но я не смог добавить подписку.");
-            }
-            finally
-            {
-                Trace.TraceInformation($"GetPerformancesCommand.ApplyResult finished");
             }
         }
 
-        public override bool IsMessageCorrect(string message)
-        {
-            return string.Equals(message, DecreasePriceSubscription, StringComparison.InvariantCultureIgnoreCase)
-                   || string.Equals(message, No, StringComparison.InvariantCultureIgnoreCase);
-        }
+        public override bool IsMessageCorrect(string message) => true;
 
         public override async Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
@@ -90,7 +85,18 @@ namespace theatrel.TLBot.Commands
             PlaybillEntity[] filteredPerformances = performances.Where(x => _filterService.IsDataSuitable(x.Performance.Location.Name, x.Performance.Type.TypeName,
                     x.When, filter)).ToArray();
 
-            return new TgOutboundMessage(await PerformancesMessage(filteredPerformances, filter, chatInfo.When, chatInfo.Culture), CommandKeyboardMarkup) {IsEscaped = true};
+            var keys = new ReplyKeyboardMarkup
+            {
+                Keyboard = GroupKeyboardButtons(new[]
+                {
+                    performances.Any() ? new KeyboardButton(DecreasePriceSubscription) :  new KeyboardButton(NewInPlaybillSubscription) ,
+                    new KeyboardButton(No),
+                }, 1),
+                OneTimeKeyboard = true,
+                ResizeKeyboard = true
+            };
+
+            return new TgOutboundMessage(await PerformancesMessage(filteredPerformances, filter, chatInfo.When, chatInfo.Culture), keys) {IsEscaped = true};
         }
 
         private Task<string> PerformancesMessage(PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)
