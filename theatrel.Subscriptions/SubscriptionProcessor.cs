@@ -118,20 +118,21 @@ namespace theatrel.Subscriptions
 
         private string GetChangeDescription(PlaybillChangeEntity change)
         {
-            var culture = CultureInfo.CreateSpecificCulture("ru");
+            var cultureRu = CultureInfo.CreateSpecificCulture("ru");
+            string formattedDate = change.PlaybillEntity.When.AddHours(3).ToString("g", cultureRu);
 
             ReasonOfChanges reason = (ReasonOfChanges)change.ReasonOfChanges;
             switch (reason)
             {
                 case ReasonOfChanges.Creation:
-                    string month = culture.DateTimeFormat.GetMonthName(change.PlaybillEntity.When.Month);
-                    return $"Новое в афише на {month}: {change.PlaybillEntity.When.AddHours(3):g} {change.PlaybillEntity.Performance.Name} {change.PlaybillEntity.Url}";
+                    string month = cultureRu.DateTimeFormat.GetMonthName(change.PlaybillEntity.When.Month);
+                    return $"Новое в афише на {month}: {formattedDate} {change.PlaybillEntity.Performance.Name} {change.PlaybillEntity.Url}";
                 case ReasonOfChanges.PriceDecreased:
-                    return $"Снижена цена {change.PlaybillEntity.When.AddHours(3):g} \"{change.PlaybillEntity.Performance.Name}\" цена билета от {change.MinPrice} {change.PlaybillEntity.Url}";
+                    return $"Снижена цена \"{change.PlaybillEntity.Performance.Name}\" {formattedDate} цена билета от {change.MinPrice} {change.PlaybillEntity.Url}";
                 case ReasonOfChanges.PriceIncreased:
-                    return $"Билеты подорожали {change.PlaybillEntity.When.AddHours(3):g} {change.PlaybillEntity.Performance.Name} цена билета от {change.MinPrice} {change.PlaybillEntity.Url}";
+                    return $"Билеты подорожали {change.PlaybillEntity.Performance.Name} {formattedDate} цена билета от {change.MinPrice} {change.PlaybillEntity.Url}";
                 case ReasonOfChanges.StartSales:
-                    return $"Появились в продаже билеты {change.PlaybillEntity.When.AddHours(3):g} {change.PlaybillEntity.Performance.Name} цена билета от {change.MinPrice} {change.PlaybillEntity.Url}";
+                    return $"Появились в продаже билеты {change.PlaybillEntity.Performance.Name} {formattedDate} цена билета от {change.MinPrice} {change.PlaybillEntity.Url}";
             }
 
             return null;
