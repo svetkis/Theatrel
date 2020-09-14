@@ -25,27 +25,27 @@ namespace theatrel.TLBot.Commands.SearchPerformances
 
             CommandKeyboardMarkup = new ReplyKeyboardMarkup
             {
-                Keyboard = GroupKeyboardButtons(buttons, ButtonsInLine),
+                Keyboard = GroupKeyboardButtons(ButtonsInLine, buttons),
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             };
         }
 
-        public override Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             chatInfo.Types = ParseMessage(message);
 
-            return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(null));
+            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(null));
         }
 
         public override bool IsMessageCorrect(string message) => SplitMessage(message).Any();
 
-        public override Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("Какие представления Вас интересуют?");
 
-            return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(stringBuilder.ToString(), CommandKeyboardMarkup));
+            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup));
         }
 
         private string[] ParseMessage(string message)

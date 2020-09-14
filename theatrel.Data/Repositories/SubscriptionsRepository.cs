@@ -50,6 +50,21 @@ namespace theatrel.DataAccess.Repositories
         private Task<SubscriptionEntity> GetById(int id)
             => _dbContext.Subscriptions.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
 
+        public SubscriptionEntity[] GetUserSubscriptions(long userId)
+        {
+            try
+            {
+                return _dbContext.Subscriptions
+                    .Include(s => s.PerformanceFilter)
+                    .Where(s => s.TelegramUserId == userId).AsNoTracking().ToArray();
+            }
+            catch (Exception e)
+            {
+                Trace.TraceError($"GetUserSubscriptions db exceptions {e.Message} {e.InnerException?.Message}");
+                return null;
+            }
+        }
+
         public async Task<SubscriptionEntity> Create(long userId, int reasonOfChange, IPerformanceFilter filter,
             CancellationToken cancellationToken)
         {
@@ -100,6 +115,23 @@ namespace theatrel.DataAccess.Repositories
         public async Task<bool> Delete(SubscriptionEntity entity)
         {
             _dbContext.Subscriptions.Remove(entity);
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Failed to delete subscription {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteRange(IEnumerable<SubscriptionEntity> entities)
+        {
+            foreach (var entity in entities)
+                _dbContext.Subscriptions.Remove(entity);
 
             try
             {

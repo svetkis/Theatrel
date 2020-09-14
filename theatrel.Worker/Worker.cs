@@ -47,7 +47,7 @@ namespace theatrel.Worker
             MemoryHelper.LogMemoryUsage();
 
             await ScheduleDataUpdates(cancellationToken);
-            await ScheduleOneTimeDataUpdate(cancellationToken);
+            //await ScheduleOneTimeDataUpdate(cancellationToken);
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)

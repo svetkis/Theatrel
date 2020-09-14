@@ -60,7 +60,7 @@ namespace theatrel.TLBot.Tests
             bool sent = false;
             var tgBotServiceMock = new Mock<ITgBotService>();
             tgBotServiceMock.Setup(x => x.Start(CancellationToken.None)).Verifiable();
-            tgBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgOutboundMessage>()))
+            tgBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgCommandResponse>()))
                 .Callback(() => { sent = true; });
 
             await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
@@ -96,7 +96,7 @@ namespace theatrel.TLBot.Tests
             Assert.Equal(month, chatData.When.Month);
             Assert.Equal(performanceType.ToLower(), chatData.Types.First().ToLower());
 
-            tgBotServiceMock.Verify(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgOutboundMessage>()), Times.AtLeastOnce);
+            tgBotServiceMock.Verify(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgCommandResponse>()), Times.AtLeastOnce);
 
             //second dialog after first
             foreach (var cmd in commands)

@@ -83,8 +83,6 @@ namespace theatrel.TLBot
                 await chatsRepository.Update(chatInfo);
         }
 
-
-
         private async void OnMessage(object sender, ITgInboundMessage tLInboundMessage)
         {
             Trace.TraceInformation($"{tLInboundMessage.ChatId} {tLInboundMessage.Message}");
@@ -134,10 +132,14 @@ namespace theatrel.TLBot
             }
 
             Trace.TraceInformation($"Command {command.Name} ApplyResult");
-            ITgOutboundMessage acknowledgement = await command.ApplyResult(chatInfo, message, _cancellationTokenSource.Token);
+            ITgCommandResponse acknowledgement = await command.ApplyResult(chatInfo, message, _cancellationTokenSource.Token);
 
-            chatInfo.PreviousStepId = chatInfo.CurrentStepId;
-            ++chatInfo.CurrentStepId;
+            if (!acknowledgement.NeedToRepeat)
+            {
+                chatInfo.PreviousStepId = chatInfo.CurrentStepId;
+                ++chatInfo.CurrentStepId;
+            }
+
             var nextCommand = _commands[chatInfo.CommandLine].FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
             if (nextCommand != null)
             {
@@ -160,13 +162,13 @@ namespace theatrel.TLBot
         private IDialogCommand GetNextCommand(IChatDataInfo chatInfo) =>
             _commands[chatInfo.CommandLine].FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId + 1);
 
-        private async Task CommandAskQuestion(IDialogCommand cmd, ChatInfoEntity chatInfo, ITgOutboundMessage previousCmdAcknowledgement)
+        private async Task CommandAskQuestion(IDialogCommand cmd, ChatInfoEntity chatInfo, ITgCommandResponse previousCmdAcknowledgement)
         {
             if (cmd == null)
                 return;
 
-            ITgOutboundMessage nextDlgQuestion = await cmd.AscUser(chatInfo, _cancellationTokenSource.Token);
-            ITgOutboundMessage botResponse = nextDlgQuestion;
+            ITgCommandResponse nextDlgQuestion = await cmd.AscUser(chatInfo, _cancellationTokenSource.Token);
+            ITgCommandResponse botResponse = nextDlgQuestion;
             if (!string.IsNullOrWhiteSpace(previousCmdAcknowledgement?.Message))
                 botResponse.Message = $"{previousCmdAcknowledgement.Message}{Environment.NewLine}{nextDlgQuestion.Message}";
 
@@ -188,13 +190,13 @@ namespace theatrel.TLBot
         private void SendWrongCommandMessage(long chatId, string message, int chatLevel)
         {
             Trace.TraceInformation($"Wrong command: {chatId} {chatLevel} {message}");
-            _botService.SendMessageAsync(chatId, new TgOutboundMessage("Простите, я вас не понял. Попробуйте еще раз."));
+            _botService.SendMessageAsync(chatId, new TgCommandResponse("Простите, я вас не понял. Попробуйте еще раз."));
         }
 
         private void SendErrorMessage(long chatId, string message, int chatLevel)
         {
             Trace.TraceInformation($"Wrong command: {chatId} {chatLevel} {message}");
-            _botService.SendMessageAsync(chatId, new TgOutboundMessage("Простите, что то пошло не так. Попробуйте еще раз."));
+            _botService.SendMessageAsync(chatId, new TgCommandResponse("Простите, что то пошло не так. Попробуйте еще раз."));
         }
 
     }

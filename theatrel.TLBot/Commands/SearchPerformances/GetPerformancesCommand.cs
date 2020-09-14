@@ -38,17 +38,17 @@ namespace theatrel.TLBot.Commands.SearchPerformances
 
             CommandKeyboardMarkup = new ReplyKeyboardMarkup
             {
-                Keyboard = GroupKeyboardButtons(new[]
+                Keyboard = GroupKeyboardButtons(1, new[]
                 {
                     new KeyboardButton(DecreasePriceSubscription),
                     new KeyboardButton(No),
-                }, 1),
+                }),
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             };
         }
 
-        public override async Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override async Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             Trace.TraceInformation("GetPerformancesCommand.ApplyResult");
 
@@ -67,17 +67,17 @@ namespace theatrel.TLBot.Commands.SearchPerformances
                         _filterService.GetFilter(chatInfo), cancellationToken);
 
                     return subscription == null
-                        ? new TgOutboundMessage("Простите, но я не смог добавить подписку.")
-                        : new TgOutboundMessage("Подписка добавлена.");
+                        ? new TgCommandResponse("Простите, но я не смог добавить подписку.")
+                        : new TgCommandResponse("Подписка добавлена.");
                 }
                 default:
-                    return new TgOutboundMessage("Приятно было пообщаться. Обращайтесь еще.");
+                    return new TgCommandResponse("Приятно было пообщаться. Обращайтесь еще.");
             }
         }
 
         public override bool IsMessageCorrect(string message) => true;
 
-        public override async Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override async Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             IPerformanceFilter filter = _filterService.GetFilter(chatInfo);
             using var playbillRepo = DbService.GetPlaybillRepository();
@@ -87,16 +87,16 @@ namespace theatrel.TLBot.Commands.SearchPerformances
 
             var keys = new ReplyKeyboardMarkup
             {
-                Keyboard = GroupKeyboardButtons(new[]
+                Keyboard = GroupKeyboardButtons(1, new[]
                 {
                     performances.Any() ? new KeyboardButton(DecreasePriceSubscription) :  new KeyboardButton(NewInPlaybillSubscription) ,
                     new KeyboardButton(No),
-                }, 1),
+                }),
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             };
 
-            return new TgOutboundMessage(await PerformancesMessage(filteredPerformances, filter, chatInfo.When, chatInfo.Culture), keys) {IsEscaped = true};
+            return new TgCommandResponse(await PerformancesMessage(filteredPerformances, filter, chatInfo.When, chatInfo.Culture), keys) {IsEscaped = true};
         }
 
         private Task<string> PerformancesMessage(PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)

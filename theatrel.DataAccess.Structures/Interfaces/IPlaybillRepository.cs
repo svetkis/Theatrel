@@ -12,7 +12,9 @@ namespace theatrel.DataAccess.Structures.Interfaces
         IEnumerable<PlaybillEntity> GetList(DateTime from, DateTime to);
         PlaybillEntity Get(IPerformanceData data);
         PlaybillEntity Get(int id);
-        public IEnumerable<PlaybillEntity> GetOutdatedList();
+        PlaybillEntity GetWithName(int id);
+
+        IEnumerable<PlaybillEntity> GetOutdatedList();
 
         Task<PlaybillEntity> AddPlaybill(IPerformanceData data);
         Task<bool> AddChange(PlaybillEntity entity, PlaybillChangeEntity change);

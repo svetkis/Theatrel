@@ -70,11 +70,13 @@ namespace theatrel.TLBot
         private void BotOnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
             => OnMessage?.Invoke(sender, new TgInboundMessage { ChatId = e.Message.Chat.Id, Message = e.Message.Text.Trim() });
 
-        public async Task<bool> SendMessageAsync(long chatId, ITgOutboundMessage message)
+        public async Task<bool> SendMessageAsync(long chatId, ITgCommandResponse message)
         {
+            if (string.IsNullOrEmpty(message.Message))
+                return true;
+
             char[] toLog = message.Message?.Take(100).ToArray();
-            string msgToLog = toLog == null ? string.Empty : new string(toLog);
-            Trace.TraceInformation($"SendMessage id: {chatId} msg: {msgToLog}...");
+            Trace.TraceInformation($"SendMessage id: {chatId} msg: {new string(toLog)}...");
 
             try
             {
@@ -103,7 +105,7 @@ namespace theatrel.TLBot
         }
 
         public async Task<bool> SendMessageAsync(long chatId, string message)
-            => await SendMessageAsync(chatId, new TgOutboundMessage(message));
+            => await SendMessageAsync(chatId, new TgCommandResponse(message));
 
         private const int MaxMessageSize = 4096;
         private string[] SplitMessage(string message)

@@ -11,12 +11,15 @@ namespace theatrel.DataAccess.Structures.Interfaces
     public interface ISubscriptionsRepository : IDIRegistrable, IDisposable
     {
         Task<SubscriptionEntity> Get(int id);
-        public IEnumerable<SubscriptionEntity> GetAllWithFilter();
+        IEnumerable<SubscriptionEntity> GetAllWithFilter();
+
+        SubscriptionEntity[] GetUserSubscriptions(long userId);
 
         Task<SubscriptionEntity> Create(long userId, int reasonOfChange, IPerformanceFilter filter,
             CancellationToken cancellationToken);
 
         Task<bool> Delete(SubscriptionEntity entity);
+        Task<bool> DeleteRange(IEnumerable<SubscriptionEntity> entity);
         Task<bool> Update(SubscriptionEntity newValue);
     }
 }

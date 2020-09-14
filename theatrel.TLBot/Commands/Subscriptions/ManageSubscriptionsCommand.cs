@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
+using theatrel.Common;
 using theatrel.DataAccess.DbService;
+using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
@@ -13,86 +17,149 @@ namespace theatrel.TLBot.Commands.Subscriptions
 {
     internal class ManageSubscriptionsCommand : DialogCommandBase
     {
-        private string GoodDay = "Добрый день! ";
-        private string IWillHelpYou = "Я помогу вам подобрать билеты в Мариинский театр. ";
-        private string Msg = "Какой месяц вас интересует?";
+        private const string DeleteAll = "Удалить все";
+        private const string DeleteMany = "Удалить";
+        private const string NothingTodo = "Оставить как есть";
 
-        private readonly string[] _monthNames;
-        private readonly string[] _monthNamesAbbreviated;
+        protected override string ReturnCommandMessage { get; set; } = string.Empty;
 
-        protected override string ReturnCommandMessage { get; set; } = "Выбрать другой месяц";
-
-        public override string Name => "Выбрать месяц";
+        public override string Name => "Редактировать подписки";
 
         public ManageSubscriptionsCommand(IDbService dbService) : base((int)DialogStep.SelectMonth, dbService)
         {
-            var cultureRu = CultureInfo.CreateSpecificCulture("ru");
-
-            _monthNames = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetMonthName(num)).ToArray();
-            _monthNamesAbbreviated = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetAbbreviatedMonthName(num)).ToArray();
-
-            var buttons = _monthNames.Select(m => new KeyboardButton(m)).ToArray();
-            CommandKeyboardMarkup = new ReplyKeyboardMarkup
-            {
-                Keyboard = GroupKeyboardButtons(buttons, ButtonsInLine),
-                OneTimeKeyboard = true,
-                ResizeKeyboard = true
-            };
         }
 
-        public override bool IsMessageCorrect(string message) => 0 != GetMonth(message.Trim().ToLower());
+        public override bool IsMessageCorrect(string message)
+        {
+            string trimMsg = message.Trim();
+            if (string.Equals(trimMsg, DeleteAll, StringComparison.InvariantCultureIgnoreCase))
+                return true;
 
-        private int GetMonth(string msg)
+            if (string.Equals(trimMsg, NothingTodo, StringComparison.InvariantCultureIgnoreCase))
+                return true;
+
+            if ( new[] { DeleteMany }.Any(s => trimMsg.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)))
+                return true;
+
+            return false;
+        }
+
+        private int GetInt(string msg)
         {
             if (int.TryParse(msg, out var value))
             {
-                if (value > 0 && value < 12)
-                    return value;
-
-                return 0;
+                return value - 1;
             }
 
-            int num = CheckEnumerable(_monthNames, msg);
-            if (num != 0)
-                return num;
-
-            int numAbr = CheckEnumerable(_monthNamesAbbreviated, msg);
-
-            return numAbr;
+            return -1;
         }
 
-        public override Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        private int[] GetInts(string msg)
         {
-            int month = GetMonth(message.Trim().ToLower());
+            if (string.IsNullOrEmpty(msg))
+                return null;
 
-            int year = DateTime.Now.Month > month ? DateTime.Now.Year + 1 : DateTime.Now.Year;
+            string[] splitData = msg.Split(",");
 
-            chatInfo.When = new DateTime(year, month, 1);
+            return splitData.Select(s => GetInt(s.Trim())).ToArray();
+        }
+
+        public override async Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        {
+            string trimMsg = message.Trim().ToLower();
+            if (string.Equals(trimMsg, NothingTodo))
+                return new TgCommandResponse(null);
+
+            using var subscriptionRepository = DbService.GetSubscriptionRepository();
+
+            SubscriptionEntity[] toDelete = null;
+
+            bool isDeleteAll = string.Equals(trimMsg, DeleteAll, StringComparison.InvariantCultureIgnoreCase);
+            bool isDeleteMany = trimMsg.StartsWith(DeleteMany, StringComparison.InvariantCultureIgnoreCase);
+
+            if (isDeleteAll)
+                toDelete = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
+
+            if (isDeleteMany)
+            {
+                int[] indexes = GetInts(trimMsg.Substring(DeleteMany.Length + 1));
+                var subscriptions = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
+                if (indexes == null || indexes.Any(i => i > subscriptions.Length - 1 || i < 0))
+                {
+                    return new TgCommandResponse("Произошла ошибка при удаление подписок. Не правильный индекс подписки.");
+                }
+
+                toDelete= subscriptions.Select((s, i) => new {idx = i, subscription = s})
+                    .Where(d => indexes.Contains(d.idx)).Select(d => d.subscription).ToArray();
+            }
+
+            if (null == toDelete) // no command
+            {
+                return new TgCommandResponse(null);
+            }
+
+            bool result = await subscriptionRepository.DeleteRange(toDelete);
+
+            return result
+                ? new TgCommandResponse("Ваши подписки были успешно удалены.") {NeedToRepeat = isDeleteMany}
+                : new TgCommandResponse("Произошла ошибка при удалении подписок.");
+        }
+
+        public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        {
+            using var subscriptionRepository = DbService.GetSubscriptionRepository();
+            SubscriptionEntity[] subscriptions = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
+
+            using var playbillRepository = DbService.GetPlaybillRepository();
+
+            if (!subscriptions.Any())
+                Task.FromResult<ITgCommandResponse>(new TgCommandResponse("У вас нет подписок."));
+
+            List<KeyboardButton> buttons = new List<KeyboardButton>();
 
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
-            return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(
-                $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}", ReturnKeyboardMarkup));
-        }
 
-        public override Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
-        {
-            switch (chatInfo.DialogState)
+            var stringBuilder = new StringBuilder();
+
+            stringBuilder.AppendLine("Ваши подписки:");
+
+            for (int i = 0; i < subscriptions.Length; ++i)
             {
-                case DialogStateEnum.DialogReturned:
-                    return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(Msg, CommandKeyboardMarkup));
-                case DialogStateEnum.DialogStarted:
-                    return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup));
-                default:
-                    throw new NotImplementedException();
+                var filter = subscriptions[i].PerformanceFilter;
+                var changesDescription = subscriptions[i].TrackingChanges.GetTrackingChangesDescription().ToLower();
+
+                if (filter.PerformanceId == -1)
+                {
+                    string monthName = culture.DateTimeFormat.GetMonthName(filter.StartDate.Month);
+
+                    string days = filter.DaysOfWeek == null
+                        ? "любой день недели"
+                        : string.Join(" или ", filter.DaysOfWeek.Select(d => culture.DateTimeFormat.GetDayName(d)));
+
+                    string types = filter.PerformanceTypes == null
+                        ? "все представления"
+                        : $"{string.Join("или ", filter.PerformanceTypes)}";
+
+                    stringBuilder.AppendLine($" {i+1}. {monthName} {filter.StartDate.Year}, {types} {days} {changesDescription}");
+
+                    buttons.Add(new KeyboardButton($"Удалить {i+1}"));
+                }
+                else
+                {
+                    var playbillEntry = playbillRepository.GetWithName(filter.PerformanceId);
+                    var date = playbillEntry.When.AddHours(3).ToString("g", culture);
+                    stringBuilder.AppendLine($" {i+1}. {playbillEntry.Performance.Name} {date} {changesDescription}");
+
+                    buttons.Add(new KeyboardButton($"Удалить {i+1}"));
+                }
             }
-        }
 
-        private int CheckEnumerable(string[] checkedData, string msg)
-        {
-            var monthData = checkedData.Select((month, idx) => new { idx, month })
-                .FirstOrDefault(data => msg.Equals(data.month, StringComparison.OrdinalIgnoreCase));
-
-            return monthData?.idx + 1 ?? 0;
+            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse($"{stringBuilder}", new ReplyKeyboardMarkup
+            {
+                Keyboard = GroupKeyboardButtons(ButtonsInLine, buttons, new []{ new KeyboardButton(DeleteAll), new KeyboardButton(NothingTodo), }),
+                OneTimeKeyboard = true,
+                ResizeKeyboard = true
+            }));
         }
     }
 }

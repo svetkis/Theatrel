@@ -34,7 +34,7 @@ namespace theatrel.TLBot.Commands.SearchPerformances
             var buttons = _monthNames.Select(m => new KeyboardButton(m)).ToArray();
             CommandKeyboardMarkup = new ReplyKeyboardMarkup
             {
-                Keyboard = GroupKeyboardButtons(buttons, ButtonsInLine),
+                Keyboard = GroupKeyboardButtons(ButtonsInLine, buttons),
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             };
@@ -61,7 +61,7 @@ namespace theatrel.TLBot.Commands.SearchPerformances
             return numAbr;
         }
 
-        public override Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             int month = GetMonth(message.Trim().ToLower());
 
@@ -70,18 +70,18 @@ namespace theatrel.TLBot.Commands.SearchPerformances
             chatInfo.When = new DateTime(year, month, 1);
 
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
-            return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(
+            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(
                 $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}", ReturnKeyboardMarkup));
         }
 
-        public override Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             switch (chatInfo.DialogState)
             {
                 case DialogStateEnum.DialogReturned:
-                    return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(Msg, CommandKeyboardMarkup));
+                    return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(Msg, CommandKeyboardMarkup));
                 case DialogStateEnum.DialogStarted:
-                    return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup));
+                    return Task.FromResult<ITgCommandResponse>(new TgCommandResponse($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup));
                 default:
                     throw new NotImplementedException();
             }

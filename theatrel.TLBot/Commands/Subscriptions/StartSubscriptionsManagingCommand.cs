@@ -23,10 +23,10 @@ namespace theatrel.TLBot.Commands.Subscriptions
 
         public override bool IsMessageCorrect(string message) => StartCommandVariants.Any(variant => message.ToLower().Contains(variant));
 
-        public override Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
-            => Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(null));
+        public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+            => Task.FromResult<ITgCommandResponse>(new TgCommandResponse(null));
 
-        public override Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
-            => Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage("Управление подписками."));
+        public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+            => Task.FromResult<ITgCommandResponse>(new TgCommandResponse("Управление подписками."));
     }
 }

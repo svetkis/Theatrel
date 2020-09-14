@@ -41,15 +41,18 @@ namespace theatrel.TLBot.Commands
             }
         }
 
-        protected KeyboardButton[][] GroupKeyboardButtons(IEnumerable<KeyboardButton> buttons, int maxCount)
+        protected KeyboardButton[][] GroupKeyboardButtons(int maxCount, params IEnumerable<KeyboardButton>[] buttons)
         {
             List<List<KeyboardButton>> groupedButtons = new List<List<KeyboardButton>> { new List<KeyboardButton>() };
-            foreach (var keyboardButton in buttons)
+            foreach (var buttonsEnumerable in buttons)
             {
-                if (groupedButtons.Last().Count >= maxCount)
-                    groupedButtons.Add(new List<KeyboardButton>());
+                foreach (var keyboardButton in buttonsEnumerable)
+                {
+                    if (groupedButtons.Last().Count >= maxCount)
+                        groupedButtons.Add(new List<KeyboardButton>());
 
-                groupedButtons.Last().Add(keyboardButton);
+                    groupedButtons.Last().Add(keyboardButton);
+                }
             }
 
             return groupedButtons.Select(list => list.ToArray()).ToArray();
@@ -60,9 +63,9 @@ namespace theatrel.TLBot.Commands
 
         public abstract bool IsMessageCorrect(string message);
 
-        public abstract Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken);
+        public abstract Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken);
 
-        public abstract Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);
+        public abstract Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);
 
         public bool IsReturnCommand(string message)
             => string.Equals(message, ReturnCommandMessage, StringComparison.CurrentCultureIgnoreCase);

@@ -25,7 +25,7 @@ namespace theatrel.TLBot.Tests
         {
             var tgBotServiceMock = new Mock<ITgBotService>();
             tgBotServiceMock.Setup(x => x.Start(CancellationToken.None)).Verifiable();
-            tgBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgOutboundMessage>())).Verifiable();
+            tgBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgCommandResponse>())).Verifiable();
 
             var playBillResolverMock = new Mock<IPlayBillDataResolver>();
             playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))

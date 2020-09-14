@@ -87,14 +87,14 @@ namespace theatrel.TLBot.Commands.SearchPerformances
 
             CommandKeyboardMarkup = new ReplyKeyboardMarkup
             {
-                Keyboard = GroupKeyboardButtons(buttons, ButtonsInLine),
+                Keyboard = GroupKeyboardButtons(ButtonsInLine, buttons),
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             };
         }
 
         private const string YouSelected = "Вы выбрали";
-        public override Task<ITgOutboundMessage> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             var days = ParseMessage(message);
             chatInfo.Days = days;
@@ -102,19 +102,19 @@ namespace theatrel.TLBot.Commands.SearchPerformances
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
 
             if (days.SequenceEqual(WeekDays))
-                return Task.FromResult<ITgOutboundMessage>(
-                    new TgOutboundMessage($"{YouSelected} {WeekDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage));
+                return Task.FromResult<ITgCommandResponse>(
+                    new TgCommandResponse($"{YouSelected} {WeekDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage));
 
             if (days.SequenceEqual(Weekends))
-                return Task.FromResult<ITgOutboundMessage>(
-                    new TgOutboundMessage($"{YouSelected} {WeekendsNames.First()}. {ReturnMsg}", ReturnCommandMessage));
+                return Task.FromResult<ITgCommandResponse>(
+                    new TgCommandResponse($"{YouSelected} {WeekendsNames.First()}. {ReturnMsg}", ReturnCommandMessage));
 
             if (days.SequenceEqual(AllDays))
-                return Task.FromResult<ITgOutboundMessage>(
-                    new TgOutboundMessage($"{YouSelected} {AllDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage));
+                return Task.FromResult<ITgCommandResponse>(
+                    new TgCommandResponse($"{YouSelected} {AllDaysNames.First()}. {ReturnMsg}", ReturnCommandMessage));
 
-            return Task.FromResult<ITgOutboundMessage>(
-                new TgOutboundMessage(
+            return Task.FromResult<ITgCommandResponse>(
+                new TgCommandResponse(
                 $"{YouSelected} {string.Join(" или ", chatInfo.Days.Select(d => culture.DateTimeFormat.GetDayName(d)))}. {ReturnMsg}",
                 ReturnCommandMessage));
         }
@@ -125,11 +125,11 @@ namespace theatrel.TLBot.Commands.SearchPerformances
             return days.Any();
         }
 
-        public override Task<ITgOutboundMessage> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("В какой день недели Вы хотели бы посетить театр? Вы можете выбрать несколько дней.");
-            return Task.FromResult<ITgOutboundMessage>(new TgOutboundMessage(stringBuilder.ToString(), CommandKeyboardMarkup));
+            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup));
         }
 
         private DayOfWeek[] ParseMessage(string message)

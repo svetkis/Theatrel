@@ -47,7 +47,7 @@ namespace theatrel.ConsoleTest
 
             _tgBotServiceMock = new Mock<ITgBotService>();
             _tgBotServiceMock.Setup(x => x.Start(CancellationToken.None)).Verifiable();
-            _tgBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgOutboundMessage>()))
+            _tgBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgCommandResponse>()))
                 .Callback(() => { _isSent = true; });
 
             ILifetimeScope scope = Bootstrapper.RootScope.BeginLifetimeScope(builder =>
