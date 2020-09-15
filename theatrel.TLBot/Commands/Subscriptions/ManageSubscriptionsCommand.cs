@@ -67,15 +67,16 @@ namespace theatrel.TLBot.Commands.Subscriptions
         public override async Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             string trimMsg = message.Trim().ToLower();
-            if (string.Equals(trimMsg, NothingTodo))
+
+            bool isDeleteAll = string.Equals(trimMsg, DeleteAll, StringComparison.InvariantCultureIgnoreCase);
+            bool isDeleteMany = trimMsg.StartsWith(DeleteMany, StringComparison.InvariantCultureIgnoreCase);
+
+            if (!(isDeleteAll || isDeleteMany))
                 return new TgCommandResponse(null);
 
             using var subscriptionRepository = DbService.GetSubscriptionRepository();
 
             SubscriptionEntity[] toDelete = null;
-
-            bool isDeleteAll = string.Equals(trimMsg, DeleteAll, StringComparison.InvariantCultureIgnoreCase);
-            bool isDeleteMany = trimMsg.StartsWith(DeleteMany, StringComparison.InvariantCultureIgnoreCase);
 
             if (isDeleteAll)
                 toDelete = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
@@ -152,6 +153,8 @@ namespace theatrel.TLBot.Commands.Subscriptions
 
                     buttons.Add(new KeyboardButton($"Удалить {i+1}"));
                 }
+
+                stringBuilder.AppendLine(" Что бы удалить несколько подписок напишите текстом Удалить и номера через запятую, например Удалить 1,2,3");
             }
 
             return Task.FromResult<ITgCommandResponse>(new TgCommandResponse($"{stringBuilder}", new ReplyKeyboardMarkup

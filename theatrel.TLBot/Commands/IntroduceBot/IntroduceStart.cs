@@ -6,18 +6,17 @@ using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands.SearchPerformances
+namespace theatrel.TLBot.Commands.IntroduceBot
 {
-    internal class StartSearchCommand : DialogCommandBase
+    internal class IntroduceStart : DialogCommandBase
     {
-        private static readonly string[] StartCommandVariants
-            = { "/search", "привет", "hi", "hello", "добрый день", "начать", "давай", "поищи", "да" };
+        private static readonly string[] StartCommandVariants = { @"/start", "/help" };
 
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
 
-        public override string Name => "StartSearch";
+        public override string Name => "Introduce myself";
 
-        public StartSearchCommand(IDbService dbService) : base((int)DialogStep.Start, dbService)
+        public IntroduceStart(IDbService dbService) : base((int)DialogStep.Start, dbService)
         {
         }
 
@@ -29,4 +28,5 @@ namespace theatrel.TLBot.Commands.SearchPerformances
         public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
             => Task.FromResult<ITgCommandResponse>(new TgCommandResponse("Вас приветствует экономный театрал."));
     }
+
 }

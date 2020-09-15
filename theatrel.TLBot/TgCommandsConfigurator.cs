@@ -1,6 +1,7 @@
 ﻿using theatrel.DataAccess.DbService;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.TimeZoneService;
+using theatrel.TLBot.Commands.IntroduceBot;
 using theatrel.TLBot.Commands.SearchPerformances;
 using theatrel.TLBot.Commands.Subscriptions;
 using theatrel.TLBot.Interfaces;
@@ -24,6 +25,11 @@ namespace theatrel.TLBot
         {
            return new[]
             {
+                new IDialogCommand[]
+                {
+                    new IntroduceStart(_dbService),
+                    new IntroduceMyself(_dbService),
+                },
                 new IDialogCommand[]
                 {
                     new StartSearchCommand(_dbService),
