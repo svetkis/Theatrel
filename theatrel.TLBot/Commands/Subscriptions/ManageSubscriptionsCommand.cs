@@ -153,9 +153,9 @@ namespace theatrel.TLBot.Commands.Subscriptions
 
                     buttons.Add(new KeyboardButton($"Удалить {i+1}"));
                 }
-
-                stringBuilder.AppendLine(" Что бы удалить несколько подписок напишите текстом Удалить и номера через запятую, например Удалить 1,2,3");
             }
+
+            stringBuilder.AppendLine(" Что бы удалить несколько подписок напишите текстом Удалить и номера через запятую, например Удалить 1,2,3");
 
             return Task.FromResult<ITgCommandResponse>(new TgCommandResponse($"{stringBuilder}", new ReplyKeyboardMarkup
             {

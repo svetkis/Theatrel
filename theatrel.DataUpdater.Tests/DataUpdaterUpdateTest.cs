@@ -64,7 +64,7 @@ namespace theatrel.DataUpdater.Tests
 
 
         [Fact]
-        public async void TestUpdate()
+        public async Task TestUpdate()
         {
             string testPerformanceUrl = "testUrl";
             DateTime performanceDateTime = DateTime.Now;

@@ -37,8 +37,10 @@ namespace theatrel.Worker
             timeZoneService.TimeZone = TimeZoneInfo.CreateCustomTimeZone("Moscow Time", new TimeSpan(03, 00, 00),
                 "(GMT+03:00) Moscow Time", "Moscow Time");
 
-            await using var dbContext = Bootstrapper.Resolve<IDbService>().GetDbContext();
-            await dbContext.Database.MigrateAsync(cancellationToken);
+            await using (var dbContext = Bootstrapper.Resolve<IDbService>().GetDbContext())
+            {
+                await dbContext.Database.MigrateAsync(cancellationToken);
+            }
 
             _tLBotProcessor = Bootstrapper.Resolve<ITgBotProcessor>();
             var tlBotService = Bootstrapper.Resolve<ITgBotService>();
@@ -100,13 +102,6 @@ namespace theatrel.Worker
 
         private async Task ScheduleOneTimeDataUpdate(CancellationToken cancellationToken)
         {
-            string upgradeJobCron = Environment.GetEnvironmentVariable("UpdateJobSchedule");
-            if (string.IsNullOrWhiteSpace(upgradeJobCron))
-            {
-                _logger.LogInformation("UpdateJobSchedule not found");
-                return;
-            }
-
             string group = "updateJobGroup2";
 
             ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
@@ -127,6 +122,5 @@ namespace theatrel.Worker
 
             _logger.LogInformation($"Update job once was scheduled");
         }
-
     }
 }

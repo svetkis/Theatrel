@@ -41,12 +41,15 @@ namespace theatrel.Subscriptions
 
         public async Task<bool> ProcessSubscriptions()
         {
+            PlaybillChangeEntity[] changes;
             await using AppDbContext dbContext = _dbService.GetDbContext();
+            {
+                changes = GetChanges(dbContext);
+            }
 
-            var subscriptionRepository = _dbService.GetSubscriptionRepository();
+            using var subscriptionRepository = _dbService.GetSubscriptionRepository();
 
             Trace.TraceInformation("Process subscriptions started");
-            PlaybillChangeEntity[] changes = GetChanges(dbContext);
 
             Dictionary<long, Dictionary<int, PlaybillChangeEntity>> messagesDictionary = new Dictionary<long, Dictionary<int, PlaybillChangeEntity>>();
 

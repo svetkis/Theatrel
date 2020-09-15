@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
+using JetBrains.Profiler.Api;
 using Quartz;
 using theatrel.Common;
 using theatrel.Interfaces.DataUpdater;
@@ -13,7 +14,7 @@ using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
 using theatrel.TLBot.Interfaces;
 
-namespace theatrel.Worker
+namespace theatrel.ConsoleTest
 {
     public class UpdateJob : IJob
     {
@@ -21,24 +22,26 @@ namespace theatrel.Worker
         {
             Trace.TraceInformation("UpdateJob was started");
 
-            MemoryHelper.LogMemoryUsage();
+            GC.Collect();
+            MemoryProfiler.GetSnapshot("Before UpdatePlaybill");
+
             if (!await UpdatePlaybill(context.CancellationToken))
                 return;
 
             GC.Collect();
-            MemoryHelper.LogMemoryUsage();
+            MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
 
             if (!await ProcessSubscriptions(context.CancellationToken))
                 return;
 
             GC.Collect();
-            MemoryHelper.LogMemoryUsage();
+            MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
 
             if (!await SubscriptionsCleanup(context.CancellationToken))
                 return;
 
             GC.Collect();
-            MemoryHelper.LogMemoryUsage();
+            MemoryProfiler.GetSnapshot("Update finished");
 
             Trace.TraceInformation("UpdateJob was finished");
         }
@@ -53,7 +56,7 @@ namespace theatrel.Worker
                 var culture = CultureInfo.CreateSpecificCulture("ru");
                 foreach (var filter in AddFiltersForNearestMonths(filters, 4))
                 {
-                    await using (var scope = Bootstrapper.BeginLifetimeScope())
+                    await using (var scope = Bootstrapper.RootScope.BeginLifetimeScope())
                     {
                         IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
@@ -121,7 +124,7 @@ namespace theatrel.Worker
             {
                 Trace.TraceInformation("Subscriptions CleanUp");
 
-                await using var scope = Bootstrapper.BeginLifetimeScope();
+                await using var scope = Bootstrapper.RootScope.BeginLifetimeScope();
                 using IPlaybillCleanUpService cleanUpService = scope.Resolve<IPlaybillCleanUpService>();
 
                 await cleanUpService.CleanUp();
@@ -142,7 +145,7 @@ namespace theatrel.Worker
             {
                 Trace.TraceInformation("ProcessSubscriptions");
 
-                await using var scope = Bootstrapper.BeginLifetimeScope();
+                await using var scope = Bootstrapper.RootScope.BeginLifetimeScope();
 
                 ISubscriptionProcessor subscriptionProcessor = scope.Resolve<ISubscriptionProcessor>();
                 await subscriptionProcessor.ProcessSubscriptions();

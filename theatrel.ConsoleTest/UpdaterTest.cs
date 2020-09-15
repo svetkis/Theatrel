@@ -1,26 +1,18 @@
-using Autofac;
-using Moq;
-using System;
-using System.Linq;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using theatrel.Common.Enums;
-using theatrel.DataAccess.DbService;
-using theatrel.DataUpdater.Tests.TestSettings;
+using Autofac;
+using JetBrains.Profiler.Api;
+using Moq;
+using theatrel.DataUpdater;
 using theatrel.Interfaces.DataUpdater;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Playbill;
-using Xunit;
 
-namespace theatrel.DataUpdater.Tests
+namespace theatrel.ConsoleTest
 {
-    public class DataUpdaterAddTest : DataUpdaterTestBase
+    internal class UpdaterTest
     {
-        public DataUpdaterAddTest(DatabaseFixture fixture) : base(fixture)
-        {
-        }
-
-        [Fact]
         public async Task TestAdd()
         {
             string performanceUrl = "testAddUrl";
@@ -44,18 +36,27 @@ namespace theatrel.DataUpdater.Tests
             var minPrice500 = GetPerformanceMock(
                 performanceName, 500, performanceUrl, performanceWhen, performanceLocation, performanceType);
 
-            await using ILifetimeScope testScope = Fixture.RootScope.BeginLifetimeScope(builder =>
+            var minPrice300 = GetPerformanceMock(
+                performanceName, 300, performanceUrl, performanceWhen, performanceLocation, performanceType);
+
+            await using ILifetimeScope testScope = Bootstrapper.RootScope.BeginLifetimeScope(builder =>
             {
                 builder.RegisterInstance(playBillResolverMock.Object).As<IPlayBillDataResolver>().AsImplementedInterfaces();
 
                 builder.RegisterModule<DataUpdaterModule>();
             });
 
-            await using(var internalScope = testScope.BeginLifetimeScope())
+            GC.Collect();
+            MemoryProfiler.GetSnapshot();
+
+            await using (var internalScope = testScope.BeginLifetimeScope())
             {
                 var dataUpdater = internalScope.Resolve<IDbPlaybillUpdater>();
                 await dataUpdater.UpdateAsync(1, filterFrom, filterTo, CancellationToken.None);
             }
+
+            GC.Collect();
+            MemoryProfiler.GetSnapshot();
 
             //setup new values
             playBillResolverMock.Setup(h =>
@@ -66,42 +67,50 @@ namespace theatrel.DataUpdater.Tests
                 }));
 
             //price changed
-
             await using (var internalScope = testScope.BeginLifetimeScope())
             {
                 var dataUpdater = internalScope.Resolve<IDbPlaybillUpdater>();
                 await dataUpdater.UpdateAsync(1, filterFrom, filterTo, CancellationToken.None);
             }
 
-            // nothing changed
+            GC.Collect();
+            MemoryProfiler.GetSnapshot();
+
+            //setup new values
+            playBillResolverMock.Setup(h =>
+                    h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(new[]
+                {
+                    minPrice300
+                }));
+
+            //price changed
             await using (var internalScope = testScope.BeginLifetimeScope())
             {
                 var dataUpdater = internalScope.Resolve<IDbPlaybillUpdater>();
                 await dataUpdater.UpdateAsync(1, filterFrom, filterTo, CancellationToken.None);
             }
 
-            //check
-            await using var db = Fixture.RootScope.Resolve<IDbService>().GetDbContext();
-
-            var changes = db.PlaybillChanges
-                .Where(c => c.PlaybillEntity.Url == performanceUrl)
-                .OrderBy(d => d.LastUpdate).ToArray();
-
-            Assert.Equal(3, changes.Count());
-            Assert.Equal(1, db.PerformanceLocations.Count(l => l.Name == performanceLocation));
-            Assert.Equal(1, db.PerformanceTypes.Count(t => t.TypeName == performanceType));
-            Assert.Equal((int)ReasonOfChanges.NothingChanged, changes.Last().ReasonOfChanges);
-            Assert.Equal((int)ReasonOfChanges.StartSales, changes[1].ReasonOfChanges);
-            Assert.Equal((int)ReasonOfChanges.Creation, changes.First().ReasonOfChanges);
+            await using (var internalScope = testScope.BeginLifetimeScope())
+            {
+                var dataUpdater = internalScope.Resolve<IDbPlaybillUpdater>();
+                await dataUpdater.UpdateAsync(1, filterFrom, filterTo, CancellationToken.None);
+            }
         }
 
-        [Fact]
-        public void TestString()
+        private IPerformanceData GetPerformanceMock(string name, int minPrice, string url, DateTime performanceDateTime, string location, string type)
         {
-            string str1 = "https://tickets.mariinsky.ru/ru/performance/a0QxYXcveDVZK1dwM1Q4dm03TzBTZz09/";
-            string str2 = "https://tickets.mariinsky.ru/ru/performance/a0QxYXcveDVZK1dwM1Q4dm03TzBTZz09/";
+            Mock<IPerformanceData> performanceMock = new Mock<IPerformanceData>();
 
-            Assert.True(string.Compare(str1, str2, StringComparison.InvariantCultureIgnoreCase) == 0);
+            performanceMock.SetupGet(x => x.Name).Returns(name);
+            performanceMock.SetupGet(x => x.Type).Returns(type);
+            performanceMock.SetupGet(x => x.Location).Returns(location);
+            performanceMock.SetupGet(x => x.MinPrice).Returns(minPrice);
+
+            performanceMock.SetupGet(x => x.Url).Returns(url);
+            performanceMock.SetupGet(x => x.DateTime).Returns(performanceDateTime);
+
+            return performanceMock.Object;
         }
     }
 }

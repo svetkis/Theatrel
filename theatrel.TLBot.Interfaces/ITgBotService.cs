@@ -5,7 +5,7 @@ using theatrel.Interfaces.Autofac;
 
 namespace theatrel.TLBot.Interfaces
 {
-    public interface ITgBotService : IDIRegistrable
+    public interface ITgBotService : IDISingleton
     {
         event EventHandler<ITgInboundMessage> OnMessage;
 
