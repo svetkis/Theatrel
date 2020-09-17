@@ -48,7 +48,7 @@ namespace theatrel.Lib.MariinskyPlaybill
                 .Select(item => Task.Run(async () =>
                     {
                         var tickets = await _ticketParser.ParseFromUrl(item.Url, cancellationToken);
-                        item.MinPrice = tickets.State == TicketsState.TechnicalError ? - 1  : tickets.GetMinPrice();
+                        item.MinPrice = tickets.State == TicketsState.TechnicalError ? -1 : tickets.GetMinPrice();
                     }, cancellationToken)).ToArray();
 
             await Task.WhenAll(resolvePricesTasks.ToArray());

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.Filters;
@@ -68,7 +69,9 @@ namespace theatrel.DataAccess.Repositories
         public IEnumerable<SubscriptionEntity> GetOutdatedList()
         {
             SubscriptionEntity[] outdatedByDate = _dbContext.Subscriptions.Where(s =>
-                s.PerformanceFilter.PlaybillId == -1 && s.PerformanceFilter.EndDate < DateTime.Now).AsNoTracking().ToArray();
+                s.PerformanceFilter.PlaybillId == -1 && s.PerformanceFilter.EndDate < DateTime.Now)
+                .Include(s => s.PerformanceFilter)
+                .AsNoTracking().ToArray();
 
             SubscriptionEntity[] byPlaybillId = _dbContext.Subscriptions.Where(s =>
                 s.PerformanceFilter.PlaybillId != -1).Include(s => s.PerformanceFilter).AsNoTracking().ToArray();
@@ -110,7 +113,7 @@ namespace theatrel.DataAccess.Repositories
                 if (newUserEntity)
                 {
                     Trace.TraceInformation($"User {userId} not found, we will create item");
-                    userEntity = new TelegramUserEntity {Culture = "ru", Id = userId};
+                    userEntity = new TelegramUserEntity { Culture = "ru", Id = userId };
                 }
 
                 SubscriptionEntity entity = new SubscriptionEntity
@@ -138,7 +141,8 @@ namespace theatrel.DataAccess.Repositories
 
         public async Task<bool> Delete(SubscriptionEntity entity)
         {
-            _dbContext.Subscriptions.Remove(entity);
+            _dbContext.Entry(entity.PerformanceFilter).State = EntityState.Deleted;
+            _dbContext.Entry(entity).State = EntityState.Deleted;
 
             try
             {
@@ -155,7 +159,10 @@ namespace theatrel.DataAccess.Repositories
         public async Task<bool> DeleteRange(IEnumerable<SubscriptionEntity> entities)
         {
             foreach (var entity in entities)
-                _dbContext.Subscriptions.Remove(entity);
+            {
+                _dbContext.Entry(entity.PerformanceFilter).State = EntityState.Deleted;
+                _dbContext.Entry(entity).State = EntityState.Deleted;
+            }
 
             try
             {

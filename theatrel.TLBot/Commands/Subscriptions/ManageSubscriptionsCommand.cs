@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -38,7 +39,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
             if (string.Equals(trimMsg, NothingTodo, StringComparison.InvariantCultureIgnoreCase))
                 return true;
 
-            if ( new[] { DeleteMany }.Any(s => trimMsg.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)))
+            if (new[] { DeleteMany }.Any(s => trimMsg.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)))
                 return true;
 
             return false;
@@ -81,16 +82,19 @@ namespace theatrel.TLBot.Commands.Subscriptions
             if (isDeleteAll)
                 toDelete = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
 
-            if (isDeleteMany)
+            bool isDeleteOnlyOne = false;
+
+            if (isDeleteMany && !isDeleteAll)
             {
                 int[] indexes = GetInts(trimMsg.Substring(DeleteMany.Length + 1));
+                isDeleteOnlyOne = indexes.Length == 1;
                 var subscriptions = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
                 if (indexes == null || indexes.Any(i => i > subscriptions.Length - 1 || i < 0))
                 {
                     return new TgCommandResponse("Произошла ошибка. Не правильный индекс подписки.");
                 }
 
-                toDelete= subscriptions.Select((s, i) => new {idx = i, subscription = s})
+                toDelete = subscriptions.Select((s, i) => new { idx = i, subscription = s })
                     .Where(d => indexes.Contains(d.idx)).Select(d => d.subscription).ToArray();
             }
 
@@ -101,9 +105,13 @@ namespace theatrel.TLBot.Commands.Subscriptions
 
             bool result = await subscriptionRepository.DeleteRange(toDelete);
 
-            return result
-                ? new TgCommandResponse("Ваши подписки были успешно удалены.") {NeedToRepeat = isDeleteMany}
-                : new TgCommandResponse("Произошла ошибка при удалении подписок.");
+            if (!result)
+                return new TgCommandResponse("Произошла ошибка при удалении.");
+
+            return new TgCommandResponse(isDeleteOnlyOne ? "Подписка была успешно удалена" : "Ваши подписки были успешно удалены.")
+            {
+                NeedToRepeat = !isDeleteAll
+            };
         }
 
         public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
@@ -114,7 +122,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
             using var playbillRepository = DbService.GetPlaybillRepository();
 
             if (!subscriptions.Any())
-                Task.FromResult<ITgCommandResponse>(new TgCommandResponse("У вас нет подписок."));
+                return Task.FromResult<ITgCommandResponse>(new TgCommandResponse("У вас нет подписок."));
 
             List<KeyboardButton> buttons = new List<KeyboardButton>();
 
@@ -141,13 +149,13 @@ namespace theatrel.TLBot.Commands.Subscriptions
                         ? "все представления"
                         : $"{string.Join("или ", filter.PerformanceTypes)}";
 
-                    stringBuilder.AppendLine($" {i+1}. {monthName} {filter.StartDate.Year}, {types} {days} {changesDescription}");
+                    stringBuilder.AppendLine($" {i + 1}. {monthName} {filter.StartDate.Year}, {types} {days} {changesDescription}");
                 }
                 else
                 {
                     var playbillEntry = playbillRepository.GetWithName(filter.PlaybillId);
                     var date = playbillEntry.When.AddHours(3).ToString("g", culture);
-                    stringBuilder.AppendLine($" {i+1}. {playbillEntry.Performance.Name} {date} {changesDescription}");
+                    stringBuilder.AppendLine($" {i + 1}. {playbillEntry.Performance.Name} {date} {changesDescription}");
                 }
 
                 buttons.Add(new KeyboardButton($"Удалить {i + 1}"));
@@ -157,7 +165,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
 
             return Task.FromResult<ITgCommandResponse>(new TgCommandResponse($"{stringBuilder}", new ReplyKeyboardMarkup
             {
-                Keyboard = GroupKeyboardButtons(ButtonsInLine, buttons, new []{ new KeyboardButton(DeleteAll), new KeyboardButton(NothingTodo), }),
+                Keyboard = GroupKeyboardButtons(ButtonsInLine, buttons, new[] { new KeyboardButton(DeleteAll), new KeyboardButton(NothingTodo), }),
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             }));

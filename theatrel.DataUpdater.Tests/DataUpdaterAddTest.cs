@@ -51,7 +51,7 @@ namespace theatrel.DataUpdater.Tests
                 builder.RegisterModule<DataUpdaterModule>();
             });
 
-            await using(var internalScope = testScope.BeginLifetimeScope())
+            await using (var internalScope = testScope.BeginLifetimeScope())
             {
                 var dataUpdater = internalScope.Resolve<IDbPlaybillUpdater>();
                 await dataUpdater.UpdateAsync(1, filterFrom, filterTo, CancellationToken.None);

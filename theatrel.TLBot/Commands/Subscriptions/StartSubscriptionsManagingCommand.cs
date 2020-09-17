@@ -11,7 +11,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
     internal class StartSubscriptionsManagingCommand : DialogCommandBase
     {
         private static readonly string[] StartCommandVariants
-            = { "/subscriptions", "подписк", "редактировать", "unsubscribe", "отписаться"};
+            = { "/subscriptions", "подписк", "редактировать", "unsubscribe", "отписаться" };
 
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
 

@@ -69,15 +69,15 @@ namespace theatrel.DataAccess.Repositories
 
         public async Task<bool> Update(ChatInfoEntity newValue)
         {
-            ChatInfoEntity oldValue = await GetChatInfoById(newValue.UserId);
-
-            if (oldValue == null)
-                return false;
-
-            _dbContext.Entry(newValue).State = EntityState.Modified;
-
             try
             {
+                ChatInfoEntity oldValue = await GetChatInfoById(newValue.UserId);
+
+                if (oldValue == null)
+                    return false;
+
+                _dbContext.Entry(newValue).State = EntityState.Modified;
+
                 await _dbContext.SaveChangesAsync();
                 _dbContext.Entry(newValue).State = EntityState.Detached;
 
@@ -85,7 +85,7 @@ namespace theatrel.DataAccess.Repositories
             }
             catch (Exception ex)
             {
-                Trace.TraceError($"Failed to update chat item {ex.Message}");
+                Trace.TraceError($"Failed to update chat item {ex.Message} {ex.InnerException?.Message} {newValue.PreviousStepId} {newValue.CurrentStepId}");
                 return false;
             }
         }

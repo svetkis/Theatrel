@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using theatrel.DataAccess.Structures.Entities;
 
 namespace theatrel.DataAccess

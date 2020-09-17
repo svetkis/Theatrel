@@ -8,7 +8,7 @@ using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot
 {
-    internal class TgCommandsConfigurator: ITgCommandsConfigurator
+    internal class TgCommandsConfigurator : ITgCommandsConfigurator
     {
         private readonly IDbService _dbService;
         private readonly IFilterService _filterService;
@@ -23,8 +23,8 @@ namespace theatrel.TLBot
 
         public IDialogCommand[][] GetDialogCommands()
         {
-           return new[]
-            {
+            return new[]
+             {
                 new IDialogCommand[]
                 {
                     new IntroduceStart(_dbService),

@@ -103,7 +103,7 @@ namespace theatrel.TLBot
             => await SendMessageAsync(chatId, new TgOutboundMessage(message), cancellationToken);
 
         public async Task<bool> SendEscapedMessageAsync(long chatId, string message, CancellationToken cancellationToken)
-            => await SendMessageAsync(chatId, new TgOutboundMessage(message){IsEscaped = true}, cancellationToken);
+            => await SendMessageAsync(chatId, new TgOutboundMessage(message) { IsEscaped = true }, cancellationToken);
 
         private const int MaxMessageSize = 4096;
         private string[] SplitMessage(string message)

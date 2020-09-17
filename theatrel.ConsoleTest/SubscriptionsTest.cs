@@ -1,7 +1,7 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using Moq;
+using System.Threading;
+using System.Threading.Tasks;
 using theatrel.Interfaces.Subscriptions;
 using theatrel.Subscriptions;
 using theatrel.TLBot.Interfaces;

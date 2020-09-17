@@ -35,7 +35,7 @@ namespace theatrel.Subscriptions.Tests
 
             DateTime performanceDateTime = DateTime.Now.AddDays(10);
 
-            var tgUser1 = new TelegramUserEntity { Culture = "ru", Id = 103};
+            var tgUser1 = new TelegramUserEntity { Culture = "ru", Id = 103 };
             var tgUser2 = new TelegramUserEntity { Culture = "ru", Id = 205 };
             var tgUser3 = new TelegramUserEntity { Culture = "ru", Id = 1008 };
 

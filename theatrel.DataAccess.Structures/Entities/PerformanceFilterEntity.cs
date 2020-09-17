@@ -25,7 +25,7 @@ namespace theatrel.DataAccess.Structures.Entities
         [NotMapped]
         public string[] PerformanceTypes
         {
-            get => DbPerformanceTypes?.Split(',').ToArray();
+            get => string.IsNullOrEmpty(DbPerformanceTypes) ? null : DbPerformanceTypes.Split(',');
             set => DbPerformanceTypes = value != null
                 ? string.Join(",", value.OrderBy(s => s))
                 : null;
@@ -37,7 +37,7 @@ namespace theatrel.DataAccess.Structures.Entities
         [NotMapped]
         public string[] Locations
         {
-            get => DbLocations?.Split(',').ToArray();
+            get => string.IsNullOrEmpty(DbLocations) ? null : DbLocations.Split(',');
             set => DbLocations = value != null
                 ? string.Join(",", value.OrderBy(s => s))
                 : null;

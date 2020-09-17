@@ -1,8 +1,8 @@
+using Autofac;
+using Moq;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Autofac;
-using Moq;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Tests.TestSettings;
 using theatrel.Interfaces.Playbill;
@@ -24,7 +24,7 @@ namespace theatrel.DataAccess.Tests
         {
             using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
 
-            var performance2 = GetPerformanceMock("TestPerformance2", 800, "url2", DateTime.Now,  TestLocationName, TestTypeName);
+            var performance2 = GetPerformanceMock("TestPerformance2", 800, "url2", DateTime.Now, TestLocationName, TestTypeName);
             var performance3 = GetPerformanceMock("TestPerformance3", 800, "url3", DateTime.Now, TestLocationName, TestTypeName);
 
             var exceptions = await Record.ExceptionAsync(async () =>

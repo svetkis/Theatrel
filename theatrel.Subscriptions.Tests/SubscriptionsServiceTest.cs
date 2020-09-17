@@ -119,7 +119,7 @@ namespace theatrel.Subscriptions.Tests
 
             await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
             {
-                builder.RegisterInstance(dbService.Object).As<IDbService>().AsImplementedInterfaces().SingleInstance(); 
+                builder.RegisterInstance(dbService.Object).As<IDbService>().AsImplementedInterfaces().SingleInstance();
                 builder.RegisterModule<SubscriptionModule>();
             });
 

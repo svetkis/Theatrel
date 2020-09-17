@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using theatrel.Common.Enums;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
@@ -50,7 +50,7 @@ namespace theatrel.DataAccess.Repositories
 
                 PerformanceTypeEntity type = typeId != -1
                     ? _dbContext.PerformanceTypes.FirstOrDefault(t => t.Id == typeId)
-                    : new PerformanceTypeEntity {TypeName = data.Type};
+                    : new PerformanceTypeEntity { TypeName = data.Type };
 
                 PerformanceEntity performance = new PerformanceEntity
                 {

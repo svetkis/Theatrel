@@ -1,11 +1,11 @@
 using Autofac;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
@@ -34,7 +34,7 @@ namespace theatrel.TLBot.Tests
         [InlineData(4, 6, new[] { DayOfWeek.Sunday }, "ќпера", false, "Hi", "июнь", "вс", "опера", "—пасибо, не надо")]
         [InlineData(5, 7, new[] { DayOfWeek.Friday }, "балет", false, "ƒобрый деЌь!", "июль", "5", "Ѕалет", "—пасибо, не надо")]
         [InlineData(6, 5, new[] { DayOfWeek.Friday }, "балет", false, "ƒобрый деЌь!", "июль", "привет!", "май", "5", "Ѕалет", "—пасибо, не надо")]
-        public async Task DialogTest(long chatId, int month, DayOfWeek[] dayOfWeeks, string performanceType, bool subscribed,  params string[] commands)
+        public async Task DialogTest(long chatId, int month, DayOfWeek[] dayOfWeeks, string performanceType, bool subscribed, params string[] commands)
         {
             foreach (var entity in _fixture.Db.Subscriptions.AsNoTracking())
             {

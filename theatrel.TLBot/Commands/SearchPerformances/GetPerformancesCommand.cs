@@ -53,24 +53,24 @@ namespace theatrel.TLBot.Commands.SearchPerformances
         {
             Trace.TraceInformation("GetPerformancesCommand.ApplyResult");
 
-            switch(message)
+            switch (message)
             {
                 case DecreasePriceSubscription:
                 case NewInPlaybillSubscription:
-                {
-                    int trackingChanges = message == DecreasePriceSubscription
-                        ? (int) ReasonOfChanges.PriceDecreased
-                        : (int) (ReasonOfChanges.StartSales | ReasonOfChanges.Creation);
+                    {
+                        int trackingChanges = message == DecreasePriceSubscription
+                            ? (int)ReasonOfChanges.PriceDecreased
+                            : (int)(ReasonOfChanges.StartSales | ReasonOfChanges.Creation);
 
-                    using var subscriptionRepository = DbService.GetSubscriptionRepository();
+                        using var subscriptionRepository = DbService.GetSubscriptionRepository();
 
-                    SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.UserId, trackingChanges,
-                        _filterService.GetFilter(chatInfo), cancellationToken);
+                        SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.UserId, trackingChanges,
+                            _filterService.GetFilter(chatInfo), cancellationToken);
 
-                    return subscription == null
-                        ? new TgCommandResponse("Простите, но я не смог добавить подписку.")
-                        : new TgCommandResponse("Подписка добавлена.");
-                }
+                        return subscription == null
+                            ? new TgCommandResponse("Простите, но я не смог добавить подписку.")
+                            : new TgCommandResponse("Подписка добавлена.");
+                    }
                 default:
                     return new TgCommandResponse("Приятно было пообщаться. Обращайтесь еще.");
             }
@@ -97,7 +97,7 @@ namespace theatrel.TLBot.Commands.SearchPerformances
                 ResizeKeyboard = true
             };
 
-            return new TgCommandResponse(await PerformancesMessage(filteredPerformances, filter, chatInfo.When, chatInfo.Culture), keys) {IsEscaped = true};
+            return new TgCommandResponse(await PerformancesMessage(filteredPerformances, filter, chatInfo.When, chatInfo.Culture), keys) { IsEscaped = true };
         }
 
         private Task<string> PerformancesMessage(PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)

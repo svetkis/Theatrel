@@ -1,5 +1,5 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
+using System;
 using theatrel.DataAccess.DbService;
 
 namespace theatrel.DataAccess.Tests.TestSettings

@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using JetBrains.Profiler.Api;
 using Moq;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using theatrel.DataUpdater;
 using theatrel.Interfaces.DataUpdater;
 using theatrel.Interfaces.Filters;
