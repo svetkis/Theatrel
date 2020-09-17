@@ -34,6 +34,12 @@ namespace theatrel.Worker
             GC.Collect();
             MemoryHelper.LogMemoryUsage();
 
+            if (!await PlaybillCleanup(context.CancellationToken))
+                return;
+
+            GC.Collect();
+            MemoryHelper.LogMemoryUsage();
+
             if (!await SubscriptionsCleanup(context.CancellationToken))
                 return;
 
@@ -115,6 +121,26 @@ namespace theatrel.Worker
             return m == 0 ? 12 : m;
         }
 
+        public async Task<bool> PlaybillCleanup(CancellationToken cToken)
+        {
+            try
+            {
+                Trace.TraceInformation("PlaybillCleanup CleanUp");
+
+                await using var scope = Bootstrapper.BeginLifetimeScope();
+                using IPlaybillCleanUpService cleanUpService = scope.Resolve<IPlaybillCleanUpService>();
+                await cleanUpService.CleanUp();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await SendExceptionMessageToOwner("PlaybillCleanup", ex);
+                Trace.TraceError($"PlaybillCleanup failed {ex.Message}");
+                return false;
+            }
+        }
+
         public async Task<bool> SubscriptionsCleanup(CancellationToken cToken)
         {
             try
@@ -122,8 +148,7 @@ namespace theatrel.Worker
                 Trace.TraceInformation("Subscriptions CleanUp");
 
                 await using var scope = Bootstrapper.BeginLifetimeScope();
-                using IPlaybillCleanUpService cleanUpService = scope.Resolve<IPlaybillCleanUpService>();
-
+                ISubscriptionsCleanupService cleanUpService = scope.Resolve<ISubscriptionsCleanupService>();
                 await cleanUpService.CleanUp();
 
                 return true;
@@ -162,8 +187,8 @@ namespace theatrel.Worker
             if (long.TryParse(Environment.GetEnvironmentVariable("OwnerTelegramgId"), out var ownerId))
             {
                 var telegramService = Bootstrapper.Resolve<ITgBotService>();
-                await telegramService.SendMessageAsync(ownerId, $"{jobName} failed");
-                await telegramService.SendMessageAsync(ownerId, $"{ex.Message}");
+                await telegramService.SendMessageAsync(ownerId, $"{jobName} failed", CancellationToken.None);
+                await telegramService.SendMessageAsync(ownerId, $"{ex.Message}", CancellationToken.None);
                 Trace.TraceError(ex.StackTrace);
             }
         }

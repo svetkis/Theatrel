@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using theatrel.DataAccess.Structures.Entities;
 
 namespace theatrel.DataAccess
@@ -17,6 +18,13 @@ namespace theatrel.DataAccess
 
         public AppDbContext(DbContextOptions options) : base(options)
         {
+            Trace.TraceInformation("AppDbContext created");
+        }
+
+        public override void Dispose()
+        {
+            Trace.TraceInformation("AppDbContext disposed");
+            base.Dispose();
         }
     }
 }

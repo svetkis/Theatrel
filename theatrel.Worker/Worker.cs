@@ -6,7 +6,6 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using theatrel.Common;
 using theatrel.DataAccess.DbService;
 using theatrel.Interfaces.TimeZoneService;
@@ -37,10 +36,7 @@ namespace theatrel.Worker
             timeZoneService.TimeZone = TimeZoneInfo.CreateCustomTimeZone("Moscow Time", new TimeSpan(03, 00, 00),
                 "(GMT+03:00) Moscow Time", "Moscow Time");
 
-            await using (var dbContext = Bootstrapper.Resolve<IDbService>().GetDbContext())
-            {
-                await dbContext.Database.MigrateAsync(cancellationToken);
-            }
+            await Bootstrapper.Resolve<IDbService>().MigrateDb(cancellationToken);
 
             _tLBotProcessor = Bootstrapper.Resolve<ITgBotProcessor>();
             var tlBotService = Bootstrapper.Resolve<ITgBotService>();

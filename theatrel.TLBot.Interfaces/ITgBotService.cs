@@ -9,8 +9,10 @@ namespace theatrel.TLBot.Interfaces
     {
         event EventHandler<ITgInboundMessage> OnMessage;
 
-        Task<bool> SendMessageAsync(long chatId, ITgCommandResponse tlMessage);
-        Task<bool> SendMessageAsync(long chatId, string message);
+        Task<bool> SendMessageAsync(long chatId, ITgOutboundMessage tlMessage, CancellationToken cancellationToken);
+        Task<bool> SendMessageAsync(long chatId, string message, CancellationToken cancellationToken);
+        Task<bool> SendEscapedMessageAsync(long chatId, string message, CancellationToken cancellationToken);
+
         void Start(CancellationToken cancellationToken);
         void Stop();
     }

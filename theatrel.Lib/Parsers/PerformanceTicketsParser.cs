@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using theatrel.Common.Enums;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
 using theatrel.Lib.Tickets;
@@ -18,7 +19,7 @@ namespace theatrel.Lib.Parsers
         {
             if (string.IsNullOrEmpty(url) || url == CommonTags.NotDefined)
             {
-                return new PerformanceTickets { Description = CommonTags.NoTickets };
+                return new PerformanceTickets { State = TicketsState.NoTickets };
             }
 
             var content = await PageRequester.Request(url, cancellationToken);
@@ -31,14 +32,14 @@ namespace theatrel.Lib.Parsers
         private async Task<IPerformanceTickets> PrivateParse(string data, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(data))
-                return new PerformanceTickets { Description = CommonTags.RequestTicketsError };
+                return new PerformanceTickets { State = TicketsState.NoTickets };
 
             var context = BrowsingContext.New(Configuration.Default);
             var parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
 
             IPerformanceTickets performanceTickets = new PerformanceTickets();
 
-            var tickets = parsedDoc.All.Where(m => 0 == string.Compare(m.TagName, "ticket", true));
+            var tickets = parsedDoc.All.Where(m => 0 == String.Compare(m.TagName, "ticket", StringComparison.OrdinalIgnoreCase));
             foreach (var ticket in tickets)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -60,6 +61,9 @@ namespace theatrel.Lib.Parsers
                     performanceTickets.Tickets.Add(ticketData.Region, new Dictionary<int, int> { { ticketData.MinPrice, 1 } });
                 }
             }
+
+            if (!tickets.Any())
+                performanceTickets.State = TicketsState.TechnicalError;
 
             performanceTickets.LastUpdate = DateTime.Now;
 

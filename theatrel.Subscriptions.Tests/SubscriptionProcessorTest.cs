@@ -3,6 +3,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Common.Enums;
 using theatrel.DataAccess;
@@ -74,7 +75,7 @@ namespace theatrel.Subscriptions.Tests
             {
                 TelegramUserId = tgUser1.Id,
                 LastUpdate = dt2,
-                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = playbillEntryWithDecreasedPrice.PerformanceId },
+                PerformanceFilter = new PerformanceFilterEntity { PlaybillId = playbillEntryWithDecreasedPrice.PerformanceId },
                 TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
             });
 
@@ -92,7 +93,7 @@ namespace theatrel.Subscriptions.Tests
             {
                 TelegramUserId = tgUser3.Id,
                 LastUpdate = dt2,
-                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = playbillEntryWithDecreasedPrice.PerformanceId },
+                PerformanceFilter = new PerformanceFilterEntity { PlaybillId = playbillEntryWithDecreasedPrice.PerformanceId },
                 TrackingChanges = (int)(ReasonOfChanges.PriceIncreased | ReasonOfChanges.StartSales)
             });
 
@@ -106,7 +107,7 @@ namespace theatrel.Subscriptions.Tests
         {
             Mock<ITgBotService> telegramService = new Mock<ITgBotService>();
 
-            telegramService.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<string>()))
+            telegramService.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(true));
 
 
@@ -127,7 +128,7 @@ namespace theatrel.Subscriptions.Tests
                 //check
                 Assert.True(result);
                 telegramService.Verify(x => x.SendMessageAsync(It.Is<long>(id
-                        => usersWhoShouldGetMessage.Contains(id)), It.IsAny<string>()),
+                        => usersWhoShouldGetMessage.Contains(id)), It.IsAny<string>(), It.IsAny<CancellationToken>()),
                     Times.Exactly(2));
             }
             catch (Exception ex)

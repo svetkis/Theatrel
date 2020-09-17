@@ -4,4 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\theatrel.Common\theatrel.Common.csproj" />
+  </ItemGroup>
+
 </Project>

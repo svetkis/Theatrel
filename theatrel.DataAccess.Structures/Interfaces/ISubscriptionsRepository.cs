@@ -15,11 +15,15 @@ namespace theatrel.DataAccess.Structures.Interfaces
 
         SubscriptionEntity[] GetUserSubscriptions(long userId);
 
+        IEnumerable<SubscriptionEntity> GetOutdatedList();
+
         Task<SubscriptionEntity> Create(long userId, int reasonOfChange, IPerformanceFilter filter,
             CancellationToken cancellationToken);
 
         Task<bool> Delete(SubscriptionEntity entity);
         Task<bool> DeleteRange(IEnumerable<SubscriptionEntity> entity);
         Task<bool> Update(SubscriptionEntity newValue);
+
+        PlaybillChangeEntity[] GetAllChanges();
     }
 }

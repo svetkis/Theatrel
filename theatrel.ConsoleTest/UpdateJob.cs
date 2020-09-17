@@ -35,6 +35,12 @@ namespace theatrel.ConsoleTest
                 return;
 
             GC.Collect();
+            MemoryProfiler.GetSnapshot("Before Playbill cleanup");
+
+            if (!await PlaybillCleanup(context.CancellationToken))
+                return;
+
+            GC.Collect();
             MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
 
             if (!await SubscriptionsCleanup(context.CancellationToken))
@@ -118,6 +124,26 @@ namespace theatrel.ConsoleTest
             return m == 0 ? 12 : m;
         }
 
+        public async Task<bool> PlaybillCleanup(CancellationToken cToken)
+        {
+            try
+            {
+                Trace.TraceInformation("PlaybillCleanup CleanUp");
+
+                await using var scope = Bootstrapper.RootScope.BeginLifetimeScope();
+                using IPlaybillCleanUpService cleanUpService = scope.Resolve<IPlaybillCleanUpService>();
+                await cleanUpService.CleanUp();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await SendExceptionMessageToOwner("PlaybillCleanup", ex);
+                Trace.TraceError($"PlaybillCleanup failed {ex.Message}");
+                return false;
+            }
+        }
+
         public async Task<bool> SubscriptionsCleanup(CancellationToken cToken)
         {
             try
@@ -125,8 +151,7 @@ namespace theatrel.ConsoleTest
                 Trace.TraceInformation("Subscriptions CleanUp");
 
                 await using var scope = Bootstrapper.RootScope.BeginLifetimeScope();
-                using IPlaybillCleanUpService cleanUpService = scope.Resolve<IPlaybillCleanUpService>();
-
+                ISubscriptionsCleanupService cleanUpService = scope.Resolve<ISubscriptionsCleanupService>();
                 await cleanUpService.CleanUp();
 
                 return true;
@@ -138,6 +163,7 @@ namespace theatrel.ConsoleTest
                 return false;
             }
         }
+
 
         public async Task<bool> ProcessSubscriptions(CancellationToken cToken)
         {
@@ -165,8 +191,8 @@ namespace theatrel.ConsoleTest
             if (long.TryParse(Environment.GetEnvironmentVariable("OwnerTelegramgId"), out var ownerId))
             {
                 var telegramService = Bootstrapper.Resolve<ITgBotService>();
-                await telegramService.SendMessageAsync(ownerId, $"{jobName} failed");
-                await telegramService.SendMessageAsync(ownerId, $"{ex.Message}");
+                await telegramService.SendMessageAsync(ownerId, $"{jobName} failed", CancellationToken.None);
+                await telegramService.SendMessageAsync(ownerId, $"{ex.Message}", CancellationToken.None);
                 Trace.TraceError(ex.StackTrace);
             }
         }

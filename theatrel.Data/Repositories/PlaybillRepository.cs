@@ -95,7 +95,7 @@ namespace theatrel.DataAccess.Repositories
                             MinPrice = data.MinPrice,
                             ReasonOfChanges = (int) ReasonOfChanges.Creation,
                         }
-                    }  
+                    }
                 };
 
                 _dbContext.Playbill.Add(playBillEntry);
@@ -220,17 +220,14 @@ namespace theatrel.DataAccess.Repositories
             if (oldValue == null)
                 return false;
 
-            entity.Changes.Add(change);
-            _dbContext.Add(change);
-
-            _dbContext.Entry(entity).State = EntityState.Modified;
-
             try
             {
-                await _dbContext.SaveChangesAsync();
+                entity.Changes.Add(change);
+                _dbContext.Add(change);
 
-                _dbContext.Entry(entity).State = EntityState.Detached;
-                _dbContext.Entry(change).State = EntityState.Detached;
+                _dbContext.Entry(entity).State = EntityState.Modified;
+
+                await _dbContext.SaveChangesAsync();
 
                 return true;
             }
@@ -239,14 +236,53 @@ namespace theatrel.DataAccess.Repositories
                 Trace.TraceInformation($"AddChange DbException {ex.Message} InnerException {ex.InnerException?.Message}");
                 return false;
             }
+            finally
+            {
+                _dbContext.Entry(entity).State = EntityState.Detached;
+                _dbContext.Entry(change).State = EntityState.Detached;
+            }
         }
 
         private Task<PlaybillChangeEntity> GetChangeById(long id)
             => _dbContext.PlaybillChanges.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
 
-        public async Task<bool> Update(PlaybillChangeEntity entity)
+        public async Task<bool> UpdateChangeLastUpdate(int changeId)
         {
-            PlaybillChangeEntity oldValue = await GetChangeById(entity.Id);
+            PlaybillChangeEntity oldValue = await GetChangeById(changeId);
+
+            if (oldValue == null)
+                return false;
+
+            try
+            {
+                oldValue.LastUpdate = DateTime.Now;
+                _dbContext.Entry(oldValue).State = EntityState.Modified;
+
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation($"Update Change entity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+                return false;
+            }
+            finally
+            {
+                _dbContext.Entry(oldValue).State = EntityState.Detached;
+            }
+        }
+
+        private PlaybillEntity GetTrackedWithAllIncludesById(int playbillEntryId) => _dbContext.Playbill
+            .Include(p => p.Performance)
+            .ThenInclude(p => p.Type)
+            .Include(p => p.Performance)
+            .ThenInclude(p => p.Location)
+            .Include(p => p.Changes)
+            .FirstOrDefault(p => p.Id == playbillEntryId);
+
+        public async Task<bool> UpdateUrl(int playbillEntityId, string url)
+        {
+            PlaybillEntity oldValue = Get(playbillEntityId);
 
             if (oldValue == null)
                 return false;
@@ -254,19 +290,9 @@ namespace theatrel.DataAccess.Repositories
             PlaybillEntity playbillEntity = null;
             try
             {
-                playbillEntity = _dbContext.Playbill
-                    .Include(p => p.Performance)
-                        .ThenInclude(p => p.Type)
-                    .Include(p => p.Performance)
-                        .ThenInclude(p => p.Location)
-                    .Include(p => p.Changes)
-                    .FirstOrDefault(p => p.Id == entity.PlaybillEntityId);
+                playbillEntity = GetTrackedWithAllIncludesById(playbillEntityId);
 
-                var updatedChange = playbillEntity?.Changes.FirstOrDefault(ch => ch.Id == entity.Id);
-                if (updatedChange == null)
-                    return false;
-
-                updatedChange.LastUpdate = entity.LastUpdate;
+                playbillEntity.Url = url;
 
                 await _dbContext.SaveChangesAsync();
                 return true;
@@ -274,7 +300,7 @@ namespace theatrel.DataAccess.Repositories
             catch (Exception ex)
             {
                 Trace.TraceInformation(
-                    $"Update Change entity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+                    $"Update playbill entity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
                 return false;
             }
             finally
@@ -313,8 +339,8 @@ namespace theatrel.DataAccess.Repositories
             if (_dbContext == null)
                 return;
 
-            Trace.TraceInformation("PlaybillRepository was disposed");
-            _dbContext?.Dispose();
+            Trace.TraceInformation("PlaybillRepository disposed");
+            _dbContext.Dispose();
 
             _dbContext = null;
         }

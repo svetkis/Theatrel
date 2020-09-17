@@ -33,7 +33,7 @@ namespace theatrel.Subscriptions.Tests
             {
                 TelegramUserId = 1,
                 LastUpdate = DateTime.Now.AddDays(-1),
-                PerformanceFilter = new PerformanceFilterEntity { PerformanceId = 100 },
+                PerformanceFilter = new PerformanceFilterEntity { PlaybillId = 100 },
                 TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
             }};
 
@@ -106,7 +106,7 @@ namespace theatrel.Subscriptions.Tests
                     LastUpdate = DateTime.Now.AddDays(-1),
                     PerformanceFilter = new PerformanceFilterEntity
                     {
-                        PerformanceId = -1,
+                        PlaybillId = -1,
                         StartDate = new DateTime(2020,9,1),
                         EndDate = new DateTime(2020,11,15)
                     },

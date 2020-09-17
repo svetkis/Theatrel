@@ -3,17 +3,14 @@ using theatrel.TLBot.Interfaces;
 
 namespace theatrel.TLBot.Messages
 {
-    internal class TgCommandResponse : ITgCommandResponse
+    internal class TgCommandResponse : TgOutboundMessage, ITgCommandResponse
     {
-        public TgCommandResponse(string message, ReplyKeyboardMarkup replyKeyboard = null)
+        public TgCommandResponse(string message, ReplyKeyboardMarkup replyKeyboard = null) : base(message, replyKeyboard)
         {
             Message = message;
             ReplyKeyboard = replyKeyboard;
         }
 
-        public string Message { get; set; }
-        public ReplyKeyboardMarkup ReplyKeyboard { get; set; }
-        public bool IsEscaped { get; set; }
         public bool NeedToRepeat { get; set; }
     }
 }

@@ -65,6 +65,30 @@ namespace theatrel.DataAccess.Repositories
             }
         }
 
+        public IEnumerable<SubscriptionEntity> GetOutdatedList()
+        {
+            SubscriptionEntity[] outdatedByDate = _dbContext.Subscriptions.Where(s =>
+                s.PerformanceFilter.PlaybillId == -1 && s.PerformanceFilter.EndDate < DateTime.Now).AsNoTracking().ToArray();
+
+            SubscriptionEntity[] byPlaybillId = _dbContext.Subscriptions.Where(s =>
+                s.PerformanceFilter.PlaybillId != -1).Include(s => s.PerformanceFilter).AsNoTracking().ToArray();
+
+            if (!byPlaybillId.Any())
+                return outdatedByDate;
+
+            List<SubscriptionEntity> outdatedList = new List<SubscriptionEntity>(outdatedByDate);
+            foreach (var subscription in byPlaybillId)
+            {
+                var pb = _dbContext.Playbill.Where(p => p.Id == subscription.PerformanceFilter.PlaybillId)
+                    .AsNoTracking().FirstOrDefault();
+
+                if (pb == null || pb.When < DateTime.Now)
+                    outdatedList.Add(subscription);
+            }
+
+            return outdatedList.ToArray();
+        }
+
         public async Task<SubscriptionEntity> Create(long userId, int reasonOfChange, IPerformanceFilter filter,
             CancellationToken cancellationToken)
         {
@@ -166,13 +190,23 @@ namespace theatrel.DataAccess.Repositories
             }
         }
 
+        public PlaybillChangeEntity[] GetAllChanges() =>
+            _dbContext.PlaybillChanges
+                .Include(c => c.PlaybillEntity)
+                .ThenInclude(p => p.Performance)
+                .ThenInclude(p => p.Type)
+                .Include(c => c.PlaybillEntity)
+                .ThenInclude(p => p.Performance)
+                .ThenInclude(p => p.Location)
+                .AsNoTracking().ToArray();
+
         public void Dispose()
         {
             if (_dbContext == null)
                 return;
 
-            Trace.TraceInformation("SubscriptionRepository was disposed");
-            _dbContext?.Dispose();
+            Trace.TraceInformation("SubscriptionRepository disposed");
+            _dbContext.Dispose();
 
             _dbContext = null;
         }

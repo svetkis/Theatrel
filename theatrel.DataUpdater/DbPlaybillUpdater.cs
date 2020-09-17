@@ -10,6 +10,7 @@ using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.DataUpdater;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Playbill;
+using theatrel.Lib;
 
 namespace theatrel.DataUpdater
 {
@@ -58,20 +59,30 @@ namespace theatrel.DataUpdater
                 .OrderByDescending(x => x.LastUpdate)
                 .FirstOrDefault();
 
+            if ((string.IsNullOrEmpty(playbillEntry.Url) || string.Equals(playbillEntry.Url, CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase))
+                && !string.IsNullOrEmpty(data.Url) && !string.Equals(data.Url, CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase))
+            {
+                await playbillRepository.UpdateUrl(playbillEntry.Id, data.Url);
+            }
+
             var compareResult = ComparePerformanceData(lastChange, data);
             if (compareResult == ReasonOfChanges.NothingChanged
                 && lastChange != null && lastChange.ReasonOfChanges == (int)ReasonOfChanges.NothingChanged)
             {
                 lastChange.LastUpdate = DateTime.Now;
-                await playbillRepository.Update(lastChange);
+                await playbillRepository.UpdateChangeLastUpdate(lastChange.Id);
+
+                return;
+            }
+
+            if (compareResult == ReasonOfChanges.DataError)
+            {
+                Trace.TraceInformation($"Data error {data.Name} {data.DateTime:M} price: {data.MinPrice}");
                 return;
             }
 
             if (compareResult != ReasonOfChanges.NothingChanged)
                 Trace.TraceInformation($"Reason of changes {compareResult} {data.Name} {data.DateTime:M} price: {data.MinPrice}");
-
-            if (compareResult == ReasonOfChanges.PriceBecameZero)
-                return;
 
             await playbillRepository.AddChange(playbillEntry, new PlaybillChangeEntity
             {
@@ -85,6 +96,9 @@ namespace theatrel.DataUpdater
         {
             int freshMinPrice = freshData.MinPrice;
 
+            if (freshMinPrice == -1)
+                return ReasonOfChanges.DataError;
+
             if (lastChange == null)
                 return freshMinPrice == 0 ? ReasonOfChanges.Creation : ReasonOfChanges.StartSales;
 
@@ -92,11 +106,7 @@ namespace theatrel.DataUpdater
                 return freshMinPrice == 0 ? ReasonOfChanges.NothingChanged : ReasonOfChanges.StartSales;
 
             if (lastChange.MinPrice > freshMinPrice)
-            {
-                // we skip cases when price was not zero, and then becomes zero because it some technical
-                // things and it produces a lot of DB records without useful information
-                return freshMinPrice != 0 ? ReasonOfChanges.PriceDecreased : ReasonOfChanges.PriceBecameZero;
-            }
+                return freshMinPrice != 0 ? ReasonOfChanges.PriceDecreased : ReasonOfChanges.StopSales;
 
             if (lastChange.MinPrice < freshMinPrice)
                 return ReasonOfChanges.PriceIncreased;

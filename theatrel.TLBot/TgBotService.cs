@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -11,12 +10,13 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using theatrel.Common;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
 namespace theatrel.TLBot
 {
-    public class TgBotService : ITgBotService
+    internal class TgBotService : ITgBotService
     {
         private readonly ITelegramBotClient _botClient;
 
@@ -26,13 +26,7 @@ namespace theatrel.TLBot
         {
             try
             {
-                WebProxy proxy = string.IsNullOrEmpty(BotSettings.BotProxy)
-                    ? null
-                    : new WebProxy(BotSettings.BotProxy, BotSettings.BotProxyPort) { UseDefaultCredentials = true };
-
-                _botClient = proxy != null
-                    ? new TelegramBotClient(BotSettings.BotToken, proxy)
-                    : new TelegramBotClient(BotSettings.BotToken);
+                _botClient = new TelegramBotClient(BotSettings.BotToken, new HttpClient());
             }
             catch (Exception ex)
             {
@@ -70,7 +64,7 @@ namespace theatrel.TLBot
         private void BotOnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
             => OnMessage?.Invoke(sender, new TgInboundMessage { ChatId = e.Message.Chat.Id, Message = e.Message.Text.Trim() });
 
-        public async Task<bool> SendMessageAsync(long chatId, ITgCommandResponse message)
+        public async Task<bool> SendMessageAsync(long chatId, ITgOutboundMessage message, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(message.Message))
                 return true;
@@ -90,8 +84,9 @@ namespace theatrel.TLBot
                         .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
                         .ExecuteAsync(async () =>
                         {
-                            await _botClient.SendChatActionAsync(chatId, ChatAction.Typing);
-                            await _botClient.SendTextMessageAsync(chatId, msg, parseMode: ParseMode.MarkdownV2, replyMarkup: replyMarkup);
+                            await _botClient.SendChatActionAsync(chatId, ChatAction.Typing, cancellationToken: cancellationToken);
+                            await _botClient.SendTextMessageAsync(chatId, msg, parseMode: ParseMode.MarkdownV2,
+                                replyMarkup: replyMarkup, cancellationToken: cancellationToken);
                         });
                 }
             }
@@ -104,8 +99,11 @@ namespace theatrel.TLBot
             return true;
         }
 
-        public async Task<bool> SendMessageAsync(long chatId, string message)
-            => await SendMessageAsync(chatId, new TgCommandResponse(message));
+        public async Task<bool> SendMessageAsync(long chatId, string message, CancellationToken cancellationToken)
+            => await SendMessageAsync(chatId, new TgOutboundMessage(message), cancellationToken);
+
+        public async Task<bool> SendEscapedMessageAsync(long chatId, string message, CancellationToken cancellationToken)
+            => await SendMessageAsync(chatId, new TgOutboundMessage(message){IsEscaped = true}, cancellationToken);
 
         private const int MaxMessageSize = 4096;
         private string[] SplitMessage(string message)

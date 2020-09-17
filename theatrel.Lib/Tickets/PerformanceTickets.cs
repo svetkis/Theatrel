@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using theatrel.Common.Enums;
 using theatrel.Interfaces.Playbill;
 
 namespace theatrel.Lib.Tickets
 {
     internal class PerformanceTickets : IPerformanceTickets
     {
-        public string Description { get; set; }
-
+        public TicketsState State { get; set; }
         public DateTime LastUpdate { get; set; }
 
         public IDictionary<string, IDictionary<int, int>> Tickets { get; set; }

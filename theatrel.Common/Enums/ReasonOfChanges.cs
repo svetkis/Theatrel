@@ -23,5 +23,11 @@ namespace theatrel.Common.Enums
 
         [Description("Стоп продаж")]
         PriceBecameZero = 16,
+
+        [Description("Ошибка получения данных")]
+        DataError = 32,
+
+        [Description("Билеты закончились")]
+        StopSales = 64,
     }
 }

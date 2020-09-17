@@ -1,4 +1,7 @@
-﻿using theatrel.DataAccess.DbSettings;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using theatrel.DataAccess.DbSettings;
 using theatrel.DataAccess.Repositories;
 using theatrel.DataAccess.Structures.Interfaces;
 
@@ -20,5 +23,12 @@ namespace theatrel.DataAccess.DbService
         public IPlaybillRepository GetPlaybillRepository() => new PlaybillRepository(GetDbContext());
 
         public ISubscriptionsRepository GetSubscriptionRepository() => new SubscriptionsRepository(GetDbContext());
+        public async Task MigrateDb(CancellationToken cancellationToken)
+        {
+            await using(var db = GetDbContext())
+            {
+                db.Database.Migrate();
+            }
+        }
     }
 }

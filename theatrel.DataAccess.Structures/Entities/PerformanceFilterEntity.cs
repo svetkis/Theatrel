@@ -50,7 +50,7 @@ namespace theatrel.DataAccess.Structures.Entities
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
-        public int PerformanceId { get; set; } = -1;
+        public int PlaybillId { get; set; } = -1;
 
         public bool IsEqual(PerformanceFilterEntity otherFilter)
         {
@@ -69,7 +69,7 @@ namespace theatrel.DataAccess.Structures.Entities
             if (EndDate != otherFilter.EndDate)
                 return false;
 
-            if (PerformanceId != otherFilter.PerformanceId)
+            if (PlaybillId != otherFilter.PlaybillId)
                 return false;
 
             return true;

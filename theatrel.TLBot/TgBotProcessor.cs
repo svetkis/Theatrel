@@ -17,11 +17,12 @@ namespace theatrel.TLBot
     internal class TgBotProcessor : ITgBotProcessor
     {
         private ITgBotService _botService;
-        private readonly CancellationTokenSource _cancellationTokenSource;
+        private CancellationTokenSource _cancellationTokenSource;
+        private CancellationToken InternalCancellationToken => _cancellationTokenSource.Token;
 
         private readonly IDbService _dbService;
 
-        private IDialogCommand[][] _commands;
+        private readonly IDialogCommand[][] _commands;
 
         public TgBotProcessor(IDbService dbService, ITgCommandsConfigurator configurator)
         {
@@ -49,8 +50,10 @@ namespace theatrel.TLBot
             _botService.OnMessage -= OnMessage;
             _botService?.Stop();
             _botService = null;
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
+
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
         }
 
         ~TgBotProcessor() => Stop();
@@ -148,8 +151,8 @@ namespace theatrel.TLBot
             }
             else
             {
-                await Task.Run(() => _botService.SendMessageAsync(chatInfo.UserId, acknowledgement),
-                    _cancellationTokenSource.Token);
+                await Task.Run(() => _botService.SendMessageAsync(chatInfo.UserId, acknowledgement, InternalCancellationToken),
+                    InternalCancellationToken);
                 await chatsRepository.Delete(chatInfo);
             }
         }
@@ -184,20 +187,19 @@ namespace theatrel.TLBot
                 };
             }
 
-            await Task.Run(() => _botService.SendMessageAsync(chatInfo.UserId, botResponse), _cancellationTokenSource.Token);
+            await Task.Run(() => _botService.SendMessageAsync(chatInfo.UserId, botResponse, InternalCancellationToken));
         }
 
         private void SendWrongCommandMessage(long chatId, string message, int chatLevel)
         {
             Trace.TraceInformation($"Wrong command: {chatId} {chatLevel} {message}");
-            _botService.SendMessageAsync(chatId, new TgCommandResponse("Простите, я вас не понял. Попробуйте еще раз."));
+            _botService.SendMessageAsync(chatId, new TgCommandResponse("Простите, я вас не понял. Попробуйте еще раз."), InternalCancellationToken);
         }
 
         private void SendErrorMessage(long chatId, string message, int chatLevel)
         {
             Trace.TraceInformation($"Wrong command: {chatId} {chatLevel} {message}");
-            _botService.SendMessageAsync(chatId, new TgCommandResponse("Простите, что то пошло не так. Попробуйте еще раз."));
+            _botService.SendMessageAsync(chatId, new TgCommandResponse("Простите, что то пошло не так. Попробуйте еще раз."), InternalCancellationToken);
         }
-
     }
 }

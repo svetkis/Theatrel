@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using theatrel.Common.Enums;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
@@ -46,7 +47,8 @@ namespace theatrel.Lib.MariinskyPlaybill
             Task[] resolvePricesTasks = filtered
                 .Select(item => Task.Run(async () =>
                     {
-                        item.MinPrice = (await _ticketParser.ParseFromUrl(item.Url, cancellationToken)).GetMinPrice();
+                        var tickets = await _ticketParser.ParseFromUrl(item.Url, cancellationToken);
+                        item.MinPrice = tickets.State == TicketsState.TechnicalError ? - 1  : tickets.GetMinPrice();
                     }, cancellationToken)).ToArray();
 
             await Task.WhenAll(resolvePricesTasks.ToArray());

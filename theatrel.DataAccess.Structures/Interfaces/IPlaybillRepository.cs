@@ -18,7 +18,8 @@ namespace theatrel.DataAccess.Structures.Interfaces
 
         Task<PlaybillEntity> AddPlaybill(IPerformanceData data);
         Task<bool> AddChange(PlaybillEntity entity, PlaybillChangeEntity change);
-        Task<bool> Update(PlaybillChangeEntity entity);
+        Task<bool> UpdateChangeLastUpdate(int changeId);
+        Task<bool> UpdateUrl(int playbillEntityId, string url);
 
         Task<bool> Delete(PlaybillEntity entity);
     }

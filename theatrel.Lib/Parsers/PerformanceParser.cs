@@ -60,9 +60,9 @@ namespace theatrel.Lib.Parsers
             return url;
         }
 
-        private static readonly Lazy<IDictionary<string, string>> performanceTypes
-            = new Lazy<IDictionary<string, string>>(() => new Dictionary<string, string>()
-        {
+        private static readonly Lazy<IDictionary<string, string>> PerformanceTypes
+            = new Lazy<IDictionary<string, string>>(() => new Dictionary<string, string>
+            {
             {"c_opera", "Опера"},
             {"c_concert", "Концерт" },
             {"c_ballet", "Балет" }
@@ -72,8 +72,8 @@ namespace theatrel.Lib.Parsers
         {
             foreach (var type in types)
             {
-                if (performanceTypes.Value.ContainsKey(type))
-                    return performanceTypes.Value[type];
+                if (PerformanceTypes.Value.ContainsKey(type))
+                    return PerformanceTypes.Value[type];
             }
 
             return types.Reverse().Skip(1).First();

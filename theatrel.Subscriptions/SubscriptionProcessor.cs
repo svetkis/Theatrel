@@ -1,16 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using theatrel.Common;
 using theatrel.Common.Enums;
-using theatrel.DataAccess;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
+using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
+using theatrel.Lib;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.Subscriptions
@@ -28,28 +30,12 @@ namespace theatrel.Subscriptions
             _filterChecker = filterChecker;
         }
 
-        private PlaybillChangeEntity[] GetChanges(AppDbContext dbContext) =>
-            dbContext.PlaybillChanges
-                .Include(c => c.PlaybillEntity)
-                .ThenInclude(p => p.Performance)
-                .ThenInclude(p => p.Type)
-                .Include(c => c.PlaybillEntity)
-                .ThenInclude(p => p.Performance)
-                .ThenInclude(p => p.Location)
-                .AsNoTracking()
-                .ToArray();
-
         public async Task<bool> ProcessSubscriptions()
         {
-            PlaybillChangeEntity[] changes;
-            await using AppDbContext dbContext = _dbService.GetDbContext();
-            {
-                changes = GetChanges(dbContext);
-            }
-
-            using var subscriptionRepository = _dbService.GetSubscriptionRepository();
-
             Trace.TraceInformation("Process subscriptions started");
+
+            using ISubscriptionsRepository subscriptionRepository = _dbService.GetSubscriptionRepository();
+            PlaybillChangeEntity[] changes = subscriptionRepository.GetAllChanges();
 
             Dictionary<long, Dictionary<int, PlaybillChangeEntity>> messagesDictionary = new Dictionary<long, Dictionary<int, PlaybillChangeEntity>>();
 
@@ -58,11 +44,11 @@ namespace theatrel.Subscriptions
             {
                 var filter = subscription.PerformanceFilter;
 
-                Trace.TraceInformation($"Process filter:{filter.Id} performanceId: {filter.PerformanceId} user:{subscription.TelegramUserId} {filter.StartDate:g} {filter.EndDate:g}");
+                Trace.TraceInformation($"Process filter:{filter.Id} performanceId: {filter.PlaybillId} user:{subscription.TelegramUserId} {filter.StartDate:g} {filter.EndDate:g}");
 
-                PlaybillChangeEntity[] performanceChanges = filter.PerformanceId > 0
+                PlaybillChangeEntity[] performanceChanges = filter.PlaybillId > 0
                     ? changes
-                        .Where(p => p.PlaybillEntity.PerformanceId == filter.PerformanceId
+                        .Where(p => p.PlaybillEntity.PerformanceId == filter.PlaybillId
                                     && p.LastUpdate > subscription.LastUpdate
                                     && (subscription.TrackingChanges & p.ReasonOfChanges) != 0)
                         .OrderBy(p => p.LastUpdate).ToArray()
@@ -116,26 +102,33 @@ namespace theatrel.Subscriptions
         {
             string message = string.Join(Environment.NewLine, changes.Select(GetChangeDescription));
 
-            return await _telegramService.SendMessageAsync(tgUserId, message);
+            return await _telegramService.SendEscapedMessageAsync(tgUserId, message, CancellationToken.None);
         }
 
         private string GetChangeDescription(PlaybillChangeEntity change)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture("ru");
-            string formattedDate = change.PlaybillEntity.When.AddHours(3).ToString("g", cultureRu);
+            string formattedDate = change.PlaybillEntity.When.AddHours(3).ToString("ddMMM HH:mm", cultureRu);
+
+            var playbillEntity = change.PlaybillEntity;
+            string performanceString = $"{formattedDate} {playbillEntity.Performance.Name}".EscapeMessageForMarkupV2();
+
+            string fullInfo = string.IsNullOrWhiteSpace(playbillEntity.Url) || playbillEntity.Url.Equals(CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase)
+                ? performanceString
+                : $"[{performanceString}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
 
             ReasonOfChanges reason = (ReasonOfChanges)change.ReasonOfChanges;
             switch (reason)
             {
                 case ReasonOfChanges.Creation:
                     string month = cultureRu.DateTimeFormat.GetMonthName(change.PlaybillEntity.When.Month);
-                    return $"Новое в афише на {month}: {formattedDate} {change.PlaybillEntity.Performance.Name} {change.PlaybillEntity.Url}";
+                    return $"Новое в афише на {month}: {fullInfo}";
                 case ReasonOfChanges.PriceDecreased:
-                    return $"Снижена цена \"{change.PlaybillEntity.Performance.Name}\" {formattedDate} цена билета от {change.MinPrice} {change.PlaybillEntity.Url}";
+                    return $"Снижена цена {fullInfo} цена билета от {change.MinPrice}";
                 case ReasonOfChanges.PriceIncreased:
-                    return $"Билеты подорожали {change.PlaybillEntity.Performance.Name} {formattedDate} цена билета от {change.MinPrice} {change.PlaybillEntity.Url}";
+                    return $"Билеты подорожали {fullInfo} цена билета от {change.MinPrice}";
                 case ReasonOfChanges.StartSales:
-                    return $"Появились в продаже билеты {change.PlaybillEntity.Performance.Name} {formattedDate} цена билета от {change.MinPrice} {change.PlaybillEntity.Url}";
+                    return $"Появились в продаже билеты {fullInfo} цена билета от {change.MinPrice}";
             }
 
             return null;

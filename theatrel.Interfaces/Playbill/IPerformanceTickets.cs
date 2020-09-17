@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using theatrel.Common.Enums;
 
 namespace theatrel.Interfaces.Playbill
 {
     public interface IPerformanceTickets
     {
-        string Description { get; set; }
+        TicketsState State { get; set; }
 
         DateTime LastUpdate { get; set; }
 

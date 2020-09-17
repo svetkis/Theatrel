@@ -27,7 +27,7 @@ namespace theatrel.Lib.Parsers
 
             IElement[] allTicketChildren = parsedTicket.QuerySelectorAll("*").ToArray();
 
-            return new Ticket
+            var tickets = new Ticket
             {
                 Id = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "ID")?.TextContent),
                 Region = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "TREGION")?.TextContent),
@@ -36,8 +36,11 @@ namespace theatrel.Lib.Parsers
                 Place = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "TPLACE")?.TextContent),
                 MinPrice = GetMinPrice(allTicketChildren)
             };
+
+            return tickets;
         }
 
+        //We can see three or two prices, but we are interested only about the lowest one, because it is correct one for RF citizens
         private int GetMinPrice(IElement[] data)
         {
             var prices = new[]

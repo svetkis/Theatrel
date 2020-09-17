@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Profiler.Api;
-using Microsoft.EntityFrameworkCore;
 using Quartz;
 using Quartz.Impl;
 using theatrel.Common;
@@ -25,65 +24,73 @@ namespace theatrel.ConsoleTest
             timeZoneService.TimeZone = TimeZoneInfo.CreateCustomTimeZone("Moscow Time", new TimeSpan(03, 00, 00),
                 "(GMT+03:00) Moscow Time", "Moscow Time");
 
-            await using (var dbContext = Bootstrapper.Resolve<IDbService>().GetDbContext())
-            {
-                await dbContext.Database.MigrateAsync(CancellationToken.None);
-            }
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            await Bootstrapper.Resolve<IDbService>().MigrateDb(cts.Token);
+
+            MemoryProfiler.CollectAllocations(true);
 
             var tLBotProcessor = Bootstrapper.Resolve<ITgBotProcessor>();
             var tlBotService = Bootstrapper.Resolve<ITgBotService>();
-            tLBotProcessor.Start(tlBotService, CancellationToken.None);
+            tlBotService.OnMessage += (sender, message) =>
+            {
+                GC.Collect();
+                MemoryProfiler.GetSnapshot("Before UpdatePlaybill");
+            };
+            tLBotProcessor.Start(tlBotService, cts.Token);
 
+/*            Trace.TraceInformation("Before UpdatePlaybill");
             GC.Collect();
             MemoryProfiler.GetSnapshot("Before UpdatePlaybill");
 
             var job = new UpdateJob();
 
-            if (!await job.UpdatePlaybill(CancellationToken.None))
+            if (!await job.UpdatePlaybill(cts.Token))
+                return;
+
+            Trace.TraceInformation("Before ProcessSubscriptions");
+            GC.Collect();
+            MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
+
+            if (!await job.ProcessSubscriptions(cts.Token))
+                return;
+
+            Trace.TraceInformation("Before SubscriptionsCleanup");
+            GC.Collect();
+            MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
+
+            if (!await job.SubscriptionsCleanup(cts.Token))
+                return;
+
+            Trace.TraceInformation("Before UpdatePlaybill2");
+            GC.Collect();
+            MemoryProfiler.GetSnapshot("Before UpdatePlaybill2");
+
+            if (!await job.UpdatePlaybill(cts.Token))
                 return;
 
             GC.Collect();
             MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
 
-            if (!await job.ProcessSubscriptions(CancellationToken.None))
+            if (!await job.ProcessSubscriptions(cts.Token))
                 return;
 
             GC.Collect();
             MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
 
-            if (!await job.SubscriptionsCleanup(CancellationToken.None))
+            if (!await job.SubscriptionsCleanup(cts.Token))
                 return;
 
-            GC.Collect();
-            MemoryProfiler.GetSnapshot("Update finished");
-
+            await Task.Delay(1000);
 
             GC.Collect();
-            MemoryProfiler.GetSnapshot("Before UpdatePlaybill");
-
-            if (!await job.UpdatePlaybill(CancellationToken.None))
-                return;
-
-            GC.Collect();
-            MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
-
-            if (!await job.ProcessSubscriptions(CancellationToken.None))
-                return;
-
-            GC.Collect();
-            MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
-
-            if (!await job.SubscriptionsCleanup(CancellationToken.None))
-                return;
-
-            GC.Collect();
-            MemoryProfiler.GetSnapshot("Update finished");
+            MemoryProfiler.GetSnapshot("Update finished");*/
 
             //await ScheduleOneTimeDataUpdate(CancellationToken.None);
 
             while (true)
             {
-                await Task.Delay(10000);
+                await Task.Delay(10000, cts.Token);
             }
 
             GC.Collect();

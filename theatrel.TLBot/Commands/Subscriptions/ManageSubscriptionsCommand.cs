@@ -87,7 +87,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
                 var subscriptions = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
                 if (indexes == null || indexes.Any(i => i > subscriptions.Length - 1 || i < 0))
                 {
-                    return new TgCommandResponse("Произошла ошибка при удаление подписок. Не правильный индекс подписки.");
+                    return new TgCommandResponse("Произошла ошибка. Не правильный индекс подписки.");
                 }
 
                 toDelete= subscriptions.Select((s, i) => new {idx = i, subscription = s})
@@ -129,7 +129,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
                 var filter = subscriptions[i].PerformanceFilter;
                 var changesDescription = subscriptions[i].TrackingChanges.GetTrackingChangesDescription().ToLower();
 
-                if (filter.PerformanceId == -1)
+                if (filter.PlaybillId == -1)
                 {
                     string monthName = culture.DateTimeFormat.GetMonthName(filter.StartDate.Month);
 
@@ -142,17 +142,15 @@ namespace theatrel.TLBot.Commands.Subscriptions
                         : $"{string.Join("или ", filter.PerformanceTypes)}";
 
                     stringBuilder.AppendLine($" {i+1}. {monthName} {filter.StartDate.Year}, {types} {days} {changesDescription}");
-
-                    buttons.Add(new KeyboardButton($"Удалить {i+1}"));
                 }
                 else
                 {
-                    var playbillEntry = playbillRepository.GetWithName(filter.PerformanceId);
+                    var playbillEntry = playbillRepository.GetWithName(filter.PlaybillId);
                     var date = playbillEntry.When.AddHours(3).ToString("g", culture);
                     stringBuilder.AppendLine($" {i+1}. {playbillEntry.Performance.Name} {date} {changesDescription}");
-
-                    buttons.Add(new KeyboardButton($"Удалить {i+1}"));
                 }
+
+                buttons.Add(new KeyboardButton($"Удалить {i + 1}"));
             }
 
             stringBuilder.AppendLine(" Что бы удалить несколько подписок напишите текстом Удалить и номера через запятую, например Удалить 1,2,3");

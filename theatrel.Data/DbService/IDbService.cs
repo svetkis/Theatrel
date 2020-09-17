@@ -1,4 +1,6 @@
-﻿using theatrel.DataAccess.Structures.Interfaces;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.Autofac;
 
 namespace theatrel.DataAccess.DbService
@@ -10,5 +12,7 @@ namespace theatrel.DataAccess.DbService
         ITgUsersRepository GetUsersRepository();
         IPlaybillRepository GetPlaybillRepository();
         ISubscriptionsRepository GetSubscriptionRepository();
+
+        Task MigrateDb(CancellationToken cancellationToken);
     }
 }

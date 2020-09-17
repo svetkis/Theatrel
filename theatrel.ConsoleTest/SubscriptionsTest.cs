@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Autofac;
 using Moq;
 using theatrel.Interfaces.Subscriptions;
@@ -20,7 +21,7 @@ namespace theatrel.ConsoleTest
         {
             Mock<ITgBotService> telegramService = new Mock<ITgBotService>();
 
-            telegramService.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<string>()))
+            telegramService.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(true));
 
             return Bootstrapper.RootScope.BeginLifetimeScope(builder =>

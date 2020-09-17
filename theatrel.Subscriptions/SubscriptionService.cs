@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
@@ -40,7 +41,7 @@ namespace theatrel.Subscriptions
                 int month;
                 DateTime startDate;
                 DateTime endDate;
-                if (newFilter.PerformanceId == -1)
+                if (newFilter.PlaybillId == -1)
                 {
                     year = newFilter.StartDate.Year;
                     month = newFilter.StartDate.Month;
@@ -49,7 +50,7 @@ namespace theatrel.Subscriptions
                 }
                 else
                 {
-                    var playbillEntry = playbillRepository.Get(newFilter.PerformanceId);
+                    var playbillEntry = playbillRepository.Get(newFilter.PlaybillId);
 
                     if (null == playbillEntry)
                         continue;
@@ -63,6 +64,7 @@ namespace theatrel.Subscriptions
                 MergeFilters(mergedFilters, _filterService.GetFilter(startDate, endDate));
             }
 
+            Trace.TraceInformation("Get update filter finished");
             return mergedFilters.ToArray();
         }
 
