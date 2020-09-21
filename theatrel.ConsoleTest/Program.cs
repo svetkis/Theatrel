@@ -39,36 +39,41 @@ namespace theatrel.ConsoleTest
             };
             tLBotProcessor.Start(tlBotService, cts.Token);
 
-          /* for (int i = 0; i < 3; ++i)
-           {
-               Trace.TraceInformation("Before UpdatePlaybill");
-               GC.Collect();
-               MemoryProfiler.GetSnapshot("Before UpdatePlaybill");
+            var job = new UpdateJob();
 
-               var job = new UpdateJob();
+            if (!await job.UpdatePlaybill(cts.Token))
+                return;
 
-               if (!await job.UpdatePlaybill(cts.Token))
-                   return;
+            /* for (int i = 0; i < 3; ++i)
+             {
+                 Trace.TraceInformation("Before UpdatePlaybill");
+                 GC.Collect();
+                 MemoryProfiler.GetSnapshot("Before UpdatePlaybill");
 
-               Trace.TraceInformation("Before ProcessSubscriptions");
-               GC.Collect();
-               MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
+                 var job = new UpdateJob();
 
-               if (!await job.ProcessSubscriptions(cts.Token))
-                   return;
+                 if (!await job.UpdatePlaybill(cts.Token))
+                     return;
 
-               Trace.TraceInformation("Before SubscriptionsCleanup");
-               GC.Collect();
-               MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
+                 Trace.TraceInformation("Before ProcessSubscriptions");
+                 GC.Collect();
+                 MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
 
-               if (!await job.SubscriptionsCleanup(cts.Token))
-                   return;
+                 if (!await job.ProcessSubscriptions(cts.Token))
+                     return;
 
-               await Task.Delay(1000);
+                 Trace.TraceInformation("Before SubscriptionsCleanup");
+                 GC.Collect();
+                 MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
 
-               GC.Collect();
-               MemoryProfiler.GetSnapshot("Update finished");
-           }*/
+                 if (!await job.SubscriptionsCleanup(cts.Token))
+                     return;
+
+                 await Task.Delay(1000);
+
+                 GC.Collect();
+                 MemoryProfiler.GetSnapshot("Update finished");
+             }*/
             //await ScheduleOneTimeDataUpdate(CancellationToken.None);
 
             while (true)

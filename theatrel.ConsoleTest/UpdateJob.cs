@@ -60,7 +60,7 @@ namespace theatrel.ConsoleTest
                 var filters = subscriptionServices.GetUpdateFilters();
 
                 var culture = CultureInfo.CreateSpecificCulture("ru");
-                foreach (var filter in AddFiltersForNearestMonths(filters, 4))
+                foreach (var filter in AddFiltersForNearestMonths(filters, 6))
                 {
                     await using (var scope = Bootstrapper.RootScope.BeginLifetimeScope())
                     {
@@ -70,7 +70,7 @@ namespace theatrel.ConsoleTest
                         await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, cToken);
                     }
 
-                    //we need to be care with memory because heroku has memory limit for free app
+                    //we need to care about memory because heroku has memory limit for free app
                     GC.Collect();
                     MemoryHelper.LogMemoryUsage();
                 }

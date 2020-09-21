@@ -35,7 +35,7 @@ namespace theatrel.DataAccess.Repositories
                 return -1;
 
             var performanceId = _dbContext.Performances.AsNoTracking()
-                .FirstOrDefault(p => p.Location == l && p.Type == t && p.Name == data.Name)?.Id ?? -1;
+                .FirstOrDefault(p => p.LocationId == l.Id && p.TypeId == t.Id && p.Name == data.Name)?.Id ?? -1;
 
             return performanceId;
         }

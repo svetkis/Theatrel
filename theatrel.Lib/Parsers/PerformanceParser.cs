@@ -32,7 +32,7 @@ namespace theatrel.Lib.Parsers
                 return new PerformanceData
                 {
                     DateTime = dt,
-                    Name = specName.Children.Any() ? specName.Children?.Last()?.TextContent : CommonTags.NotDefined,
+                    Name = specName.Children.Any() ? specName.Children?.Last()?.TextContent.Trim() : CommonTags.NotDefined,
                     Url = url,
                     Type = GetType(parsedElement.ClassList.ToArray()),
                     Location = location,
@@ -54,10 +54,7 @@ namespace theatrel.Lib.Parsers
             if (url == CommonTags.JavascriptVoid)
                 return CommonTags.NotDefined;
 
-            if (url.StartsWith("//"))
-                return $"https:{url}";
-
-            return url;
+            return url.StartsWith("//") ? $"https:{url.Trim()}" : url.Trim();
         }
 
         private static readonly Lazy<IDictionary<string, string>> PerformanceTypes
