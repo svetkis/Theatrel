@@ -18,7 +18,7 @@ namespace theatrel.Common.Enums
         [Description("Повышение цены")]
         PriceIncreased = 4,
 
-        [Description("Начало продаж")]
+        [Description("Появились в продаже билеты")]
         StartSales = 8,
 
         [Description("Стоп продаж")]

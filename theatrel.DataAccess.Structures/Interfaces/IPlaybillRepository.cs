@@ -10,6 +10,8 @@ namespace theatrel.DataAccess.Structures.Interfaces
     public interface IPlaybillRepository : IDisposable, IDIRegistrable
     {
         IEnumerable<PlaybillEntity> GetList(DateTime from, DateTime to);
+        IEnumerable<PlaybillEntity> GetListByName(string name);
+
         PlaybillEntity Get(IPerformanceData data);
         PlaybillEntity Get(int id);
         PlaybillEntity GetWithName(int id);

@@ -9,7 +9,7 @@ using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands.SearchPerformances
+namespace theatrel.TLBot.Commands.SearchByDate
 {
     internal class MonthCommand : DialogCommandBase
     {
@@ -24,7 +24,7 @@ namespace theatrel.TLBot.Commands.SearchPerformances
 
         public override string Name => "Выбрать месяц";
 
-        public MonthCommand(IDbService dbService) : base((int)DialogStep.SelectMonth, dbService)
+        public MonthCommand(IDbService dbService) : base(dbService)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture("ru");
 

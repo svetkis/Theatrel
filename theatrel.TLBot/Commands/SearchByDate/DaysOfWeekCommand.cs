@@ -11,7 +11,7 @@ using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands.SearchPerformances
+namespace theatrel.TLBot.Commands.SearchByDate
 {
     internal class DaysOfWeekCommand : DialogCommandBase
     {
@@ -51,7 +51,7 @@ namespace theatrel.TLBot.Commands.SearchPerformances
 
         public override string Name => "Выберите день недели";
 
-        public DaysOfWeekCommand(IDbService dbService) : base((int)DialogStep.SelectDays, dbService)
+        public DaysOfWeekCommand(IDbService dbService) : base(dbService)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture("ru");
             List<KeyboardButton> buttons = new List<KeyboardButton>();

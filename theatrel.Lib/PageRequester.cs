@@ -27,24 +27,21 @@ namespace theatrel.Lib
                     .Handle<HttpRequestException>()
                     .WaitAndRetryAsync(4, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
                     .ExecuteAsync(async () =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
 
-                    IRestResponse response = await client.ExecuteAsync(request, cancellationToken);
+                            IRestResponse response = await client.ExecuteAsync(request, cancellationToken);
 
-                    if (response.StatusCode == HttpStatusCode.OK)
-                    {
-                        return response.Content;
-                    }
+                            if (response.StatusCode == HttpStatusCode.OK)
+                            {
+                                return response.Content;
+                            }
 
-                    //                    Trace.TraceInformation($"{url} {response.StatusCode}");
-                    //                    Trace.TraceInformation($"status: {response.ResponseStatus} message:\"{response.ErrorMessage}\"");
+                            if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
+                                throw new HttpRequestException();
 
-                    if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
-                        throw new HttpRequestException();
-
-                    return response.Content;
-                });
+                            return response.Content;
+                        });
             }
             catch (Exception ex)
             {

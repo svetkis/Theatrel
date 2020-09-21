@@ -6,7 +6,6 @@ namespace theatrel.TLBot.Interfaces
 {
     public interface IDialogCommand
     {
-        int Label { get; }
         string Name { get; }
 
         Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);

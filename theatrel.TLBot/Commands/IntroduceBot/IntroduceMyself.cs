@@ -21,7 +21,7 @@ namespace theatrel.TLBot.Commands.IntroduceBot
         public override string Name => "IntroduceMyself";
         protected override string ReturnCommandMessage { get; set; }
 
-        public IntroduceMyself(IDbService dbService) : base((int)DialogStep.SelectMonth, dbService)
+        public IntroduceMyself(IDbService dbService) : base(dbService)
         {
             var buttons = new[]
             {

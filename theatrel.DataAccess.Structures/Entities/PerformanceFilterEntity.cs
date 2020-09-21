@@ -10,6 +10,8 @@ namespace theatrel.DataAccess.Structures.Entities
     {
         public int Id { get; set; }
 
+        public string PerformanceName { get; set; }
+
         [NotMapped]
         public DayOfWeek[] DaysOfWeek
         {

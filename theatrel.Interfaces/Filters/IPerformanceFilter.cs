@@ -20,8 +20,10 @@ namespace theatrel.Interfaces.Filters
         Night = 8
     }
 
-    public interface IPerformanceFilter : IDIRegistrable
+    public interface IPerformanceFilter
     {
+        string PerformanceName { get; set; }
+
         DayOfWeek[] DaysOfWeek { get; set; }
         string[] PerformanceTypes { get; set; }
         string[] Locations { get; set; }

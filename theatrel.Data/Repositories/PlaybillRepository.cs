@@ -158,6 +158,29 @@ namespace theatrel.DataAccess.Repositories
             return null;
         }
 
+        public IEnumerable<PlaybillEntity> GetListByName(string name)
+        {
+            try
+            {
+                string lowerName = name.ToLower();
+                return _dbContext.Playbill
+                    .Where(x => x.Performance.Name.ToLower() == lowerName)
+                    .Include(x => x.Performance)
+                    .ThenInclude(x => x.Location)
+                    .Include(x => x.Performance)
+                    .ThenInclude(x => x.Type)
+                    .Include(x => x.Changes)
+                    .AsNoTracking().ToArray();
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation($"GetList PlaybillEntity by name DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            }
+
+            return null;
+        }
+
+
         public PlaybillEntity Get(IPerformanceData data)
         {
             try

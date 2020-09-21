@@ -9,7 +9,7 @@ using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands.SearchPerformances
+namespace theatrel.TLBot.Commands.SearchByDate
 {
     internal class PerformanceTypesCommand : DialogCommandBase
     {
@@ -19,7 +19,7 @@ namespace theatrel.TLBot.Commands.SearchPerformances
         protected override string ReturnCommandMessage { get; set; } = "Выбрать другое";
 
         public override string Name => "Выбрать тип представления";
-        public PerformanceTypesCommand(IDbService dbService) : base((int)DialogStep.SelectType, dbService)
+        public PerformanceTypesCommand(IDbService dbService) : base(dbService)
         {
             var buttons = _types.Select(m => new KeyboardButton(m)).Concat(new[] { new KeyboardButton(_every.First()) }).ToArray();
 

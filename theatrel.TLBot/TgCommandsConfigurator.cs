@@ -1,8 +1,10 @@
 ﻿using theatrel.DataAccess.DbService;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.TimeZoneService;
+using theatrel.TLBot.Commands;
 using theatrel.TLBot.Commands.IntroduceBot;
-using theatrel.TLBot.Commands.SearchPerformances;
+using theatrel.TLBot.Commands.SearchByDate;
+using theatrel.TLBot.Commands.SearchByName;
 using theatrel.TLBot.Commands.Subscriptions;
 using theatrel.TLBot.Interfaces;
 
@@ -36,6 +38,12 @@ namespace theatrel.TLBot
                     new MonthCommand(_dbService),
                     new DaysOfWeekCommand(_dbService),
                     new PerformanceTypesCommand(_dbService),
+                    new GetPerformancesCommand(_filterService, _timeZoneService, _dbService)
+                },
+                new IDialogCommand[]
+                {
+                    new StartSearchByNameCommand(_dbService),
+                    new AscNameCommand(_dbService),
                     new GetPerformancesCommand(_filterService, _timeZoneService, _dbService)
                 },
                 new IDialogCommand[]

@@ -16,7 +16,7 @@ using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands.SearchPerformances
+namespace theatrel.TLBot.Commands
 {
     internal class GetPerformancesCommand : DialogCommandBase
     {
@@ -32,7 +32,7 @@ namespace theatrel.TLBot.Commands.SearchPerformances
         public override string Name => "Искать";
 
         public GetPerformancesCommand(IFilterService filterService, ITimeZoneService timeZoneService, IDbService dbService)
-            : base((int)DialogStep.GetPerformances, dbService)
+            : base(dbService)
         {
             _filterService = filterService;
             _timeZoneService = timeZoneService;
@@ -81,16 +81,27 @@ namespace theatrel.TLBot.Commands.SearchPerformances
         public override async Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             IPerformanceFilter filter = _filterService.GetFilter(chatInfo);
+
             using var playbillRepo = DbService.GetPlaybillRepository();
-            PlaybillEntity[] performances = playbillRepo.GetList(filter.StartDate, filter.EndDate).ToArray();
-            PlaybillEntity[] filteredPerformances = performances.Where(x => _filterService.IsDataSuitable(x.Performance.Location.Name, x.Performance.Type.TypeName,
+
+            PlaybillEntity[] filteredPerformances;
+
+            if (!string.IsNullOrEmpty(chatInfo.PerformanceName))
+            {
+                filteredPerformances = playbillRepo.GetListByName(chatInfo.PerformanceName).ToArray();
+            }
+            else
+            {
+                PlaybillEntity[] performances = playbillRepo.GetList(filter.StartDate, filter.EndDate).ToArray();
+                filteredPerformances = performances.Where(x => _filterService.IsDataSuitable(x.Performance.Location.Name, x.Performance.Type.TypeName,
                     x.When, filter)).ToArray();
+            }
 
             var keys = new ReplyKeyboardMarkup
             {
                 Keyboard = GroupKeyboardButtons(1, new[]
                 {
-                    performances.Any() ? new KeyboardButton(DecreasePriceSubscription) :  new KeyboardButton(NewInPlaybillSubscription) ,
+                    filteredPerformances.Any() ? new KeyboardButton(DecreasePriceSubscription) :  new KeyboardButton(NewInPlaybillSubscription) ,
                     new KeyboardButton(No),
                 }),
                 OneTimeKeyboard = true,
@@ -117,7 +128,9 @@ namespace theatrel.TLBot.Commands.SearchPerformances
                 : string.Join(", ", filter.PerformanceTypes);
 
             stringBuilder.AppendLine(
-                $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}.".EscapeMessageForMarkupV2());
+                string.IsNullOrEmpty(filter.PerformanceName)
+                    ? $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}.".EscapeMessageForMarkupV2()
+                    : $"Я искал для Вас билеты на {filter.PerformanceName}".EscapeMessageForMarkupV2());
 
             foreach (var item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.Now))
             {

@@ -26,7 +26,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
 
         public override string Name => "Редактировать подписки";
 
-        public ManageSubscriptionsCommand(IDbService dbService) : base((int)DialogStep.SelectMonth, dbService)
+        public ManageSubscriptionsCommand(IDbService dbService) : base(dbService)
         {
         }
 

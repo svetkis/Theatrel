@@ -37,6 +37,8 @@ namespace theatrel.DataAccess.Structures.Entities
             set => DbTypes = value != null ? string.Join(",", value) : null;
         }
 
+        public string PerformanceName { get; set; }
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public string DbTypes { get; set; }
 
@@ -45,6 +47,7 @@ namespace theatrel.DataAccess.Structures.Entities
 
         public void Clear()
         {
+            PerformanceName = null;
             CommandLine = 0;
 
             CurrentStepId = 0;

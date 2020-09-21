@@ -35,57 +35,40 @@ namespace theatrel.ConsoleTest
             tlBotService.OnMessage += (sender, message) =>
             {
                 GC.Collect();
-                MemoryProfiler.GetSnapshot("Before UpdatePlaybill");
+                MemoryProfiler.GetSnapshot("OnMessage");
             };
             tLBotProcessor.Start(tlBotService, cts.Token);
 
-            /*            Trace.TraceInformation("Before UpdatePlaybill");
-                        GC.Collect();
-                        MemoryProfiler.GetSnapshot("Before UpdatePlaybill");
+          /* for (int i = 0; i < 3; ++i)
+           {
+               Trace.TraceInformation("Before UpdatePlaybill");
+               GC.Collect();
+               MemoryProfiler.GetSnapshot("Before UpdatePlaybill");
 
-                        var job = new UpdateJob();
+               var job = new UpdateJob();
 
-                        if (!await job.UpdatePlaybill(cts.Token))
-                            return;
+               if (!await job.UpdatePlaybill(cts.Token))
+                   return;
 
-                        Trace.TraceInformation("Before ProcessSubscriptions");
-                        GC.Collect();
-                        MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
+               Trace.TraceInformation("Before ProcessSubscriptions");
+               GC.Collect();
+               MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
 
-                        if (!await job.ProcessSubscriptions(cts.Token))
-                            return;
+               if (!await job.ProcessSubscriptions(cts.Token))
+                   return;
 
-                        Trace.TraceInformation("Before SubscriptionsCleanup");
-                        GC.Collect();
-                        MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
+               Trace.TraceInformation("Before SubscriptionsCleanup");
+               GC.Collect();
+               MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
 
-                        if (!await job.SubscriptionsCleanup(cts.Token))
-                            return;
+               if (!await job.SubscriptionsCleanup(cts.Token))
+                   return;
 
-                        Trace.TraceInformation("Before UpdatePlaybill2");
-                        GC.Collect();
-                        MemoryProfiler.GetSnapshot("Before UpdatePlaybill2");
+               await Task.Delay(1000);
 
-                        if (!await job.UpdatePlaybill(cts.Token))
-                            return;
-
-                        GC.Collect();
-                        MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
-
-                        if (!await job.ProcessSubscriptions(cts.Token))
-                            return;
-
-                        GC.Collect();
-                        MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
-
-                        if (!await job.SubscriptionsCleanup(cts.Token))
-                            return;
-
-                        await Task.Delay(1000);
-
-                        GC.Collect();
-                        MemoryProfiler.GetSnapshot("Update finished");*/
-
+               GC.Collect();
+               MemoryProfiler.GetSnapshot("Update finished");
+           }*/
             //await ScheduleOneTimeDataUpdate(CancellationToken.None);
 
             while (true)

@@ -44,7 +44,7 @@ namespace theatrel.Subscriptions
             {
                 var filter = subscription.PerformanceFilter;
 
-                Trace.TraceInformation($"Process filter:{filter.Id} performanceId: {filter.PlaybillId} user:{subscription.TelegramUserId} {filter.StartDate:g} {filter.EndDate:g}");
+                Trace.TraceInformation($"Filter:{filter.Id} PlaybillId: {filter.PlaybillId} user:{subscription.TelegramUserId} {filter.StartDate:yy-MM-dd} {filter.EndDate:yy-MM-dd}");
 
                 PlaybillChangeEntity[] performanceChanges = filter.PlaybillId > 0
                     ? changes

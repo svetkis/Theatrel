@@ -24,7 +24,7 @@ namespace theatrel.DataAccess.Repositories
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"DbException {ex.Message}");
+                Trace.TraceInformation($"ChatInfoEntity Get DbException {ex.Message} {ex.InnerException?.Message}");
             }
 
             return Task.FromResult<ChatInfoEntity>(null);
@@ -46,7 +46,7 @@ namespace theatrel.DataAccess.Repositories
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"DbException {ex.Message}");
+                Trace.TraceInformation($"ChatInfoEntity Create DbException {ex.Message} {ex.InnerException?.Message}");
                 return null;
             }
         }

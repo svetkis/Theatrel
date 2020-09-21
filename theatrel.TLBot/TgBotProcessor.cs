@@ -119,7 +119,10 @@ namespace theatrel.TLBot
                 return;
             }
 
-            IDialogCommand command = _commands[chatInfo.CommandLine].FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
+            IDialogCommand command = _commands[chatInfo.CommandLine].Length > chatInfo.CurrentStepId
+                ? _commands[chatInfo.CommandLine][chatInfo.CurrentStepId]
+                : null;
+
             if (command == null)
             {
                 Trace.TraceError($"Current command not found {chatInfo.CurrentStepId}");
@@ -143,7 +146,10 @@ namespace theatrel.TLBot
                 ++chatInfo.CurrentStepId;
             }
 
-            var nextCommand = _commands[chatInfo.CommandLine].FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId);
+            var nextCommand = _commands[chatInfo.CommandLine].Length > chatInfo.CurrentStepId
+                ? _commands[chatInfo.CommandLine][chatInfo.CurrentStepId]
+                : null;
+
             if (nextCommand != null)
             {
                 await chatsRepository.Update(chatInfo);
@@ -160,10 +166,14 @@ namespace theatrel.TLBot
         private IDialogCommand GetPreviousCommand(IChatDataInfo chatInfo) =>
             chatInfo.PreviousStepId == -1
                 ? null
-                : _commands[chatInfo.CommandLine].FirstOrDefault(cmd => cmd.Label == chatInfo.PreviousStepId);
+                : _commands[chatInfo.CommandLine].Length > chatInfo.PreviousStepId
+                    ? _commands[chatInfo.CommandLine][chatInfo.PreviousStepId]
+                    : null;
 
         private IDialogCommand GetNextCommand(IChatDataInfo chatInfo) =>
-            _commands[chatInfo.CommandLine].FirstOrDefault(cmd => cmd.Label == chatInfo.CurrentStepId + 1);
+            _commands[chatInfo.CommandLine].Length > chatInfo.CurrentStepId + 1
+                ? _commands[chatInfo.CommandLine][chatInfo.CurrentStepId + 1]
+                : null;
 
         private async Task CommandAskQuestion(IDialogCommand cmd, ChatInfoEntity chatInfo, ITgCommandResponse previousCmdAcknowledgement)
         {

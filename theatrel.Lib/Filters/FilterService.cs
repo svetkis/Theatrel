@@ -10,6 +10,14 @@ namespace theatrel.Lib.Filters
     {
         public IPerformanceFilter GetFilter(IChatDataInfo dataInfo)
         {
+            if (!string.IsNullOrEmpty(dataInfo.PerformanceName))
+            {
+                return new PerformanceFilter
+                {
+                    PerformanceName = dataInfo.PerformanceName
+                };
+            }
+
             var filter = new PerformanceFilter
             {
                 StartDate = dataInfo.When,
@@ -41,11 +49,14 @@ namespace theatrel.Lib.Filters
             if (filter == null)
                 return true;
 
+            if (!string.IsNullOrEmpty(filter.PerformanceName))
+                return string.Compare(performance.Name, filter.PerformanceName, StringComparison.OrdinalIgnoreCase) == 0;
+
             if (filter.Locations != null && filter.Locations.Any() && !filter.Locations.Contains(performance.Location))
                 return false;
 
             if (filter.PerformanceTypes != null && filter.PerformanceTypes.Any()
-                                                && filter.PerformanceTypes.All(val => 0 != string.Compare(val, performance.Type, true)))
+                                                && filter.PerformanceTypes.All(val => 0 != String.Compare(val, performance.Type, StringComparison.OrdinalIgnoreCase)))
                 return false;
 
             if (filter.DaysOfWeek != null && filter.DaysOfWeek.Any() && !filter.DaysOfWeek.Contains(performance.DateTime.DayOfWeek))

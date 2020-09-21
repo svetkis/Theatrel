@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using theatrel.DataAccess.DbService;
@@ -10,18 +11,21 @@ namespace theatrel.TLBot.Commands.Subscriptions
 {
     internal class StartSubscriptionsManagingCommand : DialogCommandBase
     {
+        private const string MainCommandKey = "/subscriptions";
         private static readonly string[] StartCommandVariants
-            = { "/subscriptions", "подписк", "редактировать", "unsubscribe", "отписаться" };
+            = { "подписк", "редактировать", "unsubscribe", "отписаться" };
 
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
 
         public override string Name => "Подписки";
 
-        public StartSubscriptionsManagingCommand(IDbService dbService) : base((int)DialogStep.Start, dbService)
+        public StartSubscriptionsManagingCommand(IDbService dbService) : base(dbService)
         {
         }
 
-        public override bool IsMessageCorrect(string message) => StartCommandVariants.Any(variant => message.ToLower().Contains(variant));
+        public override bool IsMessageCorrect(string message) =>
+            string.Compare(MainCommandKey, message, StringComparison.InvariantCultureIgnoreCase) == 0 
+            || StartCommandVariants.Any(variant => message.ToLower().Contains(variant));
 
         public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
             => Task.FromResult<ITgCommandResponse>(new TgCommandResponse(null));

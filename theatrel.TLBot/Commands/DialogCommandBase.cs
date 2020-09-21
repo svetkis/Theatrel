@@ -16,7 +16,6 @@ namespace theatrel.TLBot.Commands
 
         protected const int ButtonsInLine = 3;
 
-        public int Label { get; }
         public abstract string Name { get; }
 
         protected abstract string ReturnCommandMessage { get; set; }
@@ -26,9 +25,8 @@ namespace theatrel.TLBot.Commands
 
         protected readonly IDbService DbService;
 
-        protected DialogCommandBase(int label, IDbService dbService)
+        protected DialogCommandBase(IDbService dbService)
         {
-            Label = label;
             DbService = dbService;
 
             if (!string.IsNullOrWhiteSpace(ReturnCommandMessage))
