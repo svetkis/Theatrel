@@ -10,6 +10,6 @@ namespace theatrel.Interfaces.Filters
         IPerformanceFilter GetFilter(IChatDataInfo dataInfo);
         IPerformanceFilter GetFilter(DateTime start, DateTime end);
         bool IsDataSuitable(IPerformanceData performance, IPerformanceFilter filter);
-        bool IsDataSuitable(string location, string type, DateTime when, IPerformanceFilter filter);
+        bool IsDataSuitable(string name, string location, string type, DateTime when, IPerformanceFilter filter);
     }
 }

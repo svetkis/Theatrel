@@ -24,5 +24,7 @@ namespace theatrel.DataAccess.Structures.Interfaces
         Task<bool> UpdateUrl(int playbillEntityId, string url);
 
         Task<bool> Delete(PlaybillEntity entity);
+
+        IEnumerable<LocationsEntity> GetLocationsList();
     }
 }

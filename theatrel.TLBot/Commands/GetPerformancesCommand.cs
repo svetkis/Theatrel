@@ -24,7 +24,7 @@ namespace theatrel.TLBot.Commands
         private readonly ITimeZoneService _timeZoneService;
 
         private const string DecreasePriceSubscription = "Подписаться на снижение цены";
-        private const string NewInPlaybillSubscription = "Подписаться на появление билетов в продаже цены";
+        private const string NewInPlaybillSubscription = "Подписаться на появление билетов в продаже";
         private const string No = "Спасибо, не надо";
 
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
@@ -84,18 +84,12 @@ namespace theatrel.TLBot.Commands
 
             using var playbillRepo = DbService.GetPlaybillRepository();
 
-            PlaybillEntity[] filteredPerformances;
+            PlaybillEntity[] performances = !string.IsNullOrEmpty(chatInfo.PerformanceName)
+                ? playbillRepo.GetListByName(chatInfo.PerformanceName).ToArray()
+                : playbillRepo.GetList(filter.StartDate, filter.EndDate).ToArray();
 
-            if (!string.IsNullOrEmpty(chatInfo.PerformanceName))
-            {
-                filteredPerformances = playbillRepo.GetListByName(chatInfo.PerformanceName).ToArray();
-            }
-            else
-            {
-                PlaybillEntity[] performances = playbillRepo.GetList(filter.StartDate, filter.EndDate).ToArray();
-                filteredPerformances = performances.Where(x => _filterService.IsDataSuitable(x.Performance.Location.Name, x.Performance.Type.TypeName,
-                    x.When, filter)).ToArray();
-            }
+            PlaybillEntity[] filteredPerformances = performances.Where(x => _filterService.IsDataSuitable(x.Performance.Name, x.Performance.Location.Name, x.Performance.Type.TypeName,
+                x.When, filter)).ToArray();
 
             var keys = new ReplyKeyboardMarkup
             {
@@ -127,10 +121,14 @@ namespace theatrel.TLBot.Commands
                 ? "все представления"
                 : string.Join(", ", filter.PerformanceTypes);
 
+            string locations = filter.Locations == null
+                ? "любая площадка"
+                : string.Join(", ", filter.Locations);
+
             stringBuilder.AppendLine(
                 string.IsNullOrEmpty(filter.PerformanceName)
-                    ? $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}.".EscapeMessageForMarkupV2()
-                    : $"Я искал для Вас билеты на {filter.PerformanceName}".EscapeMessageForMarkupV2());
+                    ? $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types} площадка: {locations}.".EscapeMessageForMarkupV2()
+                    : $"Я искал для Вас билеты на \"{filter.PerformanceName}\" площадка: {locations}".EscapeMessageForMarkupV2());
 
             foreach (var item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.Now))
             {

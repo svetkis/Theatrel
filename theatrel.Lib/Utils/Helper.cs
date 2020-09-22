@@ -11,8 +11,7 @@ namespace theatrel.Lib.Utils
             if (string.IsNullOrEmpty(value))
                 return 0;
 
-            int ret = 0;
-            int.TryParse(value, out ret);
+            int.TryParse(value, out var ret);
             return ret;
         }
 
@@ -20,10 +19,8 @@ namespace theatrel.Lib.Utils
         {
             try
             {
-                using (var reader = new StringReader(data))
-                {
-                    return (T)new XmlSerializer(typeof(T)).Deserialize(reader);
-                }
+                using var reader = new StringReader(data);
+                return (T)new XmlSerializer(typeof(T)).Deserialize(reader);
             }
             catch (Exception ex)
             {

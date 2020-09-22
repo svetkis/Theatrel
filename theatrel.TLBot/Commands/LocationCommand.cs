@@ -1,0 +1,85 @@
+﻿using System;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Telegram.Bot.Types.ReplyMarkups;
+using theatrel.DataAccess.DbService;
+using theatrel.Interfaces.TgBot;
+using theatrel.TLBot.Interfaces;
+using theatrel.TLBot.Messages;
+
+namespace theatrel.TLBot.Commands
+{
+    internal class LocationCommand : DialogCommandBase
+    {
+        private readonly string[] _types;
+        private readonly string[] _every = { "Любую", "Все", "всё", "любой", "любое", "не важно" };
+
+        protected override string ReturnCommandMessage { get; set; } = "Выбрать другую площадку";
+
+        public override string Name => "Выбрать площадку";
+        public LocationCommand(IDbService dbService) : base(dbService)
+        {
+            using var repo = dbService.GetPlaybillRepository();
+            _types = repo.GetLocationsList().Select(l => l.Name).ToArray();
+
+            var buttons = _types.Select(m => new KeyboardButton(m)).Concat(new[] { new KeyboardButton(_every.First()) }).ToArray();
+
+            CommandKeyboardMarkup = new ReplyKeyboardMarkup
+            {
+                Keyboard = GroupKeyboardButtons(ButtonsInLine, buttons),
+                OneTimeKeyboard = true,
+                ResizeKeyboard = true
+            };
+        }
+
+        public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        {
+            chatInfo.Locations = ParseMessage(message);
+
+            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(null));
+        }
+
+        public override bool IsMessageCorrect(string message) => SplitMessage(message).Any();
+
+        public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+        {
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine("Какую площадку вы желаете посетить?");
+
+            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup));
+        }
+
+        private string[] ParseMessage(string message)
+        {
+            var parts = SplitMessage(message);
+            if (parts.Any(p => _every.Any(e => e.ToLower().Contains(p.ToLower()))))
+                return null;
+
+            return parts.Select(ParseMessagePart).Where(idx => idx > -1).Select(idx => _types[idx]).ToArray();
+        }
+
+        private string[] SplitMessage(string message)
+            => message.Split(",")
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(s => s.Trim())
+            .ToArray();
+
+        private int ParseMessagePart(string messagePart)
+        {
+            if (string.IsNullOrWhiteSpace(messagePart))
+                return -1;
+
+            return CheckEnumerable(_types, messagePart);
+        }
+
+        private int CheckEnumerable(string[] checkedData, string msg)
+        {
+            var data = checkedData.Select((item, idx) => new { idx, item })
+                .FirstOrDefault(data => 0 == string.Compare(data.item, msg, StringComparison.OrdinalIgnoreCase));
+
+            return data?.idx ?? -1;
+        }
+    }
+}

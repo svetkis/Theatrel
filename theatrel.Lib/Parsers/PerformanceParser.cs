@@ -35,7 +35,7 @@ namespace theatrel.Lib.Parsers
                     Name = specName.Children.Any() ? specName.Children?.Last()?.TextContent.Trim() : CommonTags.NotDefined,
                     Url = url,
                     Type = GetType(parsedElement.ClassList.ToArray()),
-                    Location = location,
+                    Location = GetLocation(location.Trim()),
                 };
             }
             catch (Exception ex)
@@ -65,6 +65,14 @@ namespace theatrel.Lib.Parsers
             {"c_ballet", "Балет" }
         }, true);
 
+        private static readonly Lazy<IDictionary<string, string>> PerformanceLocations
+            = new Lazy<IDictionary<string, string>>(() => new Dictionary<string, string>
+            {
+                {"Мариинский театр", "Мариинский театр"},
+                {"Концертный зал", "Концертный зал (Мариинский театр)" },
+                {"Мариинский-2", "Мариинский-2" }
+            }, true);
+
         public string GetType(string[] types)
         {
             foreach (var type in types)
@@ -75,5 +83,8 @@ namespace theatrel.Lib.Parsers
 
             return types.Reverse().Skip(1).First();
         }
+
+        public string GetLocation(string location)
+            => PerformanceLocations.Value.ContainsKey(location) ? PerformanceLocations.Value[location] : location;
     }
 }

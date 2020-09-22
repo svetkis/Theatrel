@@ -41,7 +41,7 @@ namespace theatrel.ConsoleTest
 
             //var job = new UpdateJob();
 
-             for (int i = 0; i < 3; ++i)
+/*             for (int i = 0; i < 3; ++i)
              {
                  Trace.TraceInformation("Before UpdatePlaybill");
                  GC.Collect();
@@ -70,7 +70,7 @@ namespace theatrel.ConsoleTest
 
                  GC.Collect();
                  MemoryProfiler.GetSnapshot("Update finished");
-             }
+             }*/
             //await ScheduleOneTimeDataUpdate(CancellationToken.None);
 
             while (true)

@@ -9,7 +9,7 @@ using theatrel.TLBot.Messages;
 
 namespace theatrel.TLBot.Commands.SearchByDate
 {
-    internal class StartSearchCommand : DialogCommandBase
+    internal class StartSearchByDateCommand : DialogCommandBase
     {
         private const string MainCommandKey = "/search";
         private static readonly string[] StartCommandVariants
@@ -19,7 +19,7 @@ namespace theatrel.TLBot.Commands.SearchByDate
 
         public override string Name => "StartSearch";
 
-        public StartSearchCommand(IDbService dbService) : base(dbService)
+        public StartSearchByDateCommand(IDbService dbService) : base(dbService)
         {
         }
 

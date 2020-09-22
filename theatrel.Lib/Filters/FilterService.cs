@@ -14,7 +14,8 @@ namespace theatrel.Lib.Filters
             {
                 return new PerformanceFilter
                 {
-                    PerformanceName = dataInfo.PerformanceName
+                    PerformanceName = dataInfo.PerformanceName,
+                    Locations = dataInfo.Locations
                 };
             }
 
@@ -23,6 +24,9 @@ namespace theatrel.Lib.Filters
                 StartDate = dataInfo.When,
                 EndDate = dataInfo.When.AddMonths(1).AddDays(-1)
             };
+
+            if (dataInfo.Locations != null && dataInfo.Locations.Any())
+                filter.Locations = dataInfo.Locations;
 
             if (dataInfo.Days != null && dataInfo.Days.Any())
             {
@@ -44,34 +48,22 @@ namespace theatrel.Lib.Filters
                 EndDate = end
             };
 
-        public bool IsDataSuitable(IPerformanceData performance, IPerformanceFilter filter)
+        public bool IsDataSuitable(IPerformanceData performance, IPerformanceFilter filter) =>
+            IsDataSuitable(performance.Name, performance.Location, performance.Type, performance.DateTime, filter);
+
+        private bool CheckLocation(string[] filterLocations, string location)
+            => filterLocations == null || !filterLocations.Any() ||
+               filterLocations.Select(l => l.ToLower()).Contains(location.ToLower());
+
+        public bool IsDataSuitable(string name, string location, string type, DateTime when, IPerformanceFilter filter)
         {
             if (filter == null)
                 return true;
 
             if (!string.IsNullOrEmpty(filter.PerformanceName))
-                return string.Compare(performance.Name, filter.PerformanceName, StringComparison.OrdinalIgnoreCase) == 0;
+                return name.ToLower().Contains(filter.PerformanceName.ToLower()) && CheckLocation(filter.Locations, location);
 
-            if (filter.Locations != null && filter.Locations.Any() && !filter.Locations.Contains(performance.Location))
-                return false;
-
-            if (filter.PerformanceTypes != null && filter.PerformanceTypes.Any()
-                                                && filter.PerformanceTypes.All(val => 0 != String.Compare(val, performance.Type, StringComparison.OrdinalIgnoreCase)))
-                return false;
-
-            if (filter.DaysOfWeek != null && filter.DaysOfWeek.Any() && !filter.DaysOfWeek.Contains(performance.DateTime.DayOfWeek))
-                return false;
-
-            return true;
-        }
-
-        public bool IsDataSuitable(string location, string type, DateTime when, IPerformanceFilter filter)
-        {
-            if (filter == null)
-                return true;
-
-            if (filter.Locations != null && filter.Locations.Any() && !string.IsNullOrEmpty(filter.Locations.First())
-                && !filter.Locations.Contains(location))
+            if (!CheckLocation(filter.Locations, location))
                 return false;
 
             if (filter.PerformanceTypes != null && filter.PerformanceTypes.Any() && !string.IsNullOrEmpty(filter.PerformanceTypes.First())

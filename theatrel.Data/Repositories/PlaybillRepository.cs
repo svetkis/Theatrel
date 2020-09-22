@@ -164,7 +164,7 @@ namespace theatrel.DataAccess.Repositories
             {
                 string lowerName = name.ToLower();
                 return _dbContext.Playbill
-                    .Where(x => x.Performance.Name.ToLower() == lowerName)
+                    .Where(x => x.Performance.Name.ToLower().Contains(lowerName))
                     .Include(x => x.Performance)
                     .ThenInclude(x => x.Location)
                     .Include(x => x.Performance)
@@ -356,6 +356,8 @@ namespace theatrel.DataAccess.Repositories
                 return false;
             }
         }
+
+        public IEnumerable<LocationsEntity> GetLocationsList() => _dbContext.PerformanceLocations.AsNoTracking();
 
         public void Dispose()
         {

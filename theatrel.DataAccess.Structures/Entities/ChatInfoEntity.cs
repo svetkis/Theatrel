@@ -37,10 +37,19 @@ namespace theatrel.DataAccess.Structures.Entities
             set => DbTypes = value != null ? string.Join(",", value) : null;
         }
 
+        [NotMapped]
+        public string[] Locations
+        {
+            get => DbLocations?.Split(',').ToArray();
+            set => DbLocations = value != null ? string.Join(",", value) : null;
+        }
+
         public string PerformanceName { get; set; }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public string DbTypes { get; set; }
+
+        public string DbLocations { get; set; }
 
         public DateTime LastMessage { get; set; }
         public DialogStateEnum DialogState { get; set; }

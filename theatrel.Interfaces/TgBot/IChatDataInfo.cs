@@ -19,6 +19,7 @@ namespace theatrel.Interfaces.TgBot
         DateTime When { get; set; }
         DayOfWeek[] Days { get; set; }
         string[] Types { get; set; }
+        string[] Locations { get; set; }
         string PerformanceName { get; set; }
         DateTime LastMessage { get; set; }
         DialogStateEnum DialogState { get; set; }

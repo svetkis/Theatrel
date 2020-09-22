@@ -34,7 +34,8 @@ namespace theatrel.TLBot
                 },
                 new IDialogCommand[]
                 {
-                    new StartSearchCommand(_dbService),
+                    new StartSearchByDateCommand(_dbService),
+                    new LocationCommand(_dbService),
                     new MonthCommand(_dbService),
                     new DaysOfWeekCommand(_dbService),
                     new PerformanceTypesCommand(_dbService),
@@ -43,6 +44,7 @@ namespace theatrel.TLBot
                 new IDialogCommand[]
                 {
                     new StartSearchByNameCommand(_dbService),
+                    new LocationCommand(_dbService),
                     new AscNameCommand(_dbService),
                     new GetPerformancesCommand(_filterService, _timeZoneService, _dbService)
                 },

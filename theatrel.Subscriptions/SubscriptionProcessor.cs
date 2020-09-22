@@ -54,8 +54,13 @@ namespace theatrel.Subscriptions
 
                 if (!string.IsNullOrEmpty(filter.PerformanceName))
                 {
-                    performanceChanges = changes.Where(c => string.Equals(c.PlaybillEntity.Performance.Name, filter.PerformanceName,
-                        StringComparison.OrdinalIgnoreCase)).ToArray();
+                    performanceChanges = changes.Where(p =>
+                        string.Equals(p.PlaybillEntity.Performance.Name, filter.PerformanceName, StringComparison.OrdinalIgnoreCase)
+                        && _filterChecker.IsDataSuitable(p.PlaybillEntity.Performance.Name, p.PlaybillEntity.Performance.Location.Name,
+                            p.PlaybillEntity.Performance.Type.TypeName, p.PlaybillEntity.When, filter)
+                        && p.LastUpdate > subscription.LastUpdate
+                        && (subscription.TrackingChanges & p.ReasonOfChanges) != 0)
+                        .OrderBy(p => p.LastUpdate).ToArray();
                 }
                 else if (filter.PlaybillId > 0)
                 {
@@ -68,7 +73,7 @@ namespace theatrel.Subscriptions
                 else
                 {
                     performanceChanges = changes
-                        .Where(p => _filterChecker.IsDataSuitable(p.PlaybillEntity.Performance.Location.Name,
+                        .Where(p => _filterChecker.IsDataSuitable(p.PlaybillEntity.Performance.Name, p.PlaybillEntity.Performance.Location.Name,
                                         p.PlaybillEntity.Performance.Type.TypeName, p.PlaybillEntity.When, filter)
                                     && p.LastUpdate > subscription.LastUpdate
                                     && (subscription.TrackingChanges & p.ReasonOfChanges) != 0)
