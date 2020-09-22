@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using theatrel.Interfaces.Autofac;
 
 namespace theatrel.Interfaces.Filters
 {

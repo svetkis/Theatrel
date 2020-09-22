@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -51,18 +50,30 @@ namespace theatrel.Subscriptions
 
                 Trace.TraceInformation($"Filter:{filter.Id} PlaybillId: {filter.PlaybillId} user:{subscription.TelegramUserId} {filter.StartDate:yy-MM-dd} {filter.EndDate:yy-MM-dd}");
 
-                PlaybillChangeEntity[] performanceChanges = filter.PlaybillId > 0
-                    ? changes
+                PlaybillChangeEntity[] performanceChanges;
+
+                if (!string.IsNullOrEmpty(filter.PerformanceName))
+                {
+                    performanceChanges = changes.Where(c => string.Equals(c.PlaybillEntity.Performance.Name, filter.PerformanceName,
+                        StringComparison.OrdinalIgnoreCase)).ToArray();
+                }
+                else if (filter.PlaybillId > 0)
+                {
+                    performanceChanges = changes
                         .Where(p => p.PlaybillEntity.PerformanceId == filter.PlaybillId
                                     && p.LastUpdate > subscription.LastUpdate
                                     && (subscription.TrackingChanges & p.ReasonOfChanges) != 0)
-                        .OrderBy(p => p.LastUpdate).ToArray()
-                    : changes
+                        .OrderBy(p => p.LastUpdate).ToArray();
+                }
+                else
+                {
+                    performanceChanges = changes
                         .Where(p => _filterChecker.IsDataSuitable(p.PlaybillEntity.Performance.Location.Name,
                                         p.PlaybillEntity.Performance.Type.TypeName, p.PlaybillEntity.When, filter)
                                     && p.LastUpdate > subscription.LastUpdate
                                     && (subscription.TrackingChanges & p.ReasonOfChanges) != 0)
                         .OrderBy(p => p.LastUpdate).ToArray();
+                }
 
                 Trace.TraceInformation($"Found {performanceChanges.Length} changes.");
 
@@ -103,15 +114,6 @@ namespace theatrel.Subscriptions
             return true;
         }
 
-        private async Task<bool> SendMessages(long tgUserId, PlaybillChangeEntity[] changes)
-        {
-            var groups = changes.GroupBy(change => change.ReasonOfChanges).Select(group => group.ToArray());
-
-            string message = string.Join(Environment.NewLine, groups.Select(GetChangesDescription));
-
-            return await _telegramService.SendEscapedMessageAsync(tgUserId, message, CancellationToken.None);
-        }
-
         private string GetChangesDescription(PlaybillChangeEntity[] changes)
         {
             StringBuilder sb = new StringBuilder();
@@ -127,10 +129,10 @@ namespace theatrel.Subscriptions
                     sb.AppendLine("Снижена цена:");
                     break;
                 case ReasonOfChanges.PriceIncreased:
-                    sb.AppendLine("Билеты подорожали");
+                    sb.AppendLine("Билеты подорожали:");
                     break;
                 case ReasonOfChanges.StartSales:
-                    sb.AppendLine("Появились в продаже билеты");
+                    sb.AppendLine("Появились в продаже билеты:");
                     break;
             }
 
@@ -152,36 +154,11 @@ namespace theatrel.Subscriptions
 
             return sb.ToString();
         }
-
-        private string GetChangeDescription(PlaybillChangeEntity change)
+        private async Task<bool> SendMessages(long tgUserId, PlaybillChangeEntity[] changes)
         {
-            var cultureRu = CultureInfo.CreateSpecificCulture("ru");
-            string formattedDate = change.PlaybillEntity.When.AddHours(3).ToString("ddMMM HH:mm", cultureRu);
-
-            var playbillEntity = change.PlaybillEntity;
-            string performanceString = $"{formattedDate} {playbillEntity.Performance.Name}".EscapeMessageForMarkupV2();
-
-            string fullInfo = string.IsNullOrWhiteSpace(playbillEntity.Url) || playbillEntity.Url.Equals(CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase)
-                ? performanceString
-                : change.MinPrice > 0 
-                    ? $"[{performanceString}]({playbillEntity.Url.EscapeMessageForMarkupV2()}) билеты от {change.MinPrice}"
-                    : $"[{performanceString}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
-
-            ReasonOfChanges reason = (ReasonOfChanges)change.ReasonOfChanges;
-            switch (reason)
-            {
-                case ReasonOfChanges.Creation:
-                    string month = cultureRu.DateTimeFormat.GetMonthName(change.PlaybillEntity.When.Month);
-                    return $"Новое в афише на {month}: {fullInfo}";
-                case ReasonOfChanges.PriceDecreased:
-                    return $"Снижена цена {fullInfo}";
-                case ReasonOfChanges.PriceIncreased:
-                    return $"Билеты подорожали {fullInfo}";
-                case ReasonOfChanges.StartSales:
-                    return $"Появились в продаже билеты {fullInfo}";
-            }
-
-            return null;
+            var groups = changes.GroupBy(change => change.ReasonOfChanges).Select(group => group.ToArray());
+            string message = string.Join(Environment.NewLine, groups.Select(GetChangesDescription));
+            return await _telegramService.SendEscapedMessageAsync(tgUserId, message, CancellationToken.None);
         }
     }
 }

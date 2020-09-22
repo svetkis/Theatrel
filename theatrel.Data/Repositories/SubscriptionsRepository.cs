@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.Filters;
@@ -201,11 +200,11 @@ namespace theatrel.DataAccess.Repositories
             _dbContext.PlaybillChanges
                 .Where(c => c.LastUpdate > lastUpdate)
                 .Include(c => c.PlaybillEntity)
-                .ThenInclude(p => p.Performance)
-                .ThenInclude(p => p.Type)
+                    .ThenInclude(p => p.Performance)
+                        .ThenInclude(p => p.Type)
                 .Include(c => c.PlaybillEntity)
-                .ThenInclude(p => p.Performance)
-                .ThenInclude(p => p.Location)
+                    .ThenInclude(p => p.Performance)
+                        .ThenInclude(p => p.Location)
                 .AsNoTracking().ToArray();
 
         public void Dispose()

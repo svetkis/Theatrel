@@ -39,15 +39,9 @@ namespace theatrel.ConsoleTest
             };
             tLBotProcessor.Start(tlBotService, cts.Token);
 
-            var job = new UpdateJob();
+            //var job = new UpdateJob();
 
-            if (!await job.UpdatePlaybill(cts.Token))
-                return;
-
-            if (!await job.ProcessSubscriptions(cts.Token))
-                return;
-
-            /* for (int i = 0; i < 3; ++i)
+             for (int i = 0; i < 3; ++i)
              {
                  Trace.TraceInformation("Before UpdatePlaybill");
                  GC.Collect();
@@ -76,7 +70,7 @@ namespace theatrel.ConsoleTest
 
                  GC.Collect();
                  MemoryProfiler.GetSnapshot("Update finished");
-             }*/
+             }
             //await ScheduleOneTimeDataUpdate(CancellationToken.None);
 
             while (true)
