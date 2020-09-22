@@ -24,16 +24,15 @@ namespace theatrel.TLBot.Tests
         {
             _fixture = fixture;
             _output = output;
-            Trace.Listeners.Add(new Trace2TestOutputListener(output));
         }
 
         [Theory]
-        [InlineData(1, 5, new[] { DayOfWeek.Monday }, "концерт", true, "пр»вет", "апрель", "Ќет!", "май", "—уббота", "нет", "понедельник", "кќнцерт", "ѕодписатьс€ на снижение цены")]
-        [InlineData(2, 5, new[] { DayOfWeek.Monday }, "концерт", false, "пр»вет", "апрель", "¬ыбрать другой мес€ц", "май", "—уббота", "нет", "понедельник", "кќнцерт", "—пасибо, не надо")]
-        [InlineData(3, 4, new[] { DayOfWeek.Saturday }, "концерт", false, "пр»вет", "апрель", "—уббота", "кќнцерт", "—пасибо, не надо")]
-        [InlineData(4, 6, new[] { DayOfWeek.Sunday }, "ќпера", false, "Hi", "июнь", "вс", "опера", "—пасибо, не надо")]
-        [InlineData(5, 7, new[] { DayOfWeek.Friday }, "балет", false, "ƒобрый деЌь!", "июль", "5", "Ѕалет", "—пасибо, не надо")]
-        [InlineData(6, 5, new[] { DayOfWeek.Friday }, "балет", false, "ƒобрый деЌь!", "июль", "привет!", "май", "5", "Ѕалет", "—пасибо, не надо")]
+        [InlineData(1, 5, new[] { DayOfWeek.Monday }, "концерт", true, "пр»вет", "Ћюба€", "апрель", "Ќет!", "май", "—уббота", "нет", "понедельник", "кќнцерт", "ѕодписатьс€ на снижение цены")]
+        [InlineData(2, 5, new[] { DayOfWeek.Monday }, "концерт", false, "пр»вет", "Ћюба€", "апрель", "¬ыбрать другой мес€ц", "май", "—уббота", "нет", "понедельник", "кќнцерт", "—пасибо, не надо")]
+        [InlineData(3, 4, new[] { DayOfWeek.Saturday }, "концерт", false, "пр»вет", "Ћюба€", "апрель", "—уббота", "кќнцерт", "—пасибо, не надо")]
+        [InlineData(4, 6, new[] { DayOfWeek.Sunday }, "ќпера", false, "Hi", "1", "июнь", "вс", "опера", "—пасибо, не надо")]
+        [InlineData(5, 7, new[] { DayOfWeek.Friday }, "балет", false, "ƒобрый деЌь!", "Ћюба€", "июль", "5", "Ѕалет", "—пасибо, не надо")]
+        [InlineData(6, 5, new[] { DayOfWeek.Friday }, "балет", false, "ƒобрый деЌь!", "ѕлощадка-1", "июль", "/search", "ѕлощадка-2", "май", "5", "Ѕалет", "—пасибо, не надо")]
         public async Task DialogTest(long chatId, int month, DayOfWeek[] dayOfWeeks, string performanceType, bool subscribed, params string[] commands)
         {
             foreach (var entity in _fixture.Db.Subscriptions.AsNoTracking())

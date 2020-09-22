@@ -16,15 +16,20 @@ namespace theatrel.Lib.Tests
         [InlineData(true, new[] { 2020, 03, 20 }, "опера", new[] { DayOfWeek.Friday, DayOfWeek.Sunday }, new[] { "Опера" })]
         public void Test(bool expected, int[] performanceDate, string performanceType, DayOfWeek[] filterDays, string[] filterTypes)
         {
+            var dt = new DateTime(performanceDate[0], performanceDate[1], performanceDate[2]);
+
             var filterChecker = DIContainerHolder.Resolve<IFilterService>();
 
             var filter = new Mock<IPerformanceFilter>();
+            filter.SetupGet(x => x.PerformanceName).Returns(string.Empty);
             filter.SetupGet(x => x.DaysOfWeek).Returns(filterDays);
             filter.SetupGet(x => x.PerformanceTypes).Returns(filterTypes);
+            filter.SetupGet(x => x.Locations).Returns(new string[0]);
+            filter.SetupGet(x => x.StartDate).Returns(dt.AddDays(-2));
+            filter.SetupGet(x => x.EndDate).Returns(dt.AddDays(2));
 
             var performance = new Mock<IPerformanceData>();
-            performance.SetupGet(x => x.DateTime)
-                .Returns(new DateTime(performanceDate[0], performanceDate[1], performanceDate[2]));
+            performance.SetupGet(x => x.DateTime).Returns(dt);
             performance.SetupGet(x => x.Type).Returns(performanceType);
 
             bool result = filterChecker.IsDataSuitable(performance.Object, filter.Object);

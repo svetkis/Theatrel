@@ -47,11 +47,8 @@ namespace theatrel.DataAccess.Tests
 
             var pb4 = await pbRepository.AddPlaybill(performance4);
             var change = pb4.Changes.Last();
-            var dt = DateTime.Now;
-            change.LastUpdate = dt;
             bool updateResult = await pbRepository.UpdateChangeLastUpdate(change.Id);
 
-            Assert.Equal(dt, pbRepository.Get(performance4).Changes.Last().LastUpdate);
             Assert.NotNull(pb4);
             Assert.True(updateResult);
         }
