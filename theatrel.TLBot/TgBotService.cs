@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.Common;
@@ -74,8 +75,11 @@ namespace theatrel.TLBot
 
             try
             {
-                IReplyMarkup replyMarkup = message.ReplyKeyboard;
-                replyMarkup ??= new ReplyKeyboardRemove();
+                Chat chat = await _botClient.GetChatAsync(chatId, cancellationToken);
+
+                IReplyMarkup replyMarkup = chat.Type == ChatType.Private
+                    ? (IReplyMarkup)message.ReplyKeyboard ?? new ReplyKeyboardRemove()
+                    : null;
 
                 foreach (string msg in SplitMessage(message.IsEscaped ? message.Message : message.Message.EscapeMessageForMarkupV2()))
                 {

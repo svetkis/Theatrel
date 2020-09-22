@@ -24,6 +24,6 @@ namespace theatrel.DataAccess.Structures.Interfaces
         Task<bool> DeleteRange(IEnumerable<SubscriptionEntity> entity);
         Task<bool> Update(SubscriptionEntity newValue);
 
-        PlaybillChangeEntity[] GetAllChanges();
+        PlaybillChangeEntity[] GetFreshChanges(DateTime lastUpdate);
     }
 }

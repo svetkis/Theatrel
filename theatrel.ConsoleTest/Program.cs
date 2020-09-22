@@ -44,6 +44,9 @@ namespace theatrel.ConsoleTest
             if (!await job.UpdatePlaybill(cts.Token))
                 return;
 
+            if (!await job.ProcessSubscriptions(cts.Token))
+                return;
+
             /* for (int i = 0; i < 3; ++i)
              {
                  Trace.TraceInformation("Before UpdatePlaybill");

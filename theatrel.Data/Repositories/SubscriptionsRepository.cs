@@ -197,8 +197,9 @@ namespace theatrel.DataAccess.Repositories
             }
         }
 
-        public PlaybillChangeEntity[] GetAllChanges() =>
+        public PlaybillChangeEntity[] GetFreshChanges(DateTime lastUpdate) =>
             _dbContext.PlaybillChanges
+                .Where(c => c.LastUpdate > lastUpdate)
                 .Include(c => c.PlaybillEntity)
                 .ThenInclude(p => p.Performance)
                 .ThenInclude(p => p.Type)

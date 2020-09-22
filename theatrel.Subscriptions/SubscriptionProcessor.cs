@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Common;
@@ -35,11 +37,14 @@ namespace theatrel.Subscriptions
             Trace.TraceInformation("Process subscriptions started");
 
             using ISubscriptionsRepository subscriptionRepository = _dbService.GetSubscriptionRepository();
-            PlaybillChangeEntity[] changes = subscriptionRepository.GetAllChanges();
+            var subscriptions = subscriptionRepository.GetAllWithFilter().ToArray();
+
+            DateTime lastSubscriptionsUpdate = subscriptions.Min(s => s.LastUpdate);
+
+            PlaybillChangeEntity[] changes = subscriptionRepository.GetFreshChanges(lastSubscriptionsUpdate);
 
             Dictionary<long, Dictionary<int, PlaybillChangeEntity>> messagesDictionary = new Dictionary<long, Dictionary<int, PlaybillChangeEntity>>();
 
-            var subscriptions = subscriptionRepository.GetAllWithFilter().ToArray();
             foreach (SubscriptionEntity subscription in subscriptions)
             {
                 var filter = subscription.PerformanceFilter;
@@ -100,9 +105,52 @@ namespace theatrel.Subscriptions
 
         private async Task<bool> SendMessages(long tgUserId, PlaybillChangeEntity[] changes)
         {
-            string message = string.Join(Environment.NewLine, changes.Select(GetChangeDescription));
+            var groups = changes.GroupBy(change => change.ReasonOfChanges).Select(group => group.ToArray());
+
+            string message = string.Join(Environment.NewLine, groups.Select(GetChangesDescription));
 
             return await _telegramService.SendEscapedMessageAsync(tgUserId, message, CancellationToken.None);
+        }
+
+        private string GetChangesDescription(PlaybillChangeEntity[] changes)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            var cultureRu = CultureInfo.CreateSpecificCulture("ru");
+
+            switch ((ReasonOfChanges)changes.First().ReasonOfChanges)
+            {
+                case ReasonOfChanges.Creation:
+                    sb.AppendLine("Новое в афише:");
+                    break;
+                case ReasonOfChanges.PriceDecreased:
+                    sb.AppendLine("Снижена цена:");
+                    break;
+                case ReasonOfChanges.PriceIncreased:
+                    sb.AppendLine("Билеты подорожали");
+                    break;
+                case ReasonOfChanges.StartSales:
+                    sb.AppendLine("Появились в продаже билеты");
+                    break;
+            }
+
+            foreach (var change in changes)
+            {
+                string formattedDate = change.PlaybillEntity.When.AddHours(3).ToString("ddMMM HH:mm", cultureRu);
+
+                var playbillEntity = change.PlaybillEntity;
+                string performanceString = $"{formattedDate} {playbillEntity.Performance.Name}".EscapeMessageForMarkupV2();
+
+                string fullInfo = string.IsNullOrWhiteSpace(playbillEntity.Url) || playbillEntity.Url.Equals(CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase)
+                    ? performanceString
+                    : change.MinPrice > 0
+                        ? $"[{performanceString}]({playbillEntity.Url.EscapeMessageForMarkupV2()}) билеты от {change.MinPrice}"
+                        : $"[{performanceString}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
+
+                sb.AppendLine(fullInfo);
+            }
+
+            return sb.ToString();
         }
 
         private string GetChangeDescription(PlaybillChangeEntity change)
@@ -115,7 +163,9 @@ namespace theatrel.Subscriptions
 
             string fullInfo = string.IsNullOrWhiteSpace(playbillEntity.Url) || playbillEntity.Url.Equals(CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase)
                 ? performanceString
-                : $"[{performanceString}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
+                : change.MinPrice > 0 
+                    ? $"[{performanceString}]({playbillEntity.Url.EscapeMessageForMarkupV2()}) билеты от {change.MinPrice}"
+                    : $"[{performanceString}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
 
             ReasonOfChanges reason = (ReasonOfChanges)change.ReasonOfChanges;
             switch (reason)
@@ -124,11 +174,11 @@ namespace theatrel.Subscriptions
                     string month = cultureRu.DateTimeFormat.GetMonthName(change.PlaybillEntity.When.Month);
                     return $"Новое в афише на {month}: {fullInfo}";
                 case ReasonOfChanges.PriceDecreased:
-                    return $"Снижена цена {fullInfo} цена билета от {change.MinPrice}";
+                    return $"Снижена цена {fullInfo}";
                 case ReasonOfChanges.PriceIncreased:
-                    return $"Билеты подорожали {fullInfo} цена билета от {change.MinPrice}";
+                    return $"Билеты подорожали {fullInfo}";
                 case ReasonOfChanges.StartSales:
-                    return $"Появились в продаже билеты {fullInfo} цена билета от {change.MinPrice}";
+                    return $"Появились в продаже билеты {fullInfo}";
             }
 
             return null;
