@@ -37,10 +37,14 @@ namespace theatrel.Subscriptions
                 if (newFilter == null)
                     continue;
 
+                if (!string.IsNullOrEmpty(newFilter.PerformanceName))
+                    continue;
+
                 int year;
                 int month;
                 DateTime startDate;
                 DateTime endDate;
+
                 if (newFilter.PlaybillId == -1)
                 {
                     year = newFilter.StartDate.Year;

@@ -136,8 +136,20 @@ namespace theatrel.TLBot.Commands.Subscriptions
                 var filter = subscriptions[i].PerformanceFilter;
                 var changesDescription = subscriptions[i].TrackingChanges.GetTrackingChangesDescription().ToLower();
 
-                if (filter.PlaybillId == -1)
+                if (!string.IsNullOrEmpty(filter.PerformanceName))
                 {
+                    string locations = filter.Locations == null
+                        ? "все площадки"
+                        : string.Join("или ", filter.Locations);
+
+                    stringBuilder.AppendLine($" {i + 1}. Название содержит \"{filter.PerformanceName}\", место проведения: {locations} отслеживаемые события: {changesDescription}");
+                }
+                else if (filter.PlaybillId == -1)
+                {
+                    string locations = filter.Locations == null
+                        ? "все площадки"
+                        : string.Join("или ", filter.Locations);
+
                     string monthName = culture.DateTimeFormat.GetMonthName(filter.StartDate.Month);
 
                     string days = filter.DaysOfWeek == null
@@ -146,15 +158,15 @@ namespace theatrel.TLBot.Commands.Subscriptions
 
                     string types = filter.PerformanceTypes == null
                         ? "все представления"
-                        : $"{string.Join("или ", filter.PerformanceTypes)}";
+                        : string.Join("или ", filter.PerformanceTypes);
 
-                    stringBuilder.AppendLine($" {i + 1}. {monthName} {filter.StartDate.Year}, {types} {days} {changesDescription}");
+                    stringBuilder.AppendLine($" {i + 1}. {monthName} {filter.StartDate.Year}, место проведения: {locations}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
                 }
                 else
                 {
                     var playbillEntry = playbillRepository.GetWithName(filter.PlaybillId);
-                    var date = playbillEntry.When.AddHours(3).ToString("g", culture);
-                    stringBuilder.AppendLine($" {i + 1}. {playbillEntry.Performance.Name} {date} {changesDescription}");
+                    var date = playbillEntry.When.AddHours(3).ToString("ddMMM HH:mm", culture);
+                    stringBuilder.AppendLine($" {i + 1}. {playbillEntry.Performance.Name} {date} отслеживаемые события: {changesDescription}");
                 }
 
                 buttons.Add(new KeyboardButton($"Удалить {i + 1}"));

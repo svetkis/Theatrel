@@ -29,7 +29,7 @@ namespace theatrel.TLBot.Commands.SearchByName
         public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine("Какое представление вы желаете посмотреть. Напишите название спектакля.");
+            stringBuilder.AppendLine("Какое представление вы желаете посмотреть. Напишите название или часть названия спектакля.");
             return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup));
        }
     }

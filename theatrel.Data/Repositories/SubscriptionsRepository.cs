@@ -98,6 +98,7 @@ namespace theatrel.DataAccess.Repositories
             {
                 PerformanceFilterEntity filterEntity = new PerformanceFilterEntity
                 {
+                    PerformanceName = filter.PerformanceName,
                     StartDate = filter.StartDate,
                     EndDate = filter.EndDate,
                     DaysOfWeek = filter.DaysOfWeek,

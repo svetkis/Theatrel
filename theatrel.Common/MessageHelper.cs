@@ -8,7 +8,7 @@ namespace theatrel.Common
     {
         public static string GetTrackingChangesDescription(this int input)
         {
-            return string.Join(" ", Enum.GetValues(typeof(ReasonOfChanges))
+            return string.Join(", ", Enum.GetValues(typeof(ReasonOfChanges))
                 .OfType<ReasonOfChanges>()
                 .Skip(1)
                 .Where(reasonOfChange => ((ReasonOfChanges)input).HasFlag(reasonOfChange))
