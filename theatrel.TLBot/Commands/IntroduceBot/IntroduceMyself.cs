@@ -14,25 +14,31 @@ namespace theatrel.TLBot.Commands.IntroduceBot
         private readonly string _introduceString = "Добрый день! Вас приветствует Театрал-бот." +
                                          $" Я помогу вам подобрать билеты в Мариинский театр или подписаться на снижение цены и появление билетов в продаже.{Environment.NewLine}" +
                                          $" Список команда бота:{Environment.NewLine}" +
-                                         $" /help           справка по командам{Environment.NewLine}" +
-                                         $" /subscriptions  управление подписками{Environment.NewLine}" +
-                                         " /search          поиск билетов или просто напишите мне Привет!";
+                                         $" /help - показать справку{Environment.NewLine}" +
+                                         $" /search - искать с фильтром по дате и типу представления или просто напишите мне Привет!{Environment.NewLine}"+
+                                         $" /search2 - искать по имени{Environment.NewLine}" +
+                                         $" /subscriptions  управление подписками";
 
         public override string Name => "IntroduceMyself";
         protected override string ReturnCommandMessage { get; set; }
 
         public IntroduceMyself(IDbService dbService) : base(dbService)
         {
-            var buttons = new[]
+            var buttonsLine1 = new[]
             {
-                new KeyboardButton("/help"),
+                new KeyboardButton("/search"),
+                new KeyboardButton("/search2"),
+            };
+
+            var buttonsLine2 = new[]
+            {
                 new KeyboardButton("/subscriptions"),
                 new KeyboardButton("Ok"),
             };
 
             CommandKeyboardMarkup = new ReplyKeyboardMarkup
             {
-                Keyboard = GroupKeyboardButtons(ButtonsInLine, buttons),
+                Keyboard = GroupKeyboardButtons(ButtonsInLine, buttonsLine1, buttonsLine2),
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             };
