@@ -166,7 +166,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
                 {
                     var playbillEntry = playbillRepository.GetWithName(filter.PlaybillId);
                     var date = playbillEntry.When.AddHours(3).ToString("ddMMM HH:mm", culture);
-                    stringBuilder.AppendLine($" {i + 1}. {playbillEntry.Performance.Name} {date} отслеживаемые события: {changesDescription}");
+                    stringBuilder.AppendLine($" {i + 1}. {playbillEntry.Performance.Name} {date}, отслеживаемые события: {changesDescription}");
                 }
 
                 buttons.Add(new KeyboardButton($"Удалить {i + 1}"));

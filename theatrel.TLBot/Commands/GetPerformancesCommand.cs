@@ -138,12 +138,16 @@ namespace theatrel.TLBot.Commands
                     ? TimeZoneInfo.ConvertTimeFromUtc(item.When, _timeZoneService.TimeZone)
                     : item.When.AddHours(3);
 
-                string performanceString = $"{dt:ddMMM HH:mm} {item.Performance.Location.Name} {item.Performance.Type.TypeName} \"{item.Performance.Name}\" от {minPrice}"
+                string firstPart = $"{dt.ToString("ddMMM HH:mm", cultureRu)} {item.Performance.Location.Name} {item.Performance.Type.TypeName} "
                     .EscapeMessageForMarkupV2();
 
+                string performanceString = $"\"{item.Performance.Name}\"".EscapeMessageForMarkupV2();
+
+                string lastPart = $" от {minPrice}".EscapeMessageForMarkupV2();
+
                 stringBuilder.AppendLine(string.IsNullOrWhiteSpace(item.Url)
-                    ? performanceString
-                    : $"[{performanceString}]({item.Url.EscapeMessageForMarkupV2()})");
+                    ? $"{firstPart}{performanceString}{lastPart}"
+                    : $"{firstPart}[{performanceString}]({item.Url.EscapeMessageForMarkupV2()}){lastPart}");
 
                 stringBuilder.AppendLine("");
             }
