@@ -8,12 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Common;
 using theatrel.Common.Enums;
+using theatrel.Common.FormatHelper;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
-using theatrel.Lib;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.Subscriptions

@@ -2,7 +2,7 @@
 using System.Linq;
 using theatrel.Common.Enums;
 
-namespace theatrel.Common
+namespace theatrel.Common.FormatHelper
 {
     public static class MessageHelper
     {

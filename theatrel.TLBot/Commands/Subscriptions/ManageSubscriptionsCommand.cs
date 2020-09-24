@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.Common;
+using theatrel.Common.FormatHelper;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.TgBot;
@@ -152,9 +153,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
 
                     string monthName = culture.DateTimeFormat.GetMonthName(filter.StartDate.Month);
 
-                    string days = filter.DaysOfWeek == null
-                        ? "любой день недели"
-                        : string.Join(" или ", filter.DaysOfWeek.Select(d => culture.DateTimeFormat.GetDayName(d)));
+                    string days = DaysOfWeekHelper.GetDaysDescription(filter.DaysOfWeek, culture);
 
                     string types = filter.PerformanceTypes == null
                         ? "все представления"

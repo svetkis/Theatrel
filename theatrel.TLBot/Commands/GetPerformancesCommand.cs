@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -8,6 +10,7 @@ using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.Common;
 using theatrel.Common.Enums;
+using theatrel.Common.FormatHelper;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Filters;
@@ -114,7 +117,9 @@ namespace theatrel.TLBot.Commands
             string days = filter.DaysOfWeek != null
                 ? filter.DaysOfWeek.Length == 1
                     ? $"день недели: {cultureRu.DateTimeFormat.GetDayName(filter.DaysOfWeek.First())}"
-                    : "дни недели: " + string.Join(" или ", filter.DaysOfWeek.Select(d => cultureRu.DateTimeFormat.GetDayName(d)))
+                    : "дни недели: " + string.Join(" или ", filter.DaysOfWeek
+                            .OrderBy(d => (int)d, DaysOfWeekComparer.Create())
+                            .Select(d => cultureRu.DateTimeFormat.GetDayName(d)))
                 : string.Empty;
 
             string types = filter.PerformanceTypes == null
@@ -129,6 +134,8 @@ namespace theatrel.TLBot.Commands
                 string.IsNullOrEmpty(filter.PerformanceName)
                     ? $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types} площадка: {locations}.".EscapeMessageForMarkupV2()
                     : $"Я искал для Вас билеты на \"{filter.PerformanceName}\" площадка: {locations}".EscapeMessageForMarkupV2());
+
+            stringBuilder.AppendLine();
 
             foreach (var item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.Now))
             {
