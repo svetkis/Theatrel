@@ -40,7 +40,7 @@ namespace theatrel.Subscriptions.Tests
             foreach (var month in months.Skip(1))
             {
                 DateTime startDate = new DateTime(2020, month, 1);
-                DateTime endDateTime = startDate.AddMonths(1).AddDays(-1);
+                DateTime endDateTime = startDate.AddMonths(1);
 
                 subscriptionEntities.Add(new SubscriptionEntity
                 {
@@ -103,7 +103,7 @@ namespace theatrel.Subscriptions.Tests
                 new SubscriptionEntity
                 {
                     TelegramUserId = 1,
-                    LastUpdate = DateTime.Now.AddDays(-1),
+                    LastUpdate = DateTime.Now,
                     PerformanceFilter = new PerformanceFilterEntity
                     {
                         PlaybillId = -1,
@@ -133,8 +133,7 @@ namespace theatrel.Subscriptions.Tests
             Assert.NotNull(filters);
 
             Assert.Equal(9, filters.First().StartDate.Month);
-            Assert.Equal(11, filters.First().EndDate.Month);
+            Assert.Equal(12, filters.First().EndDate.Month);
         }
-
     }
 }

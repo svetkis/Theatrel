@@ -11,6 +11,7 @@ namespace theatrel.DataAccess.Structures.Entities
 
         [DataType(DataType.DateTime)]
         public DateTime When { get; set; }
+        public string TicketsUrl { get; set; }
         public string Url { get; set; }
 
         public int PerformanceId { get; set; }

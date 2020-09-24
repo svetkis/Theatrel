@@ -10,6 +10,8 @@ namespace theatrel.Lib
         public string Name { get; set; }
         public DateTime DateTime { get; set; }
         public string Url { get; set; }
+        public string TicketsUrl { get; set; }
+
         public string Type { get; set; }
         public int MinPrice { get; set; }
         public HttpStatusCode StatusCode { get; set; }

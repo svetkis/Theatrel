@@ -23,7 +23,7 @@ namespace theatrel.DataUpdater.Tests
             performanceMock.SetupGet(x => x.Location).Returns(location);
             performanceMock.SetupGet(x => x.MinPrice).Returns(minPrice);
 
-            performanceMock.SetupGet(x => x.Url).Returns(url);
+            performanceMock.SetupGet(x => x.TicketsUrl).Returns(url);
             performanceMock.SetupGet(x => x.DateTime).Returns(performanceDateTime);
 
             return performanceMock.Object;

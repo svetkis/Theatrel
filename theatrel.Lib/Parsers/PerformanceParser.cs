@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using AngleSharp.Dom;
+using theatrel.Common;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
 
@@ -14,13 +16,12 @@ namespace theatrel.Lib.Parsers
         {
             try
             {
-                AngleSharp.Dom.IElement parsedElement = (AngleSharp.Dom.IElement)element;
-                AngleSharp.Dom.IElement[] allElementChildren = parsedElement.QuerySelectorAll("*").ToArray();
+                IElement parsedElement = (IElement)element;
+                IElement[] allElementChildren = parsedElement.QuerySelectorAll("*").ToArray();
 
-                var specName = allElementChildren.FirstOrDefault(m => m.ClassName == "spec_name");
+                var specNameChildren = allElementChildren.FirstOrDefault(m => m.ClassName == "spec_name")?.Children;
                 string dtString = allElementChildren.FirstOrDefault(m => 0 == string.Compare(m.TagName, "time", true))?.GetAttribute("datetime");
-                var urlData = allElementChildren.FirstOrDefault(m => m.ClassName == "t_button")?.Children;
-                string url = ProcessUrl(urlData);
+                IHtmlCollection<IElement> ticketsUrlData = allElementChildren.FirstOrDefault(m => m.ClassName == "t_button")?.Children;
 
                 string location = allElementChildren
                     .FirstOrDefault(m => 0 == string.Compare(m.TagName, "span", true) && m.GetAttribute("itemprop") == "location")?.TextContent;
@@ -29,11 +30,18 @@ namespace theatrel.Lib.Parsers
                 var dt = DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture)
                     .ToUniversalTime();
 
+                string name = specNameChildren.Any()
+                    ? specNameChildren.Last()?.TextContent.Trim()
+                    : CommonTags.NotDefined;
+
+                string url = ProcessSpectsUrl(specNameChildren);
+
                 return new PerformanceData
                 {
                     DateTime = dt,
-                    Name = specName.Children.Any() ? specName.Children?.Last()?.TextContent.Trim() : CommonTags.NotDefined,
+                    Name = name,
                     Url = url,
+                    TicketsUrl = ProcessUrl(ticketsUrlData),
                     Type = GetType(parsedElement.ClassList.ToArray()),
                     Location = GetLocation(location.Trim()),
                 };
@@ -45,16 +53,28 @@ namespace theatrel.Lib.Parsers
             }
         }
 
-        private string ProcessUrl(AngleSharp.Dom.IHtmlCollection<AngleSharp.Dom.IElement> urlData)
+        private string ProcessUrl(IHtmlCollection<IElement> urlData)
         {
             if (!urlData.Any())
                 return CommonTags.NotDefined;
 
-            string url = urlData.First().GetAttribute("href");
+            string url = urlData.First().GetAttribute("href").Trim();
             if (url == CommonTags.JavascriptVoid)
                 return CommonTags.NotDefined;
 
-            return url.StartsWith("//") ? $"https:{url.Trim()}" : url.Trim();
+            return url.StartsWith("//") ? $"https:{url}" : url;
+        }
+
+        private string ProcessSpectsUrl(IHtmlCollection<IElement> urlData)
+        {
+            if (!urlData.Any())
+                return CommonTags.NotDefined;
+
+            string url = urlData.FirstOrDefault(m => m.GetAttribute("itemprop") == "url")?.GetAttribute("href").Trim();
+            if (string.IsNullOrEmpty(url) || url == CommonTags.JavascriptVoid)
+                return CommonTags.NotDefined;
+
+            return url.StartsWith("/") ? $"https://www.mariinsky.ru{url}" : url;
         }
 
         private static readonly Lazy<IDictionary<string, string>> PerformanceTypes

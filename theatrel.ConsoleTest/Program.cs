@@ -39,9 +39,8 @@ namespace theatrel.ConsoleTest
             };
             tLBotProcessor.Start(tlBotService, cts.Token);
 
-            //var job = new UpdateJob();
 
-/*             for (int i = 0; i < 3; ++i)
+             for (int i = 0; i < 1; ++i)
              {
                  Trace.TraceInformation("Before UpdatePlaybill");
                  GC.Collect();
@@ -66,11 +65,14 @@ namespace theatrel.ConsoleTest
                  if (!await job.SubscriptionsCleanup(cts.Token))
                      return;
 
-                 await Task.Delay(1000);
+                 if (!await job.PlaybillCleanup(cts.Token))
+                     return;
+
+                await Task.Delay(1000);
 
                  GC.Collect();
                  MemoryProfiler.GetSnapshot("Update finished");
-             }*/
+             }
             //await ScheduleOneTimeDataUpdate(CancellationToken.None);
 
             while (true)

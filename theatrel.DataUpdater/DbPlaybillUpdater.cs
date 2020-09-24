@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
@@ -58,6 +59,12 @@ namespace theatrel.DataUpdater
             var lastChange = playbillEntry.Changes
                 .OrderByDescending(x => x.LastUpdate)
                 .FirstOrDefault();
+
+            if ((string.IsNullOrEmpty(playbillEntry.TicketsUrl) || string.Equals(playbillEntry.TicketsUrl, CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase))
+                && !string.IsNullOrEmpty(data.TicketsUrl) && !string.Equals(data.TicketsUrl, CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase))
+            {
+                await playbillRepository.UpdateTicketsUrl(playbillEntry.Id, data.TicketsUrl);
+            }
 
             if ((string.IsNullOrEmpty(playbillEntry.Url) || string.Equals(playbillEntry.Url, CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase))
                 && !string.IsNullOrEmpty(data.Url) && !string.Equals(data.Url, CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase))

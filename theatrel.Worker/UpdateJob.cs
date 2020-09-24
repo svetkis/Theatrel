@@ -109,7 +109,7 @@ namespace theatrel.Worker
                 int y = month > 12 ? DateTime.Now.Year + 1 : DateTime.Now.Year;
                 var date = new DateTime(y, m, 1);
 
-                newFilters.Add(filterService.GetFilter(date, date.AddMonths(1).AddDays(-1)));
+                newFilters.Add(filterService.GetFilter(date, date.AddMonths(1)));
             }
 
             return newFilters.ToArray();

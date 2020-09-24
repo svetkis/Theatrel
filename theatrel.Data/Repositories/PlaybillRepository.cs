@@ -85,6 +85,7 @@ namespace theatrel.DataAccess.Repositories
                 var playBillEntry = new PlaybillEntity
                 {
                     Performance = performance,
+                    TicketsUrl = data.TicketsUrl,
                     Url = data.Url,
                     When = data.DateTime,
                     Changes = new List<PlaybillChangeEntity>
@@ -303,6 +304,44 @@ namespace theatrel.DataAccess.Repositories
             .Include(p => p.Changes)
             .FirstOrDefault(p => p.Id == playbillEntryId);
 
+        public async Task<bool> UpdateTicketsUrl(int playbillEntityId, string url)
+        {
+            PlaybillEntity oldValue = Get(playbillEntityId);
+
+            if (oldValue == null)
+                return false;
+
+            PlaybillEntity playbillEntity = null;
+            try
+            {
+                playbillEntity = GetTrackedWithAllIncludesById(playbillEntityId);
+
+                playbillEntity.TicketsUrl = url;
+
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation(
+                    $"UpdateTicketsUrl DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+                return false;
+            }
+            finally
+            {
+                if (playbillEntity != null)
+                {
+                    _dbContext.Entry(playbillEntity.Performance.Location).State = EntityState.Detached;
+                    _dbContext.Entry(playbillEntity.Performance.Type).State = EntityState.Detached;
+                    _dbContext.Entry(playbillEntity.Performance).State = EntityState.Detached;
+                    foreach (var change in playbillEntity.Changes)
+                        _dbContext.Entry(change).State = EntityState.Detached;
+
+                    _dbContext.Entry(playbillEntity).State = EntityState.Detached;
+                }
+            }
+        }
+
         public async Task<bool> UpdateUrl(int playbillEntityId, string url)
         {
             PlaybillEntity oldValue = Get(playbillEntityId);
@@ -323,7 +362,7 @@ namespace theatrel.DataAccess.Repositories
             catch (Exception ex)
             {
                 Trace.TraceInformation(
-                    $"Update playbill entity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+                    $"UpdateUrl DbException {ex.Message} InnerException {ex.InnerException?.Message}");
                 return false;
             }
             finally
@@ -340,6 +379,7 @@ namespace theatrel.DataAccess.Repositories
                 }
             }
         }
+
 
         public async Task<bool> Delete(PlaybillEntity entity)
         {

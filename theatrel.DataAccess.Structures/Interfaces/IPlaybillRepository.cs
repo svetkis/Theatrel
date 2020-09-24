@@ -22,6 +22,7 @@ namespace theatrel.DataAccess.Structures.Interfaces
         Task<bool> AddChange(PlaybillEntity entity, PlaybillChangeEntity change);
         Task<bool> UpdateChangeLastUpdate(int changeId);
         Task<bool> UpdateUrl(int playbillEntityId, string url);
+        Task<bool> UpdateTicketsUrl(int playbillEntityId, string url);
 
         Task<bool> Delete(PlaybillEntity entity);
 

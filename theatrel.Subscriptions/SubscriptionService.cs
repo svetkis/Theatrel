@@ -50,7 +50,7 @@ namespace theatrel.Subscriptions
                     year = newFilter.StartDate.Year;
                     month = newFilter.StartDate.Month;
                     startDate = new DateTime(year, month, 1);
-                    endDate = new DateTime(newFilter.EndDate.Year, newFilter.EndDate.Month, 1).AddMonths(1).AddDays(-1);
+                    endDate = new DateTime(newFilter.EndDate.Year, newFilter.EndDate.Month, 1).AddMonths(1);
                 }
                 else
                 {
@@ -62,7 +62,7 @@ namespace theatrel.Subscriptions
                     year = playbillEntry.When.Year;
                     month = playbillEntry.When.Month;
                     startDate = new DateTime(year, month, 1);
-                    endDate = startDate.AddMonths(1).AddDays(-1);
+                    endDate = startDate.AddMonths(1);
                 }
 
                 MergeFilters(mergedFilters, _filterService.GetFilter(startDate, endDate));

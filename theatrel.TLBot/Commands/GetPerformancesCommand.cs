@@ -132,24 +132,28 @@ namespace theatrel.TLBot.Commands
 
             foreach (var item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.Now))
             {
-                string minPrice = item.Changes.OrderBy(ch => ch.LastUpdate).Last().MinPrice.ToString();
+                int minPrice = item.Changes.OrderBy(ch => ch.LastUpdate).Last().MinPrice;
 
                 DateTime dt = item.When.Kind == DateTimeKind.Utc
                     ? TimeZoneInfo.ConvertTimeFromUtc(item.When, _timeZoneService.TimeZone)
                     : item.When.AddHours(3);
 
-                string firstPart = $"{dt.ToString("ddMMM HH:mm", cultureRu)} {item.Performance.Location.Name} {item.Performance.Type.TypeName} "
+                string firstPart = $"{dt.ToString("ddMMM HH:mm", cultureRu)} {item.Performance.Location.Name} {item.Performance.Type.TypeName}"
                     .EscapeMessageForMarkupV2();
 
-                string performanceString = $"\"{item.Performance.Name}\"".EscapeMessageForMarkupV2();
+                string escapedName = $"\"{item.Performance.Name}\"".EscapeMessageForMarkupV2();
+                string performanceString = string.IsNullOrWhiteSpace(item.Url) || item.Url == CommonTags.NotDefined
+                    ? escapedName
+                    : $"[{escapedName}]({item.Url.EscapeMessageForMarkupV2()})";
 
-                string lastPart = $" от {minPrice}".EscapeMessageForMarkupV2();
+                string lastPart = minPrice > 0
+                    ? string.IsNullOrWhiteSpace(item.TicketsUrl) || item.TicketsUrl == CommonTags.NotDefined
+                        ? $"от {minPrice}"
+                        : $"от [{minPrice}]({item.TicketsUrl.EscapeMessageForMarkupV2()})"
+                    : "Нет билетов в продаже";
 
-                stringBuilder.AppendLine(string.IsNullOrWhiteSpace(item.Url)
-                    ? $"{firstPart}{performanceString}{lastPart}"
-                    : $"{firstPart}[{performanceString}]({item.Url.EscapeMessageForMarkupV2()}){lastPart}");
-
-                stringBuilder.AppendLine("");
+                stringBuilder.AppendLine($"{firstPart} {performanceString} {lastPart}");
+                stringBuilder.AppendLine();
             }
 
             return Task.FromResult(

@@ -20,7 +20,7 @@ namespace theatrel.Lib.Parsers
 
         public async Task<IPerformanceData[]> Parse(string playbill, CancellationToken cancellationToken)
         {
-            var context = BrowsingContext.New(Configuration.Default);
+            IBrowsingContext context = BrowsingContext.New(Configuration.Default);
             IDocument document = await context.OpenAsync(req => req.Content(playbill), cancellationToken);
 
             IList<IPerformanceData> performances = new List<IPerformanceData>();
@@ -40,7 +40,7 @@ namespace theatrel.Lib.Parsers
                 Parallel.ForEach(spects.Children, new ParallelOptions { CancellationToken = cancellationToken },
                     performance =>
                     {
-                        var parsed = PerformanceParser.Parse(performance);
+                        IPerformanceData parsed = PerformanceParser.Parse(performance);
                         if (null != parsed)
                             performances.Add(parsed);
                     });

@@ -22,7 +22,7 @@ namespace theatrel.ConsoleTest
 
             DateTime performanceWhen = DateTime.Now.AddMonths(1);
             DateTime filterFrom = new DateTime(performanceWhen.Year, performanceWhen.Month, 1);
-            DateTime filterTo = filterFrom.AddMonths(1).AddDays(-1);
+            DateTime filterTo = filterFrom.AddMonths(1);
 
             Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
             playBillResolverMock.Setup(h =>
@@ -107,7 +107,7 @@ namespace theatrel.ConsoleTest
             performanceMock.SetupGet(x => x.Location).Returns(location);
             performanceMock.SetupGet(x => x.MinPrice).Returns(minPrice);
 
-            performanceMock.SetupGet(x => x.Url).Returns(url);
+            performanceMock.SetupGet(x => x.TicketsUrl).Returns(url);
             performanceMock.SetupGet(x => x.DateTime).Returns(performanceDateTime);
 
             return performanceMock.Object;

@@ -143,22 +143,29 @@ namespace theatrel.Subscriptions
 
             foreach (var change in changes)
             {
-                string formattedDate = change.PlaybillEntity.When.AddHours(3).ToString("ddMMM HH:mm", cultureRu);
+                PlaybillEntity playbillEntity = change.PlaybillEntity;
+                string formattedDate = playbillEntity.When.AddHours(3).ToString("ddMMM HH:mm", cultureRu);
 
-                var playbillEntity = change.PlaybillEntity;
-                string performanceString = $"{formattedDate} {playbillEntity.Performance.Name}".EscapeMessageForMarkupV2();
 
-                string fullInfo = string.IsNullOrWhiteSpace(playbillEntity.Url) || playbillEntity.Url.Equals(CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase)
-                    ? performanceString
-                    : change.MinPrice > 0
-                        ? $"[{performanceString}]({playbillEntity.Url.EscapeMessageForMarkupV2()}) билеты от {change.MinPrice}"
-                        : $"[{performanceString}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
+                string firstPart = $"{formattedDate} {playbillEntity.Performance.Location.Name} {playbillEntity.Performance.Type.TypeName}"
+                    .EscapeMessageForMarkupV2();
 
-                sb.AppendLine(fullInfo);
+                string escapedName = $"\"{playbillEntity.Performance.Name}\"".EscapeMessageForMarkupV2();
+                string performanceString = string.IsNullOrWhiteSpace(playbillEntity.Url) || playbillEntity.Url == CommonTags.NotDefined
+                    ? escapedName
+                    : $"[{escapedName}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
+
+                string lastPart = string.IsNullOrWhiteSpace(playbillEntity.TicketsUrl) || playbillEntity.TicketsUrl == CommonTags.NotDefined
+                    ? $"от {change.MinPrice}"
+                    : $"от [{change.MinPrice}]({playbillEntity.TicketsUrl.EscapeMessageForMarkupV2()})";
+
+                sb.AppendLine($"{firstPart} {performanceString} {lastPart}");
+                sb.AppendLine();
             }
 
             return sb.ToString();
         }
+
         private async Task<bool> SendMessages(long tgUserId, PlaybillChangeEntity[] changes)
         {
             var groups = changes.GroupBy(change => change.ReasonOfChanges).Select(group => group.ToArray());

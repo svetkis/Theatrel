@@ -22,7 +22,7 @@ namespace theatrel.Lib.Filters
             var filter = new PerformanceFilter
             {
                 StartDate = dataInfo.When,
-                EndDate = dataInfo.When.AddMonths(1).AddDays(-1)
+                EndDate = dataInfo.When.AddMonths(1)
             };
 
             if (dataInfo.Locations != null && dataInfo.Locations.Any())

@@ -1,4 +1,4 @@
-﻿namespace theatrel.Lib
+﻿namespace theatrel.Common
 {
     public class CommonTags
     {

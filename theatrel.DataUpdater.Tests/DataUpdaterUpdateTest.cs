@@ -38,7 +38,7 @@ namespace theatrel.DataUpdater.Tests
 
                 },
                 When = performanceDateTime,
-                Url = url,
+                TicketsUrl = url,
                 Changes = new List<PlaybillChangeEntity>
                 {
                     new PlaybillChangeEntity

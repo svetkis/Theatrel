@@ -30,7 +30,7 @@ namespace theatrel.DataUpdater.Tests
 
             DateTime performanceWhen = DateTime.Now.AddMonths(1);
             DateTime filterFrom = new DateTime(performanceWhen.Year, performanceWhen.Month, 1);
-            DateTime filterTo = filterFrom.AddMonths(1).AddDays(-1);
+            DateTime filterTo = filterFrom.AddMonths(1);
 
             Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
             playBillResolverMock.Setup(h =>
@@ -84,7 +84,7 @@ namespace theatrel.DataUpdater.Tests
             await using var db = Fixture.RootScope.Resolve<IDbService>().GetDbContext();
 
             var changes = db.PlaybillChanges
-                .Where(c => c.PlaybillEntity.Url == performanceUrl)
+                .Where(c => c.PlaybillEntity.TicketsUrl == performanceUrl)
                 .OrderBy(d => d.LastUpdate).ToArray();
 
             Assert.Equal(3, changes.Count());
