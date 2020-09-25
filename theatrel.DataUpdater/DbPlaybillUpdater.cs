@@ -76,9 +76,6 @@ namespace theatrel.DataUpdater
             if (compareResult == ReasonOfChanges.NothingChanged
                 && lastChange != null && lastChange.ReasonOfChanges == (int)ReasonOfChanges.NothingChanged)
             {
-                lastChange.LastUpdate = DateTime.Now;
-                await playbillRepository.UpdateChangeLastUpdate(lastChange.Id);
-
                 return;
             }
 

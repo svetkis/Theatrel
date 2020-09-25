@@ -44,6 +44,9 @@ namespace theatrel.Common.FormatHelper
 
         public static string GetDaysDescription(DayOfWeek[] days, CultureInfo culture)
         {
+            if (days == null)
+                return AllDaysNames.First().ToLower();
+
             if (days.Length > 1)
             {
                 var sorted = days.OrderBy(d => (int)d, DaysOfWeekComparer.Create()).ToArray();

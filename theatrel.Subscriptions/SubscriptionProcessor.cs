@@ -48,7 +48,7 @@ namespace theatrel.Subscriptions
             {
                 var filter = subscription.PerformanceFilter;
 
-                Trace.TraceInformation($"Filter:{filter.Id} PlaybillId: {filter.PlaybillId} user:{subscription.TelegramUserId} {filter.StartDate:yy-MM-dd} {filter.EndDate:yy-MM-dd}");
+//                Trace.TraceInformation($"Filter:{filter.Id} PlaybillId: {filter.PlaybillId} user:{subscription.TelegramUserId} {filter.StartDate:yy-MM-dd} {filter.EndDate:yy-MM-dd}");
 
                 PlaybillChangeEntity[] performanceChanges;
 
@@ -59,7 +59,8 @@ namespace theatrel.Subscriptions
                         && _filterChecker.IsDataSuitable(p.PlaybillEntity.Performance.Name, p.PlaybillEntity.Performance.Location.Name,
                             p.PlaybillEntity.Performance.Type.TypeName, p.PlaybillEntity.When, filter)
                         && p.LastUpdate > subscription.LastUpdate
-                        && (subscription.TrackingChanges & p.ReasonOfChanges) != 0)
+                        && (subscription.TrackingChanges & p.ReasonOfChanges) != 0
+                        && subscription.TrackingChanges != 0)
                         .OrderBy(p => p.LastUpdate).ToArray();
                 }
                 else if (filter.PlaybillId > 0)
@@ -67,7 +68,8 @@ namespace theatrel.Subscriptions
                     performanceChanges = changes
                         .Where(p => p.PlaybillEntity.PerformanceId == filter.PlaybillId
                                     && p.LastUpdate > subscription.LastUpdate
-                                    && (subscription.TrackingChanges & p.ReasonOfChanges) != 0)
+                                    && (subscription.TrackingChanges & p.ReasonOfChanges) != 0
+                                    && subscription.TrackingChanges != 0)
                         .OrderBy(p => p.LastUpdate).ToArray();
                 }
                 else
@@ -76,11 +78,12 @@ namespace theatrel.Subscriptions
                         .Where(p => _filterChecker.IsDataSuitable(p.PlaybillEntity.Performance.Name, p.PlaybillEntity.Performance.Location.Name,
                                         p.PlaybillEntity.Performance.Type.TypeName, p.PlaybillEntity.When, filter)
                                     && p.LastUpdate > subscription.LastUpdate
-                                    && (subscription.TrackingChanges & p.ReasonOfChanges) != 0)
+                                    && (subscription.TrackingChanges & p.ReasonOfChanges) != 0
+                                    && subscription.TrackingChanges != 0)
                         .OrderBy(p => p.LastUpdate).ToArray();
                 }
 
-                Trace.TraceInformation($"Found {performanceChanges.Length} changes.");
+//                Trace.TraceInformation($"Found {performanceChanges.Length} changes.");
 
                 if (!performanceChanges.Any())
                     continue;
@@ -110,7 +113,10 @@ namespace theatrel.Subscriptions
                 //if message was sent we should update LastUpdate for users subscriptions
                 foreach (var subscription in subscriptions.Where(s => s.TelegramUserId == userData.Key))
                 {
-                    subscription.LastUpdate = userData.Value.Last().Value.LastUpdate;
+                    var lastUpdate = userData.Value.OrderBy(d => d.Value.LastUpdate).Last().Value.LastUpdate;
+                    Trace.TraceInformation($"Update subscription date user: {subscription.TelegramUserId} {lastUpdate}");
+
+                    subscription.LastUpdate = userData.Value.OrderBy(d => d.Value.LastUpdate).Last().Value.LastUpdate;
                     await subscriptionRepository.Update(subscription);
                 }
             }

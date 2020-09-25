@@ -213,9 +213,7 @@ namespace theatrel.DataAccess.Repositories
             if (_dbContext == null)
                 return;
 
-            Trace.TraceInformation("SubscriptionRepository disposed");
             _dbContext.Dispose();
-
             _dbContext = null;
         }
     }

@@ -63,7 +63,12 @@ namespace theatrel.TLBot
         }
 
         private void BotOnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
-            => OnMessage?.Invoke(sender, new TgInboundMessage { ChatId = e.Message.Chat.Id, Message = e.Message.Text.Trim() });
+        {
+            if (e.Message.Text == null) //as example messages about adding bot to channel
+                return;
+
+            OnMessage?.Invoke(sender, new TgInboundMessage {ChatId = e.Message.Chat.Id, Message = e.Message.Text.Trim()});
+        }
 
         public async Task<bool> SendMessageAsync(long chatId, ITgOutboundMessage message, CancellationToken cancellationToken)
         {

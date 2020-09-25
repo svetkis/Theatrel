@@ -404,9 +404,7 @@ namespace theatrel.DataAccess.Repositories
             if (_dbContext == null)
                 return;
 
-            Trace.TraceInformation("PlaybillRepository disposed");
             _dbContext.Dispose();
-
             _dbContext = null;
         }
     }

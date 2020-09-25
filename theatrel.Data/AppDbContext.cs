@@ -18,13 +18,6 @@ namespace theatrel.DataAccess
 
         public AppDbContext(DbContextOptions options) : base(options)
         {
-            Trace.TraceInformation("AppDbContext created");
-        }
-
-        public override void Dispose()
-        {
-            Trace.TraceInformation("AppDbContext disposed");
-            base.Dispose();
         }
     }
 }

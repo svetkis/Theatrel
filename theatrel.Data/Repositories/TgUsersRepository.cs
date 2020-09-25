@@ -95,9 +95,7 @@ namespace theatrel.DataAccess.Repositories
             if (_dbContext == null)
                 return;
 
-            Trace.TraceInformation("TgUsersRepository was disposed");
             _dbContext?.Dispose();
-
             _dbContext = null;
         }
     }
