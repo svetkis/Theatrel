@@ -157,12 +157,12 @@ namespace theatrel.Subscriptions
                     .EscapeMessageForMarkupV2();
 
                 string escapedName = $"\"{playbillEntity.Performance.Name}\"".EscapeMessageForMarkupV2();
-                string performanceString = string.IsNullOrWhiteSpace(playbillEntity.Url) || playbillEntity.Url == CommonTags.NotDefined
+                string performanceString = string.IsNullOrWhiteSpace(playbillEntity.Url) || CommonTags.TechnicalStateTags.Contains(playbillEntity.Url)
                     ? escapedName
                     : $"[{escapedName}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
 
-                string lastPart = string.IsNullOrWhiteSpace(playbillEntity.TicketsUrl) || playbillEntity.TicketsUrl == CommonTags.NotDefined
-                    ? $"от {change.MinPrice}"
+                string lastPart = string.IsNullOrWhiteSpace(playbillEntity.TicketsUrl) || CommonTags.TechnicalStateTags.Contains(playbillEntity.TicketsUrl)
+                    ? string.Empty
                     : $"от [{change.MinPrice}]({playbillEntity.TicketsUrl.EscapeMessageForMarkupV2()})";
 
                 sb.AppendLine($"{firstPart} {performanceString} {lastPart}");

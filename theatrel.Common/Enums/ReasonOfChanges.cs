@@ -29,5 +29,8 @@ namespace theatrel.Common.Enums
 
         [Description("Билеты закончились")]
         StopSales = 64,
+
+        [Description("Переносится")]
+        WasMoved = 128,
     }
 }

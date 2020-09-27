@@ -42,13 +42,15 @@ namespace theatrel.Lib.MariinskyPlaybill
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            IEnumerable<IPerformanceData> filtered = performances.Where(item => _filterChecker.IsDataSuitable(item, filter)).ToArray();
+            IEnumerable<IPerformanceData> filtered = performances
+                .Where(item => item != null && _filterChecker.IsDataSuitable(item, filter)).ToArray();
 
             Task[] resolvePricesTasks = filtered
                 .Select(item => Task.Run(async () =>
                     {
                         var tickets = await _ticketParser.ParseFromUrl(item.TicketsUrl, cancellationToken);
-                        item.MinPrice = tickets.State == TicketsState.TechnicalError ? -1 : tickets.GetMinPrice();
+                        item.State = tickets.State;
+                        item.MinPrice = tickets.GetMinPrice();
                     }, cancellationToken)).ToArray();
 
             await Task.WhenAll(resolvePricesTasks.ToArray());

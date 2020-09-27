@@ -2,10 +2,16 @@
 {
     public class CommonTags
     {
-        public static readonly string NotDefined = "Not defined";
-        public static readonly string JavascriptVoid = "javascript:void(0)";
+        public const string NotDefinedTag = "Not defined";
+        public const string WasMovedTag = "WasMoved";
+        public const string NoTicketsTag = "NoTickets";
 
-        public static readonly string NoTickets = "Билетов нет в продаже или они продаются только в кассах театра";
-        public static readonly string RequestTicketsError = "Ошибка запроса билетов";
+        public const string BuyTicket = "Купить билет";
+        public const string NoTickets = "Билетов нет";
+        public const string WasMoved = "Переносится";
+
+        public static readonly string[] TechnicalStateTags = {NotDefinedTag, WasMovedTag, NoTicketsTag};
+
+        public const string JavascriptVoid = "javascript:void(0)";
     }
 }

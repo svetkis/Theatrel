@@ -21,7 +21,9 @@ namespace theatrel.Lib.Parsers
 
                 var specNameChildren = allElementChildren.FirstOrDefault(m => m.ClassName == "spec_name")?.Children;
                 string dtString = allElementChildren.FirstOrDefault(m => 0 == string.Compare(m.TagName, "time", true))?.GetAttribute("datetime");
-                IHtmlCollection<IElement> ticketsUrlData = allElementChildren.FirstOrDefault(m => m.ClassName == "t_button")?.Children;
+
+                IElement ticketsTButton = allElementChildren.FirstOrDefault(m => m.ClassName == "t_button");
+                IHtmlCollection<IElement> ticketsUrlData = ticketsTButton?.Children;
 
                 string location = allElementChildren
                     .FirstOrDefault(m => 0 == string.Compare(m.TagName, "span", true) && m.GetAttribute("itemprop") == "location")?.TextContent;
@@ -32,16 +34,38 @@ namespace theatrel.Lib.Parsers
 
                 string name = specNameChildren.Any()
                     ? specNameChildren.Last()?.TextContent.Trim()
-                    : CommonTags.NotDefined;
+                    : CommonTags.NotDefinedTag;
 
                 string url = ProcessSpectsUrl(specNameChildren);
+
+                string ticketsUrl;// = ProcessUrl(ticketsUrlData);
+
+                var ticketsButtonContent = ticketsTButton?.TextContent.Trim();
+                switch (ticketsButtonContent)
+                {
+                    case CommonTags.BuyTicket:
+                        ticketsUrl = ProcessUrl(ticketsUrlData);
+                        break;
+                    case CommonTags.WasMoved:
+                        ticketsUrl = CommonTags.WasMovedTag;
+                        Trace.TraceInformation($"{ticketsUrl} {dt:g} {name} {ticketsUrl}");
+                        break;
+                    case CommonTags.NoTickets:
+                        ticketsUrl = CommonTags.NoTicketsTag;
+                        Trace.TraceInformation($"{ticketsUrl} {dt:g} {name} {ticketsUrl}");
+                        break;
+                    default:
+                        ticketsUrl = CommonTags.NotDefinedTag;
+                        Trace.TraceInformation($"{ticketsUrl} {dt:g} {name} {ticketsUrl}");
+                        break;
+                }
 
                 return new PerformanceData
                 {
                     DateTime = dt,
                     Name = name,
                     Url = url,
-                    TicketsUrl = ProcessUrl(ticketsUrlData),
+                    TicketsUrl = ticketsUrl,
                     Type = GetType(parsedElement.ClassList.ToArray()),
                     Location = GetLocation(location.Trim()),
                 };
@@ -56,11 +80,11 @@ namespace theatrel.Lib.Parsers
         private string ProcessUrl(IHtmlCollection<IElement> urlData)
         {
             if (!urlData.Any())
-                return CommonTags.NotDefined;
+                return CommonTags.NotDefinedTag;
 
             string url = urlData.First().GetAttribute("href").Trim();
             if (url == CommonTags.JavascriptVoid)
-                return CommonTags.NotDefined;
+                return CommonTags.NotDefinedTag;
 
             return url.StartsWith("//") ? $"https:{url}" : url;
         }
@@ -68,11 +92,11 @@ namespace theatrel.Lib.Parsers
         private string ProcessSpectsUrl(IHtmlCollection<IElement> urlData)
         {
             if (!urlData.Any())
-                return CommonTags.NotDefined;
+                return CommonTags.NotDefinedTag;
 
             string url = urlData.FirstOrDefault(m => m.GetAttribute("itemprop") == "url")?.GetAttribute("href").Trim();
             if (string.IsNullOrEmpty(url) || url == CommonTags.JavascriptVoid)
-                return CommonTags.NotDefined;
+                return CommonTags.NotDefinedTag;
 
             return url.StartsWith("/") ? $"https://www.mariinsky.ru{url}" : url;
         }

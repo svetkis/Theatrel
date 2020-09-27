@@ -60,33 +60,25 @@ namespace theatrel.DataUpdater
                 .OrderByDescending(x => x.LastUpdate)
                 .FirstOrDefault();
 
-            if ((string.IsNullOrEmpty(playbillEntry.TicketsUrl) || string.Equals(playbillEntry.TicketsUrl, CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase))
-                && !string.IsNullOrEmpty(data.TicketsUrl) && !string.Equals(data.TicketsUrl, CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(playbillEntry.TicketsUrl, data.TicketsUrl))
             {
                 await playbillRepository.UpdateTicketsUrl(playbillEntry.Id, data.TicketsUrl);
             }
 
-            if ((string.IsNullOrEmpty(playbillEntry.Url) || string.Equals(playbillEntry.Url, CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase))
-                && !string.IsNullOrEmpty(data.Url) && !string.Equals(data.Url, CommonTags.NotDefined, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(playbillEntry.Url, data.Url))
             {
                 await playbillRepository.UpdateUrl(playbillEntry.Id, data.Url);
             }
 
             var compareResult = ComparePerformanceData(lastChange, data);
-            if (compareResult == ReasonOfChanges.NothingChanged
-                && lastChange != null && lastChange.ReasonOfChanges == (int)ReasonOfChanges.NothingChanged)
+            switch (compareResult)
             {
-                return;
+                case ReasonOfChanges.NothingChanged:
+                    return;
+                case ReasonOfChanges.DataError:
+                    Trace.TraceInformation($"Data error {data.Name} {data.DateTime:M} price: {data.MinPrice}");
+                    return;
             }
-
-            if (compareResult == ReasonOfChanges.DataError)
-            {
-                Trace.TraceInformation($"Data error {data.Name} {data.DateTime:M} price: {data.MinPrice}");
-                return;
-            }
-
-            if (compareResult != ReasonOfChanges.NothingChanged)
-                Trace.TraceInformation($"Reason of changes {compareResult} {data.Name} {data.DateTime:M} price: {data.MinPrice}");
 
             await playbillRepository.AddChange(playbillEntry, new PlaybillChangeEntity
             {
@@ -98,22 +90,36 @@ namespace theatrel.DataUpdater
 
         private ReasonOfChanges ComparePerformanceData(PlaybillChangeEntity lastChange, IPerformanceData freshData)
         {
-            int freshMinPrice = freshData.MinPrice;
+            switch (freshData.State)
+            {
+                case TicketsState.TechnicalError:
+                    return ReasonOfChanges.DataError;
 
-            if (freshMinPrice == -1)
-                return ReasonOfChanges.DataError;
+                case TicketsState.PerformanceWasMoved:
+                    return lastChange != null && lastChange.ReasonOfChanges == (int)ReasonOfChanges.WasMoved
+                        ? ReasonOfChanges.NothingChanged
+                        : ReasonOfChanges.WasMoved;
 
-            if (lastChange == null)
-                return freshMinPrice == 0 ? ReasonOfChanges.Creation : ReasonOfChanges.StartSales;
+                case TicketsState.NoTickets:
+                    return lastChange != null && lastChange.ReasonOfChanges == (int)ReasonOfChanges.StopSales
+                        ? ReasonOfChanges.NothingChanged
+                        : ReasonOfChanges.StopSales;
 
-            if (lastChange.MinPrice == 0)
-                return freshMinPrice == 0 ? ReasonOfChanges.NothingChanged : ReasonOfChanges.StartSales;
+                case TicketsState.Ok:
+                    if (lastChange == null)
+                        return freshData.MinPrice == 0 ? ReasonOfChanges.Creation : ReasonOfChanges.StartSales;
 
-            if (lastChange.MinPrice > freshMinPrice)
-                return freshMinPrice != 0 ? ReasonOfChanges.PriceDecreased : ReasonOfChanges.StopSales;
+                    if (lastChange.MinPrice == 0)
+                        return freshData.MinPrice == 0 ? ReasonOfChanges.NothingChanged : ReasonOfChanges.StartSales;
 
-            if (lastChange.MinPrice < freshMinPrice)
-                return ReasonOfChanges.PriceIncreased;
+                    if (lastChange.MinPrice > freshData.MinPrice)
+                        return ReasonOfChanges.PriceDecreased;
+
+                    if (lastChange.MinPrice < freshData.MinPrice)
+                        return ReasonOfChanges.PriceIncreased;
+
+                    break;
+            }
 
             return ReasonOfChanges.NothingChanged;
         }

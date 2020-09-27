@@ -1,4 +1,5 @@
 ﻿using System;
+using theatrel.Common.Enums;
 
 namespace theatrel.Interfaces.Playbill
 {
@@ -10,6 +11,8 @@ namespace theatrel.Interfaces.Playbill
 
         string Url { get; set; }
         string TicketsUrl { get; set; }
+
+        TicketsState State { get; set; }
 
         string Type { get; set; }
 

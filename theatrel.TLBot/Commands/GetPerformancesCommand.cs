@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -139,7 +140,14 @@ namespace theatrel.TLBot.Commands
 
             foreach (var item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.Now))
             {
-                int minPrice = item.Changes.OrderBy(ch => ch.LastUpdate).Last().MinPrice;
+                if (!item.Changes.Any())
+                    continue;
+
+                var lastChange = item.Changes.OrderBy(ch => ch.LastUpdate).Last();
+                if (lastChange.ReasonOfChanges == (int)ReasonOfChanges.WasMoved)
+                    continue;
+
+                int minPrice = lastChange.MinPrice;
 
                 DateTime dt = item.When.Kind == DateTimeKind.Utc
                     ? TimeZoneInfo.ConvertTimeFromUtc(item.When, _timeZoneService.TimeZone)
@@ -149,12 +157,12 @@ namespace theatrel.TLBot.Commands
                     .EscapeMessageForMarkupV2();
 
                 string escapedName = $"\"{item.Performance.Name}\"".EscapeMessageForMarkupV2();
-                string performanceString = string.IsNullOrWhiteSpace(item.Url) || item.Url == CommonTags.NotDefined
+                string performanceString = string.IsNullOrWhiteSpace(item.Url) || item.Url == CommonTags.NotDefinedTag
                     ? escapedName
                     : $"[{escapedName}]({item.Url.EscapeMessageForMarkupV2()})";
 
                 string lastPart = minPrice > 0
-                    ? string.IsNullOrWhiteSpace(item.TicketsUrl) || item.TicketsUrl == CommonTags.NotDefined
+                    ? string.IsNullOrWhiteSpace(item.TicketsUrl) || item.TicketsUrl == CommonTags.NotDefinedTag
                         ? $"от {minPrice}"
                         : $"от [{minPrice}]({item.TicketsUrl.EscapeMessageForMarkupV2()})"
                     : "Нет билетов в продаже";

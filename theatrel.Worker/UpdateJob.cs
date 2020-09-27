@@ -57,7 +57,7 @@ namespace theatrel.Worker
                 var filters = subscriptionServices.GetUpdateFilters();
 
                 var culture = CultureInfo.CreateSpecificCulture("ru");
-                foreach (var filter in AddFiltersForNearestMonths(filters, 4))
+                foreach (var filter in AddFiltersForNearestMonths(filters, 6))
                 {
                     await using (var scope = Bootstrapper.BeginLifetimeScope())
                     {
