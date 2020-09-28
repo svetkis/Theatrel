@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using theatrel.Common.Enums;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;

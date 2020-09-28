@@ -18,5 +18,6 @@ namespace theatrel.DataAccess.Structures.Entities
         public PerformanceEntity Performance { get; set; }
 
         public ICollection<PlaybillChangeEntity> Changes { get; set; }
+        public ICollection<ActorInRoleEntity> Cast { get; set; }
     }
 }

@@ -48,8 +48,6 @@ namespace theatrel.Subscriptions
             {
                 var filter = subscription.PerformanceFilter;
 
-//                Trace.TraceInformation($"Filter:{filter.Id} PlaybillId: {filter.PlaybillId} user:{subscription.TelegramUserId} {filter.StartDate:yy-MM-dd} {filter.EndDate:yy-MM-dd}");
-
                 PlaybillChangeEntity[] performanceChanges;
 
                 if (!string.IsNullOrEmpty(filter.PerformanceName))
@@ -82,8 +80,6 @@ namespace theatrel.Subscriptions
                                     && subscription.TrackingChanges != 0)
                         .OrderBy(p => p.LastUpdate).ToArray();
                 }
-
-//                Trace.TraceInformation($"Found {performanceChanges.Length} changes.");
 
                 if (!performanceChanges.Any())
                     continue;
@@ -144,6 +140,12 @@ namespace theatrel.Subscriptions
                     break;
                 case ReasonOfChanges.StartSales:
                     sb.AppendLine("Появились в продаже билеты:");
+                    break;
+                case ReasonOfChanges.StopSales:
+                    sb.AppendLine("Стоп продаж:");
+                    break;
+                case ReasonOfChanges.WasMoved:
+                    sb.AppendLine("Перенесены на другую дату:");
                     break;
             }
 

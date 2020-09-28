@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
@@ -11,7 +10,6 @@ using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.DataUpdater;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Playbill;
-using theatrel.Lib;
 
 namespace theatrel.DataUpdater
 {
