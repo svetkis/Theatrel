@@ -15,6 +15,10 @@ namespace theatrel.DataAccess
         public DbSet<LocationsEntity> PerformanceLocations { get; set; } = null!;
         public DbSet<PlaybillEntity> Playbill { get; set; } = null!;
 
+        public DbSet<ActorInRoleEntity> ActorInRole { get; set; } = null!;
+        public DbSet<ActorEntity> Actors { get; set; } = null!;
+        public DbSet<RoleEntity> Roles { get; set; } = null!;
+
         public AppDbContext(DbContextOptions options) : base(options)
         {
         }

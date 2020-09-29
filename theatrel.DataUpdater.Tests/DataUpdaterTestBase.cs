@@ -1,5 +1,6 @@
 ﻿using Moq;
 using System;
+using theatrel.Common.Enums;
 using theatrel.DataUpdater.Tests.TestSettings;
 using theatrel.Interfaces.Playbill;
 using Xunit;
@@ -25,6 +26,11 @@ namespace theatrel.DataUpdater.Tests
 
             performanceMock.SetupGet(x => x.TicketsUrl).Returns(url);
             performanceMock.SetupGet(x => x.DateTime).Returns(performanceDateTime);
+
+            if (minPrice == 0)
+                performanceMock.SetupGet(x => x.State).Returns(TicketsState.NoTickets);
+            else
+                performanceMock.SetupGet(x => x.State).Returns(TicketsState.Ok);
 
             return performanceMock.Object;
         }

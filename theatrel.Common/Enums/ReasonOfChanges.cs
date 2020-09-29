@@ -22,7 +22,7 @@ namespace theatrel.Common.Enums
         StartSales = 8,
 
         [Description("Стоп продаж")]
-        PriceBecameZero = 16,
+        StopSale = 16,
 
         [Description("Ошибка получения данных")]
         DataError = 32,
@@ -32,5 +32,11 @@ namespace theatrel.Common.Enums
 
         [Description("Переносится")]
         WasMoved = 128,
+
+        [Description("Обьявлен состав испольнителей")]
+        CastWasSet = 256,
+
+        [Description("Состав исполнителей был изменен")]
+        CastWasChanged = 512,
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using theatrel.Common.Enums;
+using theatrel.Interfaces.Cast;
 
 namespace theatrel.Interfaces.Playbill
 {
@@ -17,5 +18,7 @@ namespace theatrel.Interfaces.Playbill
         string Type { get; set; }
 
         int MinPrice { get; set; }
+
+        IPerformanceCast Cast { get; set; }
     }
 }

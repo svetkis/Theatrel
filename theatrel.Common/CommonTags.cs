@@ -10,6 +10,8 @@
         public const string NoTickets = "Билетов нет";
         public const string WasMoved = "Переносится";
 
+        public const string CastWillBeAddedLater = "Cостав исполнителей будет объявлен позднее";
+
         public static readonly string[] TechnicalStateTags = {NotDefinedTag, WasMovedTag, NoTicketsTag};
 
         public const string JavascriptVoid = "javascript:void(0)";

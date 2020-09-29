@@ -40,17 +40,13 @@ namespace theatrel.Subscriptions
                 if (!string.IsNullOrEmpty(newFilter.PerformanceName))
                     continue;
 
-                int year;
-                int month;
                 DateTime startDate;
                 DateTime endDate;
 
                 if (newFilter.PlaybillId == -1)
                 {
-                    year = newFilter.StartDate.Year;
-                    month = newFilter.StartDate.Month;
-                    startDate = new DateTime(year, month, 1);
-                    endDate = new DateTime(newFilter.EndDate.Year, newFilter.EndDate.Month, 1).AddMonths(1);
+                    startDate = newFilter.StartDate;
+                    endDate = newFilter.EndDate;
                 }
                 else
                 {
@@ -59,8 +55,8 @@ namespace theatrel.Subscriptions
                     if (null == playbillEntry)
                         continue;
 
-                    year = playbillEntry.When.Year;
-                    month = playbillEntry.When.Month;
+                    int year = playbillEntry.When.Year;
+                    int month = playbillEntry.When.Month;
                     startDate = new DateTime(year, month, 1);
                     endDate = startDate.AddMonths(1);
                 }

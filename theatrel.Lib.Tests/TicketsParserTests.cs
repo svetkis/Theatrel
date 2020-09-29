@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using theatrel.Interfaces.Parsers;
+using theatrel.Interfaces.Tickets;
 using Xunit;
 
 namespace theatrel.Lib.Tests

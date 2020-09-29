@@ -147,6 +147,15 @@ namespace theatrel.Subscriptions
                 case ReasonOfChanges.WasMoved:
                     sb.AppendLine("Перенесены на другую дату:");
                     break;
+                case ReasonOfChanges.StopSale:
+                    sb.AppendLine("Закончились билеты:");
+                    break;
+                case ReasonOfChanges.CastWasSet:
+                    sb.AppendLine("Объявлен состав исполнителей:");
+                    break;
+                case ReasonOfChanges.CastWasChanged:
+                    sb.AppendLine("Состав исполнителей изменен:");
+                    break;
             }
 
             foreach (var change in changes)

@@ -87,12 +87,11 @@ namespace theatrel.DataUpdater.Tests
                 .Where(c => c.PlaybillEntity.TicketsUrl == performanceUrl)
                 .OrderBy(d => d.LastUpdate).ToArray();
 
-            Assert.Equal(3, changes.Count());
+            Assert.Equal(2, changes.Count());
             Assert.Equal(1, db.PerformanceLocations.Count(l => l.Name == performanceLocation));
             Assert.Equal(1, db.PerformanceTypes.Count(t => t.TypeName == performanceType));
-            Assert.Equal((int)ReasonOfChanges.NothingChanged, changes.Last().ReasonOfChanges);
-            Assert.Equal((int)ReasonOfChanges.StartSales, changes[1].ReasonOfChanges);
             Assert.Equal((int)ReasonOfChanges.Creation, changes.First().ReasonOfChanges);
+            Assert.Equal((int)ReasonOfChanges.StartSales, changes.Last().ReasonOfChanges);
         }
 
         [Fact]

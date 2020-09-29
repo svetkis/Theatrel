@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using theatrel.Common.Enums;
+using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Playbill;
 
 namespace theatrel.Lib
@@ -16,6 +17,7 @@ namespace theatrel.Lib
 
         public string Type { get; set; }
         public int MinPrice { get; set; }
+        public IPerformanceCast Cast { get; set; }
         public HttpStatusCode StatusCode { get; set; }
     }
 }

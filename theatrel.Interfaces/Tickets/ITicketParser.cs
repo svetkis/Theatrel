@@ -1,8 +1,7 @@
 ﻿using System.Threading;
 using theatrel.Interfaces.Autofac;
-using theatrel.Interfaces.Playbill;
 
-namespace theatrel.Interfaces.Parsers
+namespace theatrel.Interfaces.Tickets
 {
     public interface ITicketParser : IDIRegistrable
     {

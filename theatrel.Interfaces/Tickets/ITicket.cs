@@ -1,4 +1,4 @@
-﻿namespace theatrel.Interfaces.Playbill
+﻿namespace theatrel.Interfaces.Tickets
 {
     public interface ITicket
     {

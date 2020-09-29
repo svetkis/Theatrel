@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using theatrel.DataAccess;
@@ -9,9 +10,10 @@ using theatrel.DataAccess;
 namespace theatrel.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200929135703_RolesDBSetsAdded")]
+    partial class RolesDBSetsAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -259,11 +261,11 @@ namespace theatrel.DataAccess.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<string>("CharacterName")
-                        .HasColumnType("text");
-
                     b.Property<int>("PerformanceId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("СharacterName")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

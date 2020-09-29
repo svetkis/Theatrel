@@ -1,11 +1,10 @@
-﻿using AngleSharp.Dom;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
-using theatrel.Interfaces.Parsers;
-using theatrel.Interfaces.Playbill;
+using AngleSharp.Dom;
+using theatrel.Interfaces.Tickets;
 using theatrel.Lib.Utils;
 
-namespace theatrel.Lib.Parsers
+namespace theatrel.Lib.Tickets
 {
     public class TicketParser : ITicketParser
     {

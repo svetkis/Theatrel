@@ -10,7 +10,7 @@ using theatrel.Interfaces.Playbill;
 
 namespace theatrel.Lib.Parsers
 {
-    public class PerformanceParser : IPerformanceParser
+    internal class PerformanceParser : IPerformanceParser
     {
         public IPerformanceData Parse(object element)
         {
@@ -24,6 +24,7 @@ namespace theatrel.Lib.Parsers
 
                 IElement ticketsTButton = allElementChildren.FirstOrDefault(m => m.ClassName == "t_button");
                 IHtmlCollection<IElement> ticketsUrlData = ticketsTButton?.Children;
+                string ticketsButtonContent = ticketsTButton?.TextContent.Trim();
 
                 string location = allElementChildren
                     .FirstOrDefault(m => 0 == string.Compare(m.TagName, "span", true) && m.GetAttribute("itemprop") == "location")?.TextContent;
@@ -38,9 +39,8 @@ namespace theatrel.Lib.Parsers
 
                 string url = ProcessSpectsUrl(specNameChildren);
 
-                string ticketsUrl;// = ProcessUrl(ticketsUrlData);
+                string ticketsUrl;
 
-                var ticketsButtonContent = ticketsTButton?.TextContent.Trim();
                 switch (ticketsButtonContent)
                 {
                     case CommonTags.BuyTicket:

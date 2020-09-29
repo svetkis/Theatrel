@@ -133,7 +133,7 @@ namespace theatrel.Subscriptions.Tests
             Assert.NotNull(filters);
 
             Assert.Equal(9, filters.First().StartDate.Month);
-            Assert.Equal(12, filters.First().EndDate.Month);
+            Assert.Equal(11, filters.First().EndDate.Month);
         }
     }
 }

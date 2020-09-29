@@ -40,6 +40,52 @@ namespace theatrel.DataAccess.Repositories
             return performanceId;
         }
 
+        private int GetActorInRoleEntityId(string roleName, string actorName, string actorUrl, int performanceId, out int roleId, out int actorId)
+        {
+            RoleEntity role = _dbContext.Roles.AsNoTracking().FirstOrDefault(x => x.CharacterName == roleName && x.PerformanceId == performanceId);
+            roleId = role?.Id ?? -1;
+
+            var actor = _dbContext.Actors.AsNoTracking().FirstOrDefault(x => x.Name == actorName  && x.Url == actorUrl);
+            actorId = actor?.Id ?? -1;
+
+            if (role == null || actor == null)
+                return -1;
+
+            var actorInRoleId = _dbContext.ActorInRole.AsNoTracking()
+                .FirstOrDefault(p => p.RoleId == role.Id && p.ActorId == actor.Id )?.Id ?? -1;
+
+            return actorInRoleId;
+        }
+
+        private ActorInRoleEntity AddActorInRole(string roleName, string actorName, string actorUrl, PerformanceEntity performance, int roleId, int actorId)
+        {
+            try
+            {
+                RoleEntity role = roleId != -1
+                    ? _dbContext.Roles.FirstOrDefault(l => l.Id == roleId)
+                    : new RoleEntity { CharacterName = roleName, Performance = performance };
+
+                ActorEntity actor = actorId != -1
+                    ? _dbContext.Actors.FirstOrDefault(t => t.Id == actorId)
+                    : new ActorEntity { Name = actorName, Url = actorUrl};
+
+                ActorInRoleEntity actorInRole = new ActorInRoleEntity
+                {
+                    Actor = actor,
+                    Role = role,
+                };
+
+                _dbContext.ActorInRole.Add(actorInRole);
+
+                return actorInRole;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"AddActorInRole DbException: {e.Message} {e.InnerException?.Message}");
+                throw;
+            }
+        }
+
         private PerformanceEntity AddPerformanceEntity(IPerformanceData data, int locationId, int typeId)
         {
             try
@@ -65,24 +111,46 @@ namespace theatrel.DataAccess.Repositories
             }
             catch (Exception e)
             {
-                Console.WriteLine($"AddPerformanceEntity DbException: {e.Message}");
+                Console.WriteLine($"AddPerformanceEntity DbException: {e.Message} {e.InnerException?.Message}");
                 throw;
             }
         }
 
         public async Task<PlaybillEntity> AddPlaybill(IPerformanceData data)
         {
+            PerformanceEntity performance = null;
+            PlaybillEntity playBillEntry = null;
+
             try
             {
-                int performanceId = GetPerformanceEntityId(data, out int location, out int type);
-                PerformanceEntity performance = -1 == performanceId
-                    ? AddPerformanceEntity(data, location, type)
+                int performanceId = GetPerformanceEntityId(data, out int locationId, out int typeId);
+                performance = -1 == performanceId
+                    ? AddPerformanceEntity(data, locationId, typeId)
                     : _dbContext.Performances
                         .Include(p => p.Location)
                         .Include(p => p.Type)
                         .FirstOrDefault(p => p.Id == performanceId);
 
-                var playBillEntry = new PlaybillEntity
+                /*List<ActorInRoleEntity> cast = new List<ActorInRoleEntity>();
+                if (data.Cast.State == CastState.Ok)
+                {
+                    foreach (var castData in data.Cast.Cast)
+                    {
+                        int actorInRoleId = GetActorInRoleEntityId(castData.Key, castData.Value.Name,
+                            castData.Value.Url, performanceId, out int roleId, out int actorId);
+                        var actorInRole = -1 == actorInRoleId
+                            ? AddActorInRole(castData.Key, castData.Value.Name, castData.Value.Url, performance, roleId,
+                                actorId)
+                            : _dbContext.ActorInRole
+                                .Include(p => p.Actor)
+                                .Include(p => p.Role)
+                                .FirstOrDefault(p => p.Id == actorInRoleId);
+
+                        cast.Add(actorInRole);
+                    }
+                }*/
+
+                playBillEntry = new PlaybillEntity
                 {
                     Performance = performance,
                     TicketsUrl = data.TicketsUrl,
@@ -96,7 +164,8 @@ namespace theatrel.DataAccess.Repositories
                             MinPrice = data.MinPrice,
                             ReasonOfChanges = (int) ReasonOfChanges.Creation,
                         }
-                    }
+                    },
+                    //                    Cast = cast
                 };
 
                 _dbContext.Playbill.Add(playBillEntry);
@@ -104,6 +173,15 @@ namespace theatrel.DataAccess.Repositories
 
                 await _dbContext.SaveChangesAsync();
 
+                return playBillEntry;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation(
+                    $"AddPlaybill DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            }
+            finally
+            {
                 if (performance != null)
                 {
                     _dbContext.Entry(performance.Location).State = EntityState.Detached;
@@ -111,14 +189,17 @@ namespace theatrel.DataAccess.Repositories
                     _dbContext.Entry(performance).State = EntityState.Detached;
                 }
 
-                _dbContext.Entry(playBillEntry).State = EntityState.Detached;
-                _dbContext.Entry(playBillEntry.Changes.First()).State = EntityState.Detached;
+                if (playBillEntry != null)
+                {
+                    _dbContext.Entry(playBillEntry).State = EntityState.Detached;
+                    _dbContext.Entry(playBillEntry.Changes.First()).State = EntityState.Detached;
 
-                return playBillEntry;
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceInformation($"AddPlaybill DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+                    if (playBillEntry.Cast != null)
+                    {
+                        foreach (var castItem in playBillEntry.Cast)
+                            _dbContext.Entry(castItem).State = EntityState.Detached;
+                    }
+                }
             }
 
             return null;
@@ -181,7 +262,6 @@ namespace theatrel.DataAccess.Repositories
             return null;
         }
 
-
         public PlaybillEntity Get(IPerformanceData data)
         {
             try
@@ -191,8 +271,12 @@ namespace theatrel.DataAccess.Repositories
                     return null;
 
                 return _dbContext.Playbill
-                    .Include(x => x.Changes)
                     .Where(x => x.When == data.DateTime && x.PerformanceId == performanceId)
+                    .Include(x => x.Changes)
+                    .Include(x => x.Cast)
+                        .ThenInclude(c => c.Actor)
+                    .Include(x => x.Cast)
+                        .ThenInclude(c => c.Role)
                     .AsNoTracking()
                     .FirstOrDefault();
             }

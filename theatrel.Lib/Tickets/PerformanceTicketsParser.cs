@@ -1,18 +1,16 @@
-﻿using AngleSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AngleSharp;
 using theatrel.Common;
 using theatrel.Common.Enums;
-using theatrel.Interfaces.Parsers;
-using theatrel.Interfaces.Playbill;
-using theatrel.Lib.Tickets;
+using theatrel.Interfaces.Tickets;
 
-namespace theatrel.Lib.Parsers
+namespace theatrel.Lib.Tickets
 {
-    public class PerformanceTicketsParser : ITicketsParser
+    internal class PerformanceTicketsParser : ITicketsParser
     {
         private readonly ITicketParser _ticketParser = new TicketParser();
 

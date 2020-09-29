@@ -5,23 +5,28 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
+using theatrel.Interfaces.Tickets;
+using theatrel.Lib.Cast;
 
 namespace theatrel.Lib.MariinskyPlaybill
 {
     internal class PlayBillResolver : IPlayBillDataResolver
     {
         private readonly IPlaybillParser _playbillParser;
-        private readonly ITicketsParser _ticketParser;
+        private readonly ITicketsParser _ticketsParser;
         private readonly IFilterService _filterChecker;
+        private readonly IPerformanceCastParser _performanceCastParser;
 
-        public PlayBillResolver(IPlaybillParser playbillParser, ITicketsParser ticketParser, IFilterService filterChecker)
+        public PlayBillResolver(IPlaybillParser playbillParser, ITicketsParser ticketsParser, IFilterService filterChecker, IPerformanceCastParser performanceCastParser)
         {
             _playbillParser = playbillParser;
-            _ticketParser = ticketParser;
+            _ticketsParser = ticketsParser;
             _filterChecker = filterChecker;
+            _performanceCastParser = performanceCastParser;
         }
 
         public async Task<IPerformanceData[]> RequestProcess(IPerformanceFilter filter, CancellationToken cancellationToken)
@@ -46,11 +51,13 @@ namespace theatrel.Lib.MariinskyPlaybill
 
             Task[] resolvePricesTasks = filtered
                 .Select(item => Task.Run(async () =>
-                    {
-                        var tickets = await _ticketParser.ParseFromUrl(item.TicketsUrl, cancellationToken);
-                        item.State = tickets.State;
-                        item.MinPrice = tickets.GetMinPrice();
-                    }, cancellationToken)).ToArray();
+                {
+                    item.Cast = await _performanceCastParser.ParseFromUrl(item.Url, cancellationToken);
+                    var tickets = await _ticketsParser.ParseFromUrl(item.TicketsUrl, cancellationToken);
+                    item.State = tickets.State;
+                    item.MinPrice = tickets.GetMinPrice();
+
+                }, cancellationToken)).ToArray();
 
             await Task.WhenAll(resolvePricesTasks.ToArray());
 

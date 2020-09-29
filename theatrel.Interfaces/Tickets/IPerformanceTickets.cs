@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using theatrel.Common.Enums;
 
-namespace theatrel.Interfaces.Playbill
+namespace theatrel.Interfaces.Tickets
 {
     public interface IPerformanceTickets
     {

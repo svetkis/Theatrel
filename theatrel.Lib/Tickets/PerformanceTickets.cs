@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using theatrel.Common.Enums;
-using theatrel.Interfaces.Playbill;
+using theatrel.Interfaces.Tickets;
 
 namespace theatrel.Lib.Tickets
 {

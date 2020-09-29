@@ -7,7 +7,7 @@ namespace theatrel.DataAccess.Structures.Entities
         [Key]
         public int Id { get; set; }
 
-        public string СharacterName { get; set; }
+        public string CharacterName { get; set; }
 
         public int PerformanceId { get; set; }
         public PerformanceEntity Performance { get; set; }
