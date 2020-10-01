@@ -1,10 +1,13 @@
 using Autofac;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using theatrel.Common.Enums;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Tests.TestSettings;
+using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Playbill;
 using Xunit;
 
@@ -83,6 +86,21 @@ namespace theatrel.DataAccess.Tests
 
             performanceMock.SetupGet(x => x.TicketsUrl).Returns(url);
             performanceMock.SetupGet(x => x.DateTime).Returns(performanceDateTime);
+
+            Mock<IActor> actor1Mock = new Mock<IActor>();
+            actor1Mock.SetupGet(a => a.Name).Returns("actor1");
+            actor1Mock.SetupGet(a => a.Url).Returns("actor1url");
+
+            Mock<IActor> actor2Mock = new Mock<IActor>();
+            actor2Mock.SetupGet(a => a.Name).Returns("actor2");
+            actor2Mock.SetupGet(a => a.Url).Returns("actor2url");
+
+            IList<IActor> actors = new List<IActor> {actor1Mock.Object, actor2Mock.Object};
+
+            Mock<IPerformanceCast> castMock = new Mock<IPerformanceCast>();
+            castMock.SetupGet(x => x.State).Returns(CastState.Ok);
+            castMock.SetupGet(x => x.Cast).Returns(new Dictionary<string, IList<IActor>>{ {"role1" , actors}});
+            performanceMock.SetupGet(x => x.Cast).Returns(castMock.Object);
 
             return performanceMock.Object;
         }
