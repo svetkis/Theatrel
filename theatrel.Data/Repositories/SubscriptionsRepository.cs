@@ -70,7 +70,7 @@ namespace theatrel.DataAccess.Repositories
         public IEnumerable<SubscriptionEntity> GetOutdatedList()
         {
             SubscriptionEntity[] outdatedByDate = _dbContext.Subscriptions.Where(s =>
-                s.PerformanceFilter.PlaybillId == -1 && s.PerformanceFilter.EndDate < DateTime.Now)
+                s.PerformanceFilter.PlaybillId == -1 && null == s.PerformanceFilter.PerformanceName && s.PerformanceFilter.EndDate < DateTime.Now)
                 .Include(s => s.PerformanceFilter)
                 .AsNoTracking().ToArray();
 
