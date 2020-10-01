@@ -57,7 +57,7 @@ namespace theatrel.ConsoleTest
             try
             {
                 ISubscriptionService subscriptionServices = Bootstrapper.Resolve<ISubscriptionService>();
-                var filters = subscriptionServices.GetUpdateFilters();
+                IPerformanceFilter[] filters = subscriptionServices.GetUpdateFilters();
 
                 var culture = CultureInfo.CreateSpecificCulture("ru");
                 foreach (var filter in AddFiltersForNearestMonths(filters, 6))

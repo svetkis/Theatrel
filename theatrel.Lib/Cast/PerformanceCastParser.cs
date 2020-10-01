@@ -14,10 +14,10 @@ namespace theatrel.Lib.Cast
 {
     internal class PerformanceCastParser : IPerformanceCastParser
     {
-        public async Task<IPerformanceCast> ParseFromUrl(string url, CancellationToken cancellationToken)
+        public async Task<IPerformanceCast> ParseFromUrl(string url, bool wasMoved, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(url))
-                return new PerformanceCast {State = CastState.CastIsNotSet };
+            if (string.IsNullOrEmpty(url) || wasMoved)
+                return new PerformanceCast {State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>()};
 
             switch (url)
             {
@@ -27,7 +27,10 @@ namespace theatrel.Lib.Cast
                     return new PerformanceCast { State = CastState.PerformanceWasMoved };
             }
 
-            var content = await PageRequester.Request(url, cancellationToken);
+            string content = await PageRequester.Request(url, cancellationToken);
+            if (null == content)
+                return new PerformanceCast {State = CastState.TechnicalError};
+
             return await PrivateParse(content, cancellationToken);
         }
 
@@ -49,31 +52,48 @@ namespace theatrel.Lib.Cast
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (castBlock == null)
-                    return new PerformanceCast { State = CastState.CastIsNotSet };
+                    return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>()};
+
+                PerformanceCast performanceCast = new PerformanceCast { State = CastState.Ok, Cast = new Dictionary<string, IList<IActor>>() };
+
+                IElement conductor = castBlock.Children.FirstOrDefault(e => e.ClassName == "conductor");
+                if (conductor != null)
+                {
+                    var actors = GetCastInfo(conductor.Children.Where(m => m.LocalName == "a").ToArray(), cancellationToken);
+                    if (null != actors && actors.Any())
+                        performanceCast.Cast[CommonTags.Conductor] = actors;
+                }
 
                 IElement paragraph = castBlock.Children.Last();
                 if (!paragraph.Children.Any())
-                    return new PerformanceCast {State = CastState.CastIsNotSet};
+                    return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
 
                 string text = paragraph.Children[0].InnerHtml.Trim();
                 var lines = text.Split(new[] { "<br/>", "<br>" }, StringSplitOptions.RemoveEmptyEntries);
 
-                PerformanceCast performanceCast = new PerformanceCast { State = CastState.Ok, Cast = new Dictionary<string, IActor>() };
-
                 foreach (var line in lines)
                 {
-                    string name = line.Split('–').First().Replace("&nbsp;", " ").Trim();
+                    string characterName = line.Contains('–') || line.Contains(':')
+                        ? line.Split('–', ':').First().Replace("&nbsp;", " ").Trim()
+                        : CommonTags.Actor;
 
-                    var parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
-
+                    IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
                     IElement[] allElementChildren = parsedLine.QuerySelectorAll("*").ToArray();
 
-                    IElement aTag = allElementChildren.FirstOrDefault(m => m.LocalName == "a");
+                    if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
+                        continue;
 
-                    string actorName = aTag?.TextContent.Replace("&nbsp;", " ").Trim();
-                    actorName = string.IsNullOrEmpty(actorName) ? CommonTags.NotDefinedTag : actorName;
+                    var actors = GetCastInfo(allElementChildren, cancellationToken);
+                    if (null == actors || !actors.Any())
+                        continue;
 
-                    performanceCast.Cast[name] = new PerformanceActor { Name = actorName, Url = ProcessUrl(aTag) };
+                    if (performanceCast.Cast.ContainsKey(characterName))
+                    {
+                        foreach (var actor in actors)
+                            performanceCast.Cast[characterName].Add(actor);
+                    }
+                    else
+                        performanceCast.Cast[characterName] = actors;
                 }
 
                 return performanceCast;
@@ -87,6 +107,22 @@ namespace theatrel.Lib.Cast
             return new PerformanceCast { State = CastState.TechnicalError };
         }
 
+        private IList<IActor> GetCastInfo(IElement[] allElementChildren, CancellationToken ctx)
+        {
+            IElement[] aTags = allElementChildren.Where(m => m.LocalName == "a").ToArray();
+
+            var actors = new List<IActor>();
+
+            foreach (var aTag in aTags)
+            {
+                string actorName = aTag?.TextContent.Replace("&nbsp;", " ").Trim();
+                if (!string.IsNullOrEmpty(actorName))
+                    actors.Add(new PerformanceActor { Name = actorName, Url = ProcessUrl(aTag) });
+            }
+
+            return actors;
+        }
+
         private string ProcessUrl(IElement urlData)
         {
             string url = urlData?.GetAttribute("href").Trim();
@@ -95,6 +131,5 @@ namespace theatrel.Lib.Cast
 
             return url.StartsWith("/") ? $"https://www.mariinsky.ru{url}" : url;
         }
-
     }
 }

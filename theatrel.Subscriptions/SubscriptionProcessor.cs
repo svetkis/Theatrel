@@ -121,13 +121,16 @@ namespace theatrel.Subscriptions
             return true;
         }
 
+        private readonly ReasonOfChanges[] _reasonToShowCast = {ReasonOfChanges.CastWasChanged, ReasonOfChanges.CastWasSet, ReasonOfChanges.Creation, ReasonOfChanges.StartSales};
         private string GetChangesDescription(PlaybillChangeEntity[] changes)
         {
             StringBuilder sb = new StringBuilder();
 
             var cultureRu = CultureInfo.CreateSpecificCulture("ru");
 
-            switch ((ReasonOfChanges)changes.First().ReasonOfChanges)
+            ReasonOfChanges reason = (ReasonOfChanges) changes.First().ReasonOfChanges;
+
+            switch (reason)
             {
                 case ReasonOfChanges.Creation:
                     sb.AppendLine("Новое в афише:");
@@ -177,6 +180,32 @@ namespace theatrel.Subscriptions
                     : $"от [{change.MinPrice}]({playbillEntity.TicketsUrl.EscapeMessageForMarkupV2()})";
 
                 sb.AppendLine($"{firstPart} {performanceString} {lastPart}");
+                if (playbillEntity.Cast != null && _reasonToShowCast.Contains(reason))
+                {
+                    IDictionary<string, IList<ActorEntity>> actorsDictionary = new Dictionary<string, IList<ActorEntity>>();
+                    foreach (var item in playbillEntity.Cast)
+                    {
+                        if (!actorsDictionary.ContainsKey(item.Role.CharacterName))
+                            actorsDictionary[item.Role.CharacterName] = new List<ActorEntity>();
+
+                        actorsDictionary[item.Role.CharacterName].Add(item.Actor);
+                    }
+
+                    foreach (var group in actorsDictionary.OrderBy(kp => kp.Key, CharactersComparer.Create()))
+                    {
+                        string actorsList = string.Join(", ", group.Value.Select(item =>
+                            item.Url == CommonTags.NotDefinedTag || string.IsNullOrEmpty(item.Url)
+                                ? item.Name.EscapeMessageForMarkupV2()
+                                : $"[{item.Name.EscapeMessageForMarkupV2()}]({item.Url.EscapeMessageForMarkupV2()})"));
+
+                        string characterPart = group.Key == CommonTags.Actor
+                            ? string.Empty
+                            : $"{group.Key} - ".EscapeMessageForMarkupV2();
+
+                        sb.AppendLine($"{characterPart}{actorsList}");
+                    }
+                }
+
                 sb.AppendLine();
             }
 

@@ -22,5 +22,10 @@ namespace theatrel.DataAccess
         public AppDbContext(DbContextOptions options) : base(options)
         {
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ActorInRoleEntity>().HasKey(actorInRole => new { actorInRole.ActorId, actorInRole.RoleId, actorInRole.PlaybillId });
+        }
     }
 }

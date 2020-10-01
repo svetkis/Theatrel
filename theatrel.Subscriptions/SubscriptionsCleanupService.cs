@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
@@ -19,11 +20,18 @@ namespace theatrel.Subscriptions
         {
             using ISubscriptionsRepository repo = _dbService.GetSubscriptionRepository();
 
-            IEnumerable<SubscriptionEntity> oldEntities = repo.GetOutdatedList();
+            IEnumerable<SubscriptionEntity> oldEntities = repo.GetOutdatedList().ToArray();
+            var filters = oldEntities.Select(item => item.PerformanceFilter).ToArray();
             bool result = true;
             foreach (SubscriptionEntity entity in oldEntities)
             {
-                if (await repo.Delete(entity))
+                if (!await repo.Delete(entity))
+                    result = false;
+            }
+
+            foreach (var filter in filters)
+            {
+                if (!await repo.DeleteFilter(filter))
                     result = false;
             }
 

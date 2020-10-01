@@ -7,6 +7,6 @@ namespace theatrel.Lib.Cast
     internal class PerformanceCast : IPerformanceCast
     {
         public CastState State { get; set; }
-        public IDictionary<string, IActor> Cast { get; set; }
+        public IDictionary<string, IList<IActor>> Cast { get; set; }
     }
 }

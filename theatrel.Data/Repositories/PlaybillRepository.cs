@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Storage;
 using theatrel.Common.Enums;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
+using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Playbill;
 
 namespace theatrel.DataAccess.Repositories
@@ -40,48 +42,63 @@ namespace theatrel.DataAccess.Repositories
             return performanceId;
         }
 
-        private int GetActorInRoleEntityId(string roleName, string actorName, string actorUrl, int performanceId, out int roleId, out int actorId)
+      /*  private int GetActorInRoleEntityId(string roleName, int performanceId, out int roleId)
         {
-            RoleEntity role = _dbContext.Roles.AsNoTracking().FirstOrDefault(x => x.CharacterName == roleName && x.PerformanceId == performanceId);
-            roleId = role?.Id ?? -1;
+            int internalRoleId = GetRoleId(roleName, performanceId);
+            roleId = internalRoleId;
 
-            var actor = _dbContext.Actors.AsNoTracking().FirstOrDefault(x => x.Name == actorName  && x.Url == actorUrl);
-            actorId = actor?.Id ?? -1;
-
-            if (role == null || actor == null)
+            if (roleId == -1)
                 return -1;
 
-            var actorInRoleId = _dbContext.ActorInRole.AsNoTracking()
-                .FirstOrDefault(p => p.RoleId == role.Id && p.ActorId == actor.Id )?.Id ?? -1;
+            return _dbContext.ActorInRole.AsNoTracking().FirstOrDefault(p => p.RoleId == internalRoleId)?.Id ?? -1;
+        }*/
 
-            return actorInRoleId;
+        private int GetRoleId(string characterName, int performanceId)
+        {
+            RoleEntity role = _dbContext.Roles.AsNoTracking().FirstOrDefault(x => x.CharacterName == characterName && x.PerformanceId == performanceId);
+            return role?.Id ?? -1;
         }
 
-        private ActorInRoleEntity AddActorInRole(string roleName, string actorName, string actorUrl, PerformanceEntity performance, int roleId, int actorId)
+
+        private int GetActorId(string actorName, string actorUrl)
+        {
+            var actor = _dbContext.Actors.AsNoTracking().FirstOrDefault(x => x.Name == actorName && x.Url == actorUrl);
+            return actor?.Id ?? -1;
+        }
+
+        private IList<ActorInRoleEntity> AddActorsInRole(string roleName, IList<IActor> actorsData, PerformanceEntity performance, int playbillId, int performanceId)
         {
             try
             {
+                int roleId = -1 == performanceId ? -1 : GetRoleId(roleName, performance.Id);
+
                 RoleEntity role = roleId != -1
                     ? _dbContext.Roles.FirstOrDefault(l => l.Id == roleId)
                     : new RoleEntity { CharacterName = roleName, Performance = performance };
 
-                ActorEntity actor = actorId != -1
-                    ? _dbContext.Actors.FirstOrDefault(t => t.Id == actorId)
-                    : new ActorEntity { Name = actorName, Url = actorUrl};
+                List<ActorInRoleEntity> actorsInRoleList = new List<ActorInRoleEntity>();
 
-                ActorInRoleEntity actorInRole = new ActorInRoleEntity
+                foreach (var actorData in actorsData)
                 {
-                    Actor = actor,
-                    Role = role,
-                };
+                    int actorId = GetActorId(actorData.Name, actorData.Url);
 
-                _dbContext.ActorInRole.Add(actorInRole);
+                    ActorEntity actor = actorId != -1
+                        ? _dbContext.Actors.FirstOrDefault(t => t.Id == actorId)
+                        : new ActorEntity { Name = actorData.Name, Url = actorData.Url };
 
-                return actorInRole;
+                    ActorInRoleEntity actorInRole = actorId != -1 && roleId != -1 && playbillId != -1
+                        ? _dbContext.ActorInRole.FirstOrDefault(ar => ar.ActorId == actorId && ar.RoleId == roleId && ar.PlaybillId == playbillId)
+                          ?? new ActorInRoleEntity {Role = role, Actor = actor}
+                        : new ActorInRoleEntity { Role = role, Actor = actor };
+
+                    actorsInRoleList.Add(actorInRole);
+                }
+
+                return actorsInRoleList;
             }
             catch (Exception e)
             {
-                Console.WriteLine($"AddActorInRole DbException: {e.Message} {e.InnerException?.Message}");
+                Console.WriteLine($"AddActorsInRole DbException: {e.Message} {e.InnerException?.Message}");
                 throw;
             }
         }
@@ -116,6 +133,116 @@ namespace theatrel.DataAccess.Repositories
             }
         }
 
+        public async Task<bool> UpdateCast(PlaybillEntity playbillEntry, IPerformanceData data)
+        {
+            var checkList = playbillEntry.Cast.Select(a => new CheckData { Exists = false, ActorInRole = a }).ToArray();
+            var toAddListData = new Dictionary<string, IList<IActor>>();
+
+            foreach (KeyValuePair<string, IList<IActor>> castDataFresh in data.Cast.Cast)
+            {
+                string character = castDataFresh.Key;
+                foreach (var actorFresh in castDataFresh.Value)
+                {
+                    var checkItem = checkList.FirstOrDefault(item =>
+                        item.ActorInRole.Role.CharacterName == character &&
+                        item.ActorInRole.Actor.Name == actorFresh.Name &&
+                        item.ActorInRole.Actor.Url == actorFresh.Url);
+
+                    if (checkItem == null)
+                    {
+                        if (!toAddListData.ContainsKey(character))
+                            toAddListData[character] = new List<IActor>();
+
+                        toAddListData[character].Add(actorFresh);
+                        continue;
+                    }
+
+                    checkItem.Exists = true;
+                }
+            }
+
+            ActorInRoleEntity[] toRemoveList = checkList.Where(item => !item.Exists).Select(c => c.ActorInRole).ToArray();
+            ActorInRoleEntity[] toAddList = toAddListData.Select(data
+                    => AddActorsInRole(data.Key, data.Value, playbillEntry.Performance, playbillEntry.Id,
+                        playbillEntry.PerformanceId))
+                .SelectMany(group => group.ToArray()).ToArray();
+
+            PlaybillEntity oldValue = await GetById(playbillEntry.Id);
+
+            if (oldValue == null)
+                return false;
+
+            try
+            {
+                foreach (ActorInRoleEntity removedItem in toRemoveList)
+                {
+                    playbillEntry.Cast.Remove(removedItem);
+                    _dbContext.Entry(removedItem).State = EntityState.Deleted;
+                }
+
+                foreach (var addItem in toAddList)
+                    playbillEntry.Cast.Add(addItem);
+
+                _dbContext.AddRange(toAddList);
+
+                _dbContext.Entry(playbillEntry).State = EntityState.Modified;
+                _dbContext.Entry(playbillEntry.Performance).State = EntityState.Modified;
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation(
+                    $"UpdateCast DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+
+                return false;
+            }
+            finally
+            {
+                _dbContext.Entry(playbillEntry).State = EntityState.Detached;
+                _dbContext.Entry(playbillEntry.Performance).State = EntityState.Detached;
+                if (playbillEntry.Cast != null && playbillEntry.Cast.Any())
+                {
+                    foreach (var castItem in playbillEntry.Cast)
+                    {
+                        _dbContext.Entry(castItem).State = EntityState.Detached;
+                        _dbContext.Entry(castItem.Actor).State = EntityState.Detached;
+                        _dbContext.Entry(castItem.Role).State = EntityState.Detached;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private class CheckData
+        {
+            public bool Exists { get; set; }
+            public ActorInRoleEntity ActorInRole { get; set; }
+        }
+
+        public bool IsCastEqual(PlaybillEntity playbillEntry, IPerformanceData data)
+        {
+            var checkList = playbillEntry.Cast.Select(a => new CheckData { Exists = false, ActorInRole = a}).ToArray();
+            foreach (KeyValuePair<string, IList<IActor>> castDataFresh in data.Cast.Cast)
+            {
+                string character = castDataFresh.Key;
+                foreach (var actorFresh in castDataFresh.Value)
+                {
+                    var checkItem = checkList.FirstOrDefault(item =>
+                        item.ActorInRole.Role.CharacterName == character &&
+                        item.ActorInRole.Actor.Name == actorFresh.Name &&
+                        item.ActorInRole.Actor.Url == actorFresh.Url);
+
+                    if (checkItem == null)
+                        return false;
+
+                    checkItem.Exists = true;
+                }
+            }
+
+            return checkList.All(item => item.Exists);
+        }
+
         public async Task<PlaybillEntity> AddPlaybill(IPerformanceData data)
         {
             PerformanceEntity performance = null;
@@ -131,24 +258,17 @@ namespace theatrel.DataAccess.Repositories
                         .Include(p => p.Type)
                         .FirstOrDefault(p => p.Id == performanceId);
 
-                /*List<ActorInRoleEntity> cast = new List<ActorInRoleEntity>();
+                List<ActorInRoleEntity> castList = new List<ActorInRoleEntity>();
                 if (data.Cast.State == CastState.Ok)
                 {
-                    foreach (var castData in data.Cast.Cast)
+                    foreach (KeyValuePair<string, IList<IActor>> castData in data.Cast.Cast)
                     {
-                        int actorInRoleId = GetActorInRoleEntityId(castData.Key, castData.Value.Name,
-                            castData.Value.Url, performanceId, out int roleId, out int actorId);
-                        var actorInRole = -1 == actorInRoleId
-                            ? AddActorInRole(castData.Key, castData.Value.Name, castData.Value.Url, performance, roleId,
-                                actorId)
-                            : _dbContext.ActorInRole
-                                .Include(p => p.Actor)
-                                .Include(p => p.Role)
-                                .FirstOrDefault(p => p.Id == actorInRoleId);
+                        IList<IActor> actorsData = castData.Value;
+                        string characterName = castData.Key;
 
-                        cast.Add(actorInRole);
+                        castList.AddRange(AddActorsInRole(characterName, actorsData, performance, -1, performanceId));
                     }
-                }*/
+                }
 
                 playBillEntry = new PlaybillEntity
                 {
@@ -165,7 +285,7 @@ namespace theatrel.DataAccess.Repositories
                             ReasonOfChanges = (int) ReasonOfChanges.Creation,
                         }
                     },
-                    //                    Cast = cast
+                    Cast = castList
                 };
 
                 _dbContext.Playbill.Add(playBillEntry);
@@ -197,7 +317,11 @@ namespace theatrel.DataAccess.Repositories
                     if (playBillEntry.Cast != null)
                     {
                         foreach (var castItem in playBillEntry.Cast)
+                        {
                             _dbContext.Entry(castItem).State = EntityState.Detached;
+                            _dbContext.Entry(castItem.Actor).State = EntityState.Detached;
+                            _dbContext.Entry(castItem.Role).State = EntityState.Detached;
+                        }
                     }
                 }
             }
@@ -272,6 +396,7 @@ namespace theatrel.DataAccess.Repositories
 
                 return _dbContext.Playbill
                     .Where(x => x.When == data.DateTime && x.PerformanceId == performanceId)
+                    .Include(x => x.Performance)
                     .Include(x => x.Changes)
                     .Include(x => x.Cast)
                         .ThenInclude(c => c.Actor)

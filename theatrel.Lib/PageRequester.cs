@@ -25,22 +25,23 @@ namespace theatrel.Lib
 
                 return await Policy
                     .Handle<HttpRequestException>()
-                    .WaitAndRetryAsync(4, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+                    .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
                     .ExecuteAsync(async () =>
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
                             IRestResponse response = await client.ExecuteAsync(request, cancellationToken);
 
-                            if (response.StatusCode == HttpStatusCode.OK)
-                            {
-                                return response.Content;
-                            }
-
-                            if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
+                            if (response.Content.Contains("Страница не найдена"))
                                 throw new HttpRequestException();
 
-                            return response.Content;
+                            if (response.StatusCode == HttpStatusCode.OK)
+                                return response.Content;
+
+                            if (response.StatusCode == HttpStatusCode.ServiceUnavailable || response.StatusCode == HttpStatusCode.NotFound)
+                                throw new HttpRequestException();
+
+                            return null;
                         });
             }
             catch (Exception ex)

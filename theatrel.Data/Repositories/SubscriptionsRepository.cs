@@ -37,7 +37,9 @@ namespace theatrel.DataAccess.Repositories
         {
             try
             {
-                return _dbContext.Subscriptions.Include(s => s.PerformanceFilter).AsNoTracking().ToArray();
+                return _dbContext.Subscriptions
+                    .Include(s => s.PerformanceFilter)
+                    .AsNoTracking().ToArray();
             }
             catch (Exception ex)
             {
@@ -156,6 +158,23 @@ namespace theatrel.DataAccess.Repositories
             }
         }
 
+        public async Task<bool> DeleteFilter(PerformanceFilterEntity entity)
+        {
+            _dbContext.Entry(entity).State = EntityState.Deleted;
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Failed to delete subscription {ex.Message}");
+                return false;
+            }
+        }
+
+
         public async Task<bool> DeleteRange(IEnumerable<SubscriptionEntity> entities)
         {
             foreach (var entity in entities)
@@ -206,6 +225,12 @@ namespace theatrel.DataAccess.Repositories
                 .Include(c => c.PlaybillEntity)
                     .ThenInclude(p => p.Performance)
                         .ThenInclude(p => p.Location)
+                .Include(c => c.PlaybillEntity)
+                    .ThenInclude(p => p.Cast)
+                        .ThenInclude(p => p.Actor)
+                .Include(c => c.PlaybillEntity)
+                    .ThenInclude(p => p.Cast)
+                        .ThenInclude(p => p.Role)
                 .AsNoTracking().ToArray();
 
         public void Dispose()

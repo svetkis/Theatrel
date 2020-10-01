@@ -39,25 +39,18 @@ namespace theatrel.DataAccess.Migrations
 
             modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.ActorInRoleEntity", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
                     b.Property<int>("ActorId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("PlaybillEntityId")
                         .HasColumnType("integer");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.Property<int>("PlaybillId")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("ActorId");
+                    b.HasKey("ActorId", "RoleId", "PlaybillId");
 
-                    b.HasIndex("PlaybillEntityId");
+                    b.HasIndex("PlaybillId");
 
                     b.HasIndex("RoleId");
 
@@ -318,17 +311,19 @@ namespace theatrel.DataAccess.Migrations
             modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.ActorInRoleEntity", b =>
                 {
                     b.HasOne("theatrel.DataAccess.Structures.Entities.ActorEntity", "Actor")
-                        .WithMany()
+                        .WithMany("ActorInRole")
                         .HasForeignKey("ActorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("theatrel.DataAccess.Structures.Entities.PlaybillEntity", null)
+                    b.HasOne("theatrel.DataAccess.Structures.Entities.PlaybillEntity", "Playbill")
                         .WithMany("Cast")
-                        .HasForeignKey("PlaybillEntityId");
+                        .HasForeignKey("PlaybillId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("theatrel.DataAccess.Structures.Entities.RoleEntity", "Role")
-                        .WithMany()
+                        .WithMany("ActorInRole")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

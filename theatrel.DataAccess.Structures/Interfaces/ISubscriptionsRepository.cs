@@ -21,6 +21,7 @@ namespace theatrel.DataAccess.Structures.Interfaces
             CancellationToken cancellationToken);
 
         Task<bool> Delete(SubscriptionEntity entity);
+        public Task<bool> DeleteFilter(PerformanceFilterEntity entity);
         Task<bool> DeleteRange(IEnumerable<SubscriptionEntity> entity);
         Task<bool> Update(SubscriptionEntity newValue);
 

@@ -47,7 +47,7 @@ namespace theatrel.DataUpdater
             if (data.DateTime < DateTime.Now)
                 return;
 
-            var playbillEntry = playbillRepository.Get(data);
+            PlaybillEntity playbillEntry = playbillRepository.Get(data);
             if (null == playbillEntry)
             {
                 await playbillRepository.AddPlaybill(data);
@@ -66,6 +66,20 @@ namespace theatrel.DataUpdater
             if (!string.Equals(playbillEntry.Url, data.Url))
             {
                 await playbillRepository.UpdateUrl(playbillEntry.Id, data.Url);
+            }
+
+            var compareCastResult = CompareCast(playbillRepository, playbillEntry, data);
+            if (data.State == TicketsState.Ok && (compareCastResult == ReasonOfChanges.CastWasSet || compareCastResult == ReasonOfChanges.CastWasChanged))
+            {
+                if (await playbillRepository.UpdateCast(playbillEntry, data))
+                {
+                    await playbillRepository.AddChange(playbillEntry, new PlaybillChangeEntity
+                    {
+                        LastUpdate = DateTime.Now,
+                        MinPrice = data.MinPrice,
+                        ReasonOfChanges = (int)compareCastResult
+                    });
+                }
             }
 
             var compareResult = ComparePerformanceData(lastChange, data);
@@ -121,6 +135,36 @@ namespace theatrel.DataUpdater
 
             return ReasonOfChanges.NothingChanged;
         }
+
+        private ReasonOfChanges CompareCast(IPlaybillRepository playbillRepository, PlaybillEntity playbillEntity, IPerformanceData freshData)
+        {
+            switch (freshData.Cast.State)
+            {
+                case CastState.TechnicalError:
+                case CastState.PerformanceWasMoved:
+                    return ReasonOfChanges.NothingChanged;
+
+                case CastState.CastIsNotSet:
+                    return playbillEntity.Cast.Any() ? ReasonOfChanges.CastWasChanged : ReasonOfChanges.NothingChanged;
+
+                case CastState.Ok:
+                    bool wasEmpty = !playbillEntity.Cast.Any();
+                    bool nowEmpty = freshData.Cast.Cast == null || !freshData.Cast.Cast.Any();
+
+                    if (wasEmpty && nowEmpty)
+                        return ReasonOfChanges.NothingChanged;
+
+                    if (wasEmpty)
+                        return ReasonOfChanges.CastWasSet;
+
+                    return playbillRepository.IsCastEqual(playbillEntity, freshData)
+                            ? ReasonOfChanges.NothingChanged
+                            : ReasonOfChanges.CastWasChanged;
+            }
+
+            return ReasonOfChanges.NothingChanged;
+        }
+
 
         public void Dispose()
         {

@@ -7,6 +7,6 @@ namespace theatrel.Interfaces.Cast
     public interface IPerformanceCastParser : IDIRegistrable
     {
         Task<IPerformanceCast> Parse(string data, CancellationToken cancellationToken);
-        Task<IPerformanceCast> ParseFromUrl(string url, CancellationToken cancellationToken);
+        Task<IPerformanceCast> ParseFromUrl(string url, bool wasMoved, CancellationToken cancellationToken);
     }
 }

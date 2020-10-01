@@ -7,6 +7,6 @@ namespace theatrel.Interfaces.Cast
     {
         CastState State { get; set; }
 
-        IDictionary<string, IActor> Cast { get; set; }
+        IDictionary<string, IList<IActor>> Cast { get; set; }
     }
 }

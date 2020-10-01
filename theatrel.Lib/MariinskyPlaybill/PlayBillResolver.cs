@@ -5,12 +5,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using theatrel.Common.Enums;
 using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
 using theatrel.Interfaces.Tickets;
-using theatrel.Lib.Cast;
 
 namespace theatrel.Lib.MariinskyPlaybill
 {
@@ -52,10 +52,11 @@ namespace theatrel.Lib.MariinskyPlaybill
             Task[] resolvePricesTasks = filtered
                 .Select(item => Task.Run(async () =>
                 {
-                    item.Cast = await _performanceCastParser.ParseFromUrl(item.Url, cancellationToken);
                     var tickets = await _ticketsParser.ParseFromUrl(item.TicketsUrl, cancellationToken);
                     item.State = tickets.State;
                     item.MinPrice = tickets.GetMinPrice();
+
+                    item.Cast = await _performanceCastParser.ParseFromUrl(item.Url, item.State == TicketsState.PerformanceWasMoved, cancellationToken);
 
                 }, cancellationToken)).ToArray();
 

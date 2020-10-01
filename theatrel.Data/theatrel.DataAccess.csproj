@@ -7,6 +7,20 @@
   <ItemGroup>
     <Compile Remove="Migrations\20200922092457_AddDescriptionToLocations.cs" />
     <Compile Remove="Migrations\20200922092457_AddDescriptionToLocations.Designer.cs" />
+    <Compile Remove="Migrations\20200928174353_ActorsAndCastAdded.cs" />
+    <Compile Remove="Migrations\20200928174353_ActorsAndCastAdded.Designer.cs" />
+    <Compile Remove="Migrations\20200929135703_RolesDBSetsAdded.cs" />
+    <Compile Remove="Migrations\20200929135703_RolesDBSetsAdded.Designer.cs" />
+    <Compile Remove="Migrations\20200929140900_fixedCharacterName.cs" />
+    <Compile Remove="Migrations\20200929140900_fixedCharacterName.Designer.cs" />
+    <Compile Remove="Migrations\20200930093642_MultipleActorsInOneRole.cs" />
+    <Compile Remove="Migrations\20200930093642_MultipleActorsInOneRole.Designer.cs" />
+    <Compile Remove="Migrations\20200930135950_SetActorsInRoleManyToManyRS.cs" />
+    <Compile Remove="Migrations\20200930135950_SetActorsInRoleManyToManyRS.Designer.cs" />
+    <Compile Remove="Migrations\20200930151559_SetActorsInRoleManyToManyRS.cs" />
+    <Compile Remove="Migrations\20200930151559_SetActorsInRoleManyToManyRS.Designer.cs" />
+    <Compile Remove="Migrations\20200930152041_PerformaceCast.cs" />
+    <Compile Remove="Migrations\20200930152041_PerformaceCast.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
