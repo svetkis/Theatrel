@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -24,8 +25,10 @@ namespace theatrel.TLBot.Commands
         private readonly IFilterService _filterService;
         private readonly ITimeZoneService _timeZoneService;
 
-        private const string DecreasePriceSubscription = "Подписаться на снижение цены";
-        private const string NewInPlaybillSubscription = "Подписаться на появление билетов в продаже";
+        private const string DecreasePriceSubscription = "Подписаться на снижение цены на билеты";
+        private const string NewInPlaybillSubscription = "Подписаться на новые спектакли и появление билетов в продаже";
+        private const string CastSubscription = "Подписаться на изменения в составе исполнителей";
+
         private const string No = "Спасибо, не надо";
 
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
@@ -54,27 +57,33 @@ namespace theatrel.TLBot.Commands
         {
             Trace.TraceInformation("GetPerformancesCommand.ApplyResult");
 
+            int trackingChanges;
+
             switch (message)
             {
                 case DecreasePriceSubscription:
+                    trackingChanges = (int) ReasonOfChanges.PriceDecreased;
+                    break;
                 case NewInPlaybillSubscription:
-                    {
-                        int trackingChanges = message == DecreasePriceSubscription
-                            ? (int)ReasonOfChanges.PriceDecreased
-                            : (int)(ReasonOfChanges.StartSales | ReasonOfChanges.Creation);
+                    trackingChanges = (int)(ReasonOfChanges.StartSales | ReasonOfChanges.Creation);
+                    break;
 
-                        using var subscriptionRepository = DbService.GetSubscriptionRepository();
+                case CastSubscription:
+                    trackingChanges = (int)(ReasonOfChanges.CastWasSet | ReasonOfChanges.CastWasChanged);
+                    break;
 
-                        SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.UserId, trackingChanges,
-                            _filterService.GetFilter(chatInfo), cancellationToken);
-
-                        return subscription == null
-                            ? new TgCommandResponse("Простите, но я не смог добавить подписку.")
-                            : new TgCommandResponse("Подписка добавлена.");
-                    }
                 default:
                     return new TgCommandResponse("Приятно было пообщаться. Обращайтесь еще.");
             }
+
+            using var subscriptionRepository = DbService.GetSubscriptionRepository();
+
+            SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.UserId, trackingChanges,
+                _filterService.GetFilter(chatInfo), cancellationToken);
+
+            return subscription == null
+                ? new TgCommandResponse("Простите, но я не смог добавить подписку.")
+                : new TgCommandResponse("Подписка добавлена.");
         }
 
         public override bool IsMessageCorrect(string message) => true;
@@ -92,13 +101,18 @@ namespace theatrel.TLBot.Commands
             PlaybillEntity[] filteredPerformances = performances.Where(x => _filterService.IsDataSuitable(x.Performance.Name, x.Performance.Location.Name, x.Performance.Type.TypeName,
                 x.When, filter)).ToArray();
 
+            List<KeyboardButton> buttons = new List<KeyboardButton> { new KeyboardButton(NewInPlaybillSubscription) };
+            if (filteredPerformances.Any())
+            {
+                buttons.Add(new KeyboardButton(DecreasePriceSubscription));
+                buttons.Add(new KeyboardButton(CastSubscription));
+            }
+
+            buttons.Add(new KeyboardButton(No));
+
             var keys = new ReplyKeyboardMarkup
             {
-                Keyboard = GroupKeyboardButtons(1, new[]
-                {
-                    filteredPerformances.Any() ? new KeyboardButton(DecreasePriceSubscription) :  new KeyboardButton(NewInPlaybillSubscription) ,
-                    new KeyboardButton(No),
-                }),
+                Keyboard = GroupKeyboardButtons(1, buttons),
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             };
