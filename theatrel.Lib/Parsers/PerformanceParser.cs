@@ -106,7 +106,8 @@ namespace theatrel.Lib.Parsers
             {
             {"c_opera", "Опера"},
             {"c_concert", "Концерт" },
-            {"c_ballet", "Балет" }
+            {"c_ballet", "Балет" },
+            {"c_", "Балет" } //to do read it from description
         }, true);
 
         private static readonly Lazy<IDictionary<string, string>> PerformanceLocations

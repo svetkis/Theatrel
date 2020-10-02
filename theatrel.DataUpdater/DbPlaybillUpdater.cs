@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
@@ -50,7 +51,9 @@ namespace theatrel.DataUpdater
             PlaybillEntity playbillEntry = playbillRepository.Get(data);
             if (null == playbillEntry)
             {
-                await playbillRepository.AddPlaybill(data);
+                if (data.TicketsUrl != CommonTags.WasMoved)
+                    await playbillRepository.AddPlaybill(data);
+
                 return;
             }
 

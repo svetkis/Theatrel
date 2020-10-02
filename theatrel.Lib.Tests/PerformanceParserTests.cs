@@ -50,7 +50,7 @@ namespace theatrel.Lib.Tests
             var timeZone = TimeZoneInfo.CreateCustomTimeZone("Moscow Time", new TimeSpan(03, 00, 00),
                 "(GMT+03:00) Moscow Time", "Moscow Time");
 
-            DateTime dt = TimeZoneInfo.ConvertTimeFromUtc(performances.First().DateTime, timeZone);
+            DateTime dt = TimeZoneInfo.ConvertTimeFromUtc(performances.OrderBy(p => p.DateTime).First().DateTime, timeZone);
 
             Assert.Equal(hour, dt.Hour);
             Assert.Equal(minute, dt.Minute);

@@ -98,8 +98,19 @@ namespace theatrel.TLBot.Commands
                 ? playbillRepo.GetListByName(chatInfo.PerformanceName).ToArray()
                 : playbillRepo.GetList(filter.StartDate, filter.EndDate).ToArray();
 
-            PlaybillEntity[] filteredPerformances = performances.Where(x => _filterService.IsDataSuitable(x.Performance.Name, x.Performance.Location.Name, x.Performance.Type.TypeName,
-                x.When, filter)).ToArray();
+            PlaybillEntity[] filteredPerformances = performances.Where(x =>
+            {
+                if (!_filterService.IsDataSuitable(x.Performance.Name, x.Performance.Location.Name,
+                    x.Performance.Type.TypeName,
+                    x.When, filter))
+                    return false;
+
+                if (!x.Changes.Any())
+                    return true;
+
+                var lastChange = x.Changes.OrderBy(ch => ch.LastUpdate).Last();
+                return lastChange.ReasonOfChanges != (int) ReasonOfChanges.WasMoved;
+            }).ToArray();
 
             List<KeyboardButton> buttons = new List<KeyboardButton> { new KeyboardButton(NewInPlaybillSubscription) };
             if (filteredPerformances.Any())
