@@ -59,7 +59,7 @@ namespace theatrel.Lib.Cast
                 IElement conductor = castBlock.Children.FirstOrDefault(e => e.ClassName == "conductor");
                 if (conductor != null)
                 {
-                    var actors = GetCastInfo(conductor.Children.Where(m => m.LocalName == "a").ToArray(), cancellationToken);
+                    var actors = GetCastInfo(conductor.QuerySelectorAll("*").Where(m => m.LocalName == "a").ToArray(), cancellationToken);
                     if (null != actors && actors.Any())
                         performanceCast.Cast[CommonTags.Conductor] = actors;
                 }
