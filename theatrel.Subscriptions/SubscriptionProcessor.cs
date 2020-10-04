@@ -175,7 +175,13 @@ namespace theatrel.Subscriptions
                     ? escapedName
                     : $"[{escapedName}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
 
-                string lastPart = string.IsNullOrWhiteSpace(playbillEntity.TicketsUrl) || CommonTags.TechnicalStateTags.Contains(playbillEntity.TicketsUrl)
+                bool noTicketsUrl = string.IsNullOrWhiteSpace(playbillEntity.TicketsUrl) ||
+                                    CommonTags.TechnicalStateTags.Contains(playbillEntity.TicketsUrl);
+
+                if (noTicketsUrl && change.MinPrice > 0)
+                    Trace.TraceInformation($"noTicketsUrl {playbillEntity.TicketsUrl} {playbillEntity.Performance.Name} {playbillEntity.When} {change.MinPrice}");
+
+                string lastPart = change.MinPrice == 0 || noTicketsUrl
                     ? string.Empty
                     : $"от [{change.MinPrice}]({playbillEntity.TicketsUrl.EscapeMessageForMarkupV2()})";
 

@@ -518,7 +518,10 @@ namespace theatrel.DataAccess.Repositories
             PlaybillEntity oldValue = Get(playbillEntityId);
 
             if (oldValue == null)
+            {
+                Trace.TraceInformation($"UpdateTicketsUrl can't get old value for {playbillEntityId}");
                 return false;
+            }
 
             PlaybillEntity playbillEntity = null;
             try

@@ -116,7 +116,10 @@ namespace theatrel.DataUpdater
                         : ReasonOfChanges.WasMoved;
 
                 case TicketsState.NoTickets:
-                    return lastChange != null && lastChange.ReasonOfChanges == (int)ReasonOfChanges.StopSales
+                    if (lastChange == null)
+                        return ReasonOfChanges.Creation;
+
+                    return lastChange.MinPrice == 0
                         ? ReasonOfChanges.NothingChanged
                         : ReasonOfChanges.StopSales;
 
