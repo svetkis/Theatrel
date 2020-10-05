@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage;
+using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
@@ -42,17 +43,6 @@ namespace theatrel.DataAccess.Repositories
             return performanceId;
         }
 
-      /*  private int GetActorInRoleEntityId(string roleName, int performanceId, out int roleId)
-        {
-            int internalRoleId = GetRoleId(roleName, performanceId);
-            roleId = internalRoleId;
-
-            if (roleId == -1)
-                return -1;
-
-            return _dbContext.ActorInRole.AsNoTracking().FirstOrDefault(p => p.RoleId == internalRoleId)?.Id ?? -1;
-        }*/
-
         private int GetRoleId(string characterName, int performanceId)
         {
             RoleEntity role = _dbContext.Roles.AsNoTracking().FirstOrDefault(x => x.CharacterName == characterName && x.PerformanceId == performanceId);
@@ -62,7 +52,10 @@ namespace theatrel.DataAccess.Repositories
 
         private int GetActorId(string actorName, string actorUrl)
         {
-            var actor = _dbContext.Actors.AsNoTracking().FirstOrDefault(x => x.Name == actorName && x.Url == actorUrl);
+            var actor = actorUrl != CommonTags.NotDefinedTag
+                ? _dbContext.Actors.AsNoTracking().FirstOrDefault(x => x.Url == actorUrl)
+                : _dbContext.Actors.AsNoTracking().FirstOrDefault(x => x.Name == actorName);
+
             return actor?.Id ?? -1;
         }
 
