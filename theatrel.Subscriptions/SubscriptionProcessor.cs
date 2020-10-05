@@ -204,7 +204,9 @@ namespace theatrel.Subscriptions
                                 ? item.Name.EscapeMessageForMarkupV2()
                                 : $"[{item.Name.EscapeMessageForMarkupV2()}]({item.Url.EscapeMessageForMarkupV2()})"));
 
-                        string characterPart = group.Key == CommonTags.Actor
+                        bool isPhonogram = group.Key == CommonTags.Conductor && group.Value.First().Name == CommonTags.Phonogram;
+
+                        string characterPart = group.Key == CommonTags.Actor || isPhonogram
                             ? string.Empty
                             : $"{group.Key} - ".EscapeMessageForMarkupV2();
 

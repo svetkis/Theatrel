@@ -68,11 +68,19 @@ namespace theatrel.Lib.Cast
                 if (!paragraph.Children.Any())
                     return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
 
-                string text = paragraph.Children[0].InnerHtml.Trim();
-                var lines = text.Split(new[] { "<br/>", "<br>" }, StringSplitOptions.RemoveEmptyEntries);
+                string text = paragraph.InnerHtml.Trim();
+                var lines = text.Split(new[] { "<br/>", "<br>", "</p>", "<p>" }, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach (var line in lines)
                 {
+                    if (line.StartsWith(CommonTags.Phonogram, StringComparison.OrdinalIgnoreCase))
+                    {
+                        performanceCast.Cast[CommonTags.Conductor] = new List<IActor>
+                            {new PerformanceActor{ Name = CommonTags.Phonogram, Url = CommonTags.NotDefinedTag}};
+
+                        continue;
+                    }
+
                     string characterName = line.Contains('–') || line.Contains(':')
                         ? line.Split('–', ':').First().Replace("&nbsp;", " ").Trim()
                         : CommonTags.Actor;
@@ -93,7 +101,9 @@ namespace theatrel.Lib.Cast
                             performanceCast.Cast[characterName].Add(actor);
                     }
                     else
+                    {
                         performanceCast.Cast[characterName] = actors;
+                    }
                 }
 
                 return performanceCast;

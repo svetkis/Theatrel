@@ -15,6 +15,7 @@
 
         public const string Conductor = "Дирижер";
         public const string Actor = "Исполнитель";
+        public const string Phonogram = "Исполняется под фонограмму";
 
         public const string PerformanceDuration = "Продолжительность спектакля";
         public const string GapsPhraseStart = "Спектакль идет с";
