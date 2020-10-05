@@ -51,9 +51,14 @@ namespace theatrel.DataUpdater
             PlaybillEntity playbillEntry = playbillRepository.Get(data);
             if (null == playbillEntry)
             {
-                if (data.TicketsUrl != CommonTags.WasMoved)
-                    await playbillRepository.AddPlaybill(data);
+                if (data.TicketsUrl == CommonTags.WasMovedTag)
+                    return;
 
+                int reason = data.MinPrice == 0
+                        ? (int) ReasonOfChanges.Creation
+                        : (int) ReasonOfChanges.StartSales;
+
+                await playbillRepository.AddPlaybill(data, reason);
                 return;
             }
 

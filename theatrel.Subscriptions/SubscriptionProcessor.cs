@@ -109,10 +109,7 @@ namespace theatrel.Subscriptions
                 //if message was sent we should update LastUpdate for users subscriptions
                 foreach (var subscription in subscriptions.Where(s => s.TelegramUserId == userData.Key))
                 {
-                    var lastUpdate = changesToProcess.OrderBy(d => d.LastUpdate).Last().LastUpdate;
-                    Trace.TraceInformation($"Update subscription date user: {subscription.TelegramUserId} {lastUpdate}");
-
-                    subscription.LastUpdate = changesToProcess.OrderBy(d => d.LastUpdate).Last().LastUpdate;
+                    subscription.LastUpdate = DateTime.Now;
                     await subscriptionRepository.Update(subscription);
                 }
             }

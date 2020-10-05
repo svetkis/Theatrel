@@ -223,7 +223,6 @@ namespace theatrel.DataAccess.Repositories
                 {
                     var checkItem = checkList.FirstOrDefault(item =>
                         item.ActorInRole.Role.CharacterName == character &&
-                        item.ActorInRole.Actor.Name == actorFresh.Name &&
                         item.ActorInRole.Actor.Url == actorFresh.Url);
 
                     if (checkItem == null)
@@ -236,7 +235,7 @@ namespace theatrel.DataAccess.Repositories
             return checkList.All(item => item.Exists);
         }
 
-        public async Task<PlaybillEntity> AddPlaybill(IPerformanceData data)
+        public async Task<PlaybillEntity> AddPlaybill(IPerformanceData data, int reasonOfFirstChanges)
         {
             PerformanceEntity performance = null;
             PlaybillEntity playBillEntry = null;
@@ -275,7 +274,7 @@ namespace theatrel.DataAccess.Repositories
                         {
                             LastUpdate = DateTime.Now,
                             MinPrice = data.MinPrice,
-                            ReasonOfChanges = (int) ReasonOfChanges.Creation,
+                            ReasonOfChanges = reasonOfFirstChanges,
                         }
                     },
                     Cast = castList,

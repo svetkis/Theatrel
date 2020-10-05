@@ -32,8 +32,8 @@ namespace theatrel.DataAccess.Tests
 
             var exceptions = await Record.ExceptionAsync(async () =>
             {
-                var res2 = await pbRepository.AddPlaybill(performance2);
-                var res3 = await pbRepository.AddPlaybill(performance3);
+                var res2 = await pbRepository.AddPlaybill(performance2, (int)ReasonOfChanges.StartSales);
+                var res3 = await pbRepository.AddPlaybill(performance3, (int)ReasonOfChanges.StartSales);
                 Assert.NotNull(res2);
                 Assert.NotNull(res3);
             });
@@ -48,7 +48,7 @@ namespace theatrel.DataAccess.Tests
 
             var performance4 = GetPerformanceMock("TestPerformance4", 800, "url4", DateTime.Now, TestLocationName, TestTypeName);
 
-            var pb4 = await pbRepository.AddPlaybill(performance4);
+            var pb4 = await pbRepository.AddPlaybill(performance4, (int)ReasonOfChanges.StartSales);
             var change = pb4.Changes.Last();
             bool updateResult = await pbRepository.UpdateChangeLastUpdate(change.Id);
 
@@ -63,7 +63,7 @@ namespace theatrel.DataAccess.Tests
 
             var performance2 = GetPerformanceMock("TestPerformance2", 500, "url2", DateTime.Now.AddDays(50), TestLocationName, TestTypeName);
 
-            await pbRepository.AddPlaybill(performance2);
+            await pbRepository.AddPlaybill(performance2, (int)ReasonOfChanges.StartSales);
 
             var list = pbRepository.GetList(DateTime.Now.AddDays(49), DateTime.Now.AddDays(51));
 
@@ -112,7 +112,7 @@ namespace theatrel.DataAccess.Tests
 
             var performance = GetPerformanceMock("TestPerformance", 500, "url", DateTime.Now, TestLocationName, TestTypeName);
 
-            await pbRepository.AddPlaybill(performance);
+            await pbRepository.AddPlaybill(performance, (int)ReasonOfChanges.StartSales);
         }
     }
 }
