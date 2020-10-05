@@ -20,5 +20,7 @@ namespace theatrel.Interfaces.Playbill
         int MinPrice { get; set; }
 
         IPerformanceCast Cast { get; set; }
+
+        string Description { get; set; }
     }
 }

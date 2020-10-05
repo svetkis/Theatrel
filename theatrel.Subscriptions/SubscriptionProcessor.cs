@@ -170,6 +170,10 @@ namespace theatrel.Subscriptions
                 string firstPart = $"{formattedDate} {playbillEntity.Performance.Location.Name} {playbillEntity.Performance.Type.TypeName}"
                     .EscapeMessageForMarkupV2();
 
+                string description = !string.IsNullOrEmpty(playbillEntity.Description)
+                    ? $" ({playbillEntity.Description})".EscapeMessageForMarkupV2()
+                    : string.Empty;
+
                 string escapedName = $"\"{playbillEntity.Performance.Name}\"".EscapeMessageForMarkupV2();
                 string performanceString = string.IsNullOrWhiteSpace(playbillEntity.Url) || CommonTags.TechnicalStateTags.Contains(playbillEntity.Url)
                     ? escapedName
@@ -185,7 +189,7 @@ namespace theatrel.Subscriptions
                     ? string.Empty
                     : $"от [{change.MinPrice}]({playbillEntity.TicketsUrl.EscapeMessageForMarkupV2()})";
 
-                sb.AppendLine($"{firstPart} {performanceString} {lastPart}");
+                sb.AppendLine($"{firstPart} {performanceString}{description} {lastPart}");
                 if (playbillEntity.Cast != null && _reasonToShowCast.Contains(reason))
                 {
                     IDictionary<string, IList<ActorEntity>> actorsDictionary = new Dictionary<string, IList<ActorEntity>>();

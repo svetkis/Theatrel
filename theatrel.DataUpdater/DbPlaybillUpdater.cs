@@ -71,6 +71,11 @@ namespace theatrel.DataUpdater
                 await playbillRepository.UpdateUrl(playbillEntry.Id, data.Url);
             }
 
+            if (!string.Equals(playbillEntry.Description, data.Description))
+            {
+                await playbillRepository.UpdateDescription(playbillEntry.Id, data.Description);
+            }
+
             var compareCastResult = CompareCast(playbillRepository, playbillEntry, data);
             if (data.State == TicketsState.Ok && (compareCastResult == ReasonOfChanges.CastWasSet || compareCastResult == ReasonOfChanges.CastWasChanged))
             {
@@ -170,7 +175,6 @@ namespace theatrel.DataUpdater
 
             return ReasonOfChanges.NothingChanged;
         }
-
 
         public void Dispose()
         {

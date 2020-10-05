@@ -183,13 +183,17 @@ namespace theatrel.TLBot.Commands
                     ? escapedName
                     : $"[{escapedName}]({item.Url.EscapeMessageForMarkupV2()})";
 
+                string description = !string.IsNullOrEmpty(item.Description)
+                    ? $" ({item.Description})".EscapeMessageForMarkupV2()
+                    : string.Empty;
+
                 string lastPart = minPrice > 0
                     ? string.IsNullOrWhiteSpace(item.TicketsUrl) || item.TicketsUrl == CommonTags.NotDefinedTag
                         ? $"от {minPrice}"
                         : $"от [{minPrice}]({item.TicketsUrl.EscapeMessageForMarkupV2()})"
                     : "Нет билетов в продаже";
 
-                stringBuilder.AppendLine($"{firstPart} {performanceString} {lastPart}");
+                stringBuilder.AppendLine($"{firstPart} {performanceString}{description} {lastPart}");
                 stringBuilder.AppendLine();
             }
 

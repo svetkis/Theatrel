@@ -23,8 +23,6 @@ namespace theatrel.Lib.Parsers
                 string dtString = allElementChildren.FirstOrDefault(m => 0 == string.Compare(m.TagName, "time", true))?.GetAttribute("datetime");
 
                 IElement ticketsTButton = allElementChildren.FirstOrDefault(m => m.ClassName == "t_button");
-                IHtmlCollection<IElement> ticketsUrlData = ticketsTButton?.Children;
-                string ticketsButtonContent = ticketsTButton?.TextContent.Trim();
 
                 string location = allElementChildren
                     .FirstOrDefault(m => 0 == string.Compare(m.TagName, "span", true) && m.GetAttribute("itemprop") == "location")?.TextContent;
@@ -37,28 +35,14 @@ namespace theatrel.Lib.Parsers
                     ? specNameChildren.Last()?.TextContent.Trim()
                     : CommonTags.NotDefinedTag;
 
+                var statusChildren = allElementChildren.FirstOrDefault(m => m.ClassName == "status")?.Children;
+                string status = statusChildren != null && statusChildren.Any()
+                    ? statusChildren.Last()?.TextContent.Trim()
+                    : null;
+
                 string url = ProcessSpectsUrl(specNameChildren);
 
-                string ticketsUrl;
-
-                switch (ticketsButtonContent)
-                {
-                    case CommonTags.BuyTicket:
-                        ticketsUrl = ProcessUrl(ticketsUrlData);
-                        break;
-                    case CommonTags.WasMoved:
-                        ticketsUrl = CommonTags.WasMovedTag;
-                        Trace.TraceInformation($"{ticketsUrl} {dt:g} {name} {ticketsUrl}");
-                        break;
-                    case CommonTags.NoTickets:
-                        ticketsUrl = CommonTags.NoTicketsTag;
-                        Trace.TraceInformation($"{ticketsUrl} {dt:g} {name} {ticketsUrl}");
-                        break;
-                    default:
-                        ticketsUrl = CommonTags.NotDefinedTag;
-                        Trace.TraceInformation($"{ticketsUrl} {dt:g} {name} {ticketsUrl}");
-                        break;
-                }
+                string ticketsUrl = GetTicketsUrl(ticketsTButton);
 
                 return new PerformanceData
                 {
@@ -68,12 +52,30 @@ namespace theatrel.Lib.Parsers
                     TicketsUrl = ticketsUrl,
                     Type = GetType(parsedElement.ClassList.ToArray()),
                     Location = GetLocation(location.Trim()),
+                    Description = status
                 };
             }
             catch (Exception ex)
             {
                 Trace.TraceError(ex.Message);
                 return null;
+            }
+        }
+
+        private string GetTicketsUrl(IElement ticketsTButton)
+        {
+            string ticketsButtonContent = ticketsTButton?.TextContent.Trim();
+
+            switch (ticketsButtonContent)
+            {
+                case CommonTags.BuyTicket:
+                    return ProcessUrl(ticketsTButton.Children);
+                case CommonTags.WasMoved:
+                    return CommonTags.WasMovedTag;
+                case CommonTags.NoTickets:
+                    return CommonTags.NoTicketsTag;
+                default:
+                    return CommonTags.NotDefinedTag;
             }
         }
 

@@ -285,7 +285,8 @@ namespace theatrel.DataAccess.Repositories
                             ReasonOfChanges = (int) ReasonOfChanges.Creation,
                         }
                     },
-                    Cast = castList
+                    Cast = castList,
+                    Description = data.Description
                 };
 
                 _dbContext.Playbill.Add(playBillEntry);
@@ -512,6 +513,47 @@ namespace theatrel.DataAccess.Repositories
             .ThenInclude(p => p.Location)
             .Include(p => p.Changes)
             .FirstOrDefault(p => p.Id == playbillEntryId);
+
+        public async Task<bool> UpdateDescription(int playbillEntityId, string description)
+        {
+            PlaybillEntity oldValue = Get(playbillEntityId);
+
+            if (oldValue == null)
+            {
+                Trace.TraceInformation($"UpdateDescription can't get old value for {playbillEntityId}");
+                return false;
+            }
+
+            PlaybillEntity playbillEntity = null;
+            try
+            {
+                playbillEntity = GetTrackedWithAllIncludesById(playbillEntityId);
+
+                playbillEntity.Description = description;
+
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation(
+                    $"UpdateTicketsUrl DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+                return false;
+            }
+            finally
+            {
+                if (playbillEntity != null)
+                {
+                    _dbContext.Entry(playbillEntity.Performance.Location).State = EntityState.Detached;
+                    _dbContext.Entry(playbillEntity.Performance.Type).State = EntityState.Detached;
+                    _dbContext.Entry(playbillEntity.Performance).State = EntityState.Detached;
+                    foreach (var change in playbillEntity.Changes)
+                        _dbContext.Entry(change).State = EntityState.Detached;
+
+                    _dbContext.Entry(playbillEntity).State = EntityState.Detached;
+                }
+            }
+        }
 
         public async Task<bool> UpdateTicketsUrl(int playbillEntityId, string url)
         {

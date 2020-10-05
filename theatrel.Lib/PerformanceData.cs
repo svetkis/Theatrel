@@ -18,6 +18,6 @@ namespace theatrel.Lib
         public string Type { get; set; }
         public int MinPrice { get; set; }
         public IPerformanceCast Cast { get; set; }
-        public HttpStatusCode StatusCode { get; set; }
+        public string Description { get; set; }
     }
 }
