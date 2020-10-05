@@ -42,7 +42,7 @@ namespace theatrel.Subscriptions
 
             PlaybillChangeEntity[] changes = subscriptionRepository.GetFreshChanges(lastSubscriptionsUpdate);
 
-            Dictionary<long, Dictionary<int, PlaybillChangeEntity>> messagesDictionary = new Dictionary<long, Dictionary<int, PlaybillChangeEntity>>();
+            Dictionary<long, Dictionary<int, List<PlaybillChangeEntity>>> messagesDictionary = new Dictionary<long, Dictionary<int, List<PlaybillChangeEntity>>>();
 
             foreach (SubscriptionEntity subscription in subscriptions)
             {
@@ -85,34 +85,34 @@ namespace theatrel.Subscriptions
                     continue;
 
                 if (!messagesDictionary.ContainsKey(subscription.TelegramUserId))
-                    messagesDictionary.Add(subscription.TelegramUserId, new Dictionary<int, PlaybillChangeEntity>());
+                    messagesDictionary.Add(subscription.TelegramUserId, new Dictionary<int, List<PlaybillChangeEntity>>());
 
-                Dictionary<int, PlaybillChangeEntity> changesDictionary = messagesDictionary[subscription.TelegramUserId];
+                Dictionary<int, List<PlaybillChangeEntity>> changesDictionary = messagesDictionary[subscription.TelegramUserId];
                 foreach (var change in performanceChanges)
                 {
                     if (!changesDictionary.ContainsKey(change.PlaybillEntityId))
                     {
-                        changesDictionary[change.PlaybillEntityId] = change;
+                        changesDictionary[change.PlaybillEntityId] = new List<PlaybillChangeEntity> {change};
                         continue;
                     }
 
-                    if (changesDictionary[change.PlaybillEntityId].LastUpdate < change.LastUpdate)
-                        changesDictionary[change.PlaybillEntityId] = change;
+                    changesDictionary[change.PlaybillEntityId].Add(change);
                 }
             }
 
             foreach (var userData in messagesDictionary)
             {
-                if (!await SendMessages(userData.Key, userData.Value.Select(d => d.Value).ToArray()))
+                var changesToProcess = userData.Value.SelectMany(d => d.Value.ToArray()).ToArray();
+                if (!await SendMessages(userData.Key, changesToProcess))
                     continue;
 
                 //if message was sent we should update LastUpdate for users subscriptions
                 foreach (var subscription in subscriptions.Where(s => s.TelegramUserId == userData.Key))
                 {
-                    var lastUpdate = userData.Value.OrderBy(d => d.Value.LastUpdate).Last().Value.LastUpdate;
+                    var lastUpdate = changesToProcess.OrderBy(d => d.LastUpdate).Last().LastUpdate;
                     Trace.TraceInformation($"Update subscription date user: {subscription.TelegramUserId} {lastUpdate}");
 
-                    subscription.LastUpdate = userData.Value.OrderBy(d => d.Value.LastUpdate).Last().Value.LastUpdate;
+                    subscription.LastUpdate = changesToProcess.OrderBy(d => d.LastUpdate).Last().LastUpdate;
                     await subscriptionRepository.Update(subscription);
                 }
             }
