@@ -136,10 +136,13 @@ namespace theatrel.DataAccess.Repositories
                 string character = castDataFresh.Key;
                 foreach (var actorFresh in castDataFresh.Value)
                 {
-                    var checkItem = checkList.FirstOrDefault(item =>
-                        item.ActorInRole.Role.CharacterName == character &&
-                        item.ActorInRole.Actor.Name == actorFresh.Name &&
-                        item.ActorInRole.Actor.Url == actorFresh.Url);
+                    var checkItem = actorFresh.Url == CommonTags.NotDefinedTag
+                        ? checkList.FirstOrDefault(item =>
+                            item.ActorInRole.Role.CharacterName == character &&
+                            item.ActorInRole.Actor.Name == actorFresh.Name)
+                        : checkList.FirstOrDefault(item =>
+                            item.ActorInRole.Role.CharacterName == character &&
+                            item.ActorInRole.Actor.Url == actorFresh.Url);
 
                     if (checkItem == null)
                     {
@@ -221,14 +224,30 @@ namespace theatrel.DataAccess.Repositories
                 string character = castDataFresh.Key;
                 foreach (var actorFresh in castDataFresh.Value)
                 {
-                    var checkItem = checkList.FirstOrDefault(item =>
+                    var checkItem = actorFresh.Url == CommonTags.NotDefinedTag
+                     ? checkList.FirstOrDefault(item =>
+                         item.ActorInRole.Role.CharacterName == character &&
+                         item.ActorInRole.Actor.Name == actorFresh.Name)
+                     : checkList.FirstOrDefault(item =>
                         item.ActorInRole.Role.CharacterName == character &&
                         item.ActorInRole.Actor.Url == actorFresh.Url);
 
                     if (checkItem == null)
+                    {
+                        Trace.TraceInformation($"Cast is not equal {playbillEntry.Id}. Not found {character} - {actorFresh.Name} {actorFresh.Url}");
                         return false;
+                    }
 
                     checkItem.Exists = true;
+                }
+            }
+
+            bool result = checkList.All(item => item.Exists);
+            if (!result)
+            {
+                foreach (var item in checkList.Where(item => !item.Exists))
+                {
+                    Trace.TraceInformation($"Cast is not equal {playbillEntry.Id}. No data in fresh {item.ActorInRole.Role.CharacterName} - {item.ActorInRole.Actor.Name} {item.ActorInRole.Actor.Url}");
                 }
             }
 

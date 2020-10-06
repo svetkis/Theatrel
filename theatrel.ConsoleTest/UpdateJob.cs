@@ -60,7 +60,7 @@ namespace theatrel.ConsoleTest
                 IPerformanceFilter[] filters = subscriptionServices.GetUpdateFilters();
 
                 var culture = CultureInfo.CreateSpecificCulture("ru");
-                foreach (var filter in AddFiltersForNearestMonths(filters, 1))
+                foreach (var filter in AddFiltersForNearestMonths(filters, 3))
                 {
                     await using (var scope = Bootstrapper.RootScope.BeginLifetimeScope())
                     {
