@@ -59,7 +59,7 @@ namespace theatrel.Lib.Cast
                 IElement conductor = castBlock.Children.FirstOrDefault(e => e.ClassName == "conductor");
                 if (conductor != null)
                 {
-                    var actors = GetCastInfo(conductor.QuerySelectorAll("*").Where(m => m.LocalName == "a").ToArray(), cancellationToken);
+                    var actors = GetCastInfo(conductor.QuerySelectorAll("*").Where(m => m.LocalName == "a").ToArray());
                     if (null != actors && actors.Any())
                         performanceCast.Cast[CommonTags.Conductor] = actors;
                 }
@@ -91,7 +91,7 @@ namespace theatrel.Lib.Cast
                     if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
                         continue;
 
-                    var actors = GetCastInfo(allElementChildren, cancellationToken);
+                    var actors = GetCastInfo(allElementChildren);
                     if (null == actors || !actors.Any())
                         continue;
 
@@ -117,7 +117,7 @@ namespace theatrel.Lib.Cast
             return new PerformanceCast { State = CastState.TechnicalError };
         }
 
-        private IList<IActor> GetCastInfo(IElement[] allElementChildren, CancellationToken ctx)
+        private IList<IActor> GetCastInfo(IElement[] allElementChildren)
         {
             IElement[] aTags = allElementChildren.Where(m => m.LocalName == "a").ToArray();
 

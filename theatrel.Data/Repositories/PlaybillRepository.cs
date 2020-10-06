@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Storage;
 using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.DataAccess.Structures.Entities;
@@ -458,19 +457,18 @@ namespace theatrel.DataAccess.Repositories
         private Task<PlaybillEntity> GetById(long id)
             => _dbContext.Playbill.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
 
-        public async Task<bool> AddChange(PlaybillEntity entity, PlaybillChangeEntity change)
+        public async Task<bool> AddChange(int playbillEntityId, PlaybillChangeEntity change)
         {
-            PlaybillEntity oldValue = await GetById(entity.Id);
+            PlaybillEntity oldValue = await GetById(playbillEntityId);
 
             if (oldValue == null)
                 return false;
 
+            PlaybillEntity playbillEntity = GetTrackedWithAllIncludesById(playbillEntityId);
             try
             {
-                entity.Changes.Add(change);
+                playbillEntity.Changes.Add(change);
                 _dbContext.Add(change);
-
-                _dbContext.Entry(entity).State = EntityState.Modified;
 
                 await _dbContext.SaveChangesAsync();
 
@@ -483,8 +481,16 @@ namespace theatrel.DataAccess.Repositories
             }
             finally
             {
-                _dbContext.Entry(entity).State = EntityState.Detached;
-                _dbContext.Entry(change).State = EntityState.Detached;
+                if (playbillEntity != null)
+                {
+                    _dbContext.Entry(playbillEntity.Performance.Location).State = EntityState.Detached;
+                    _dbContext.Entry(playbillEntity.Performance.Type).State = EntityState.Detached;
+                    _dbContext.Entry(playbillEntity.Performance).State = EntityState.Detached;
+                    foreach (var ch in playbillEntity.Changes)
+                        _dbContext.Entry(ch).State = EntityState.Detached;
+
+                    _dbContext.Entry(playbillEntity).State = EntityState.Detached;
+                }
             }
         }
 

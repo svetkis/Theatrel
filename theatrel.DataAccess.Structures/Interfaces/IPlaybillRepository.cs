@@ -19,7 +19,7 @@ namespace theatrel.DataAccess.Structures.Interfaces
         IEnumerable<PlaybillEntity> GetOutdatedList();
 
         Task<PlaybillEntity> AddPlaybill(IPerformanceData data, int reasonOfFirstChanges);
-        Task<bool> AddChange(PlaybillEntity entity, PlaybillChangeEntity change);
+        Task<bool> AddChange(int playbillEntityId, PlaybillChangeEntity change);
         Task<bool> UpdateChangeLastUpdate(int changeId);
         Task<bool> UpdateUrl(int playbillEntityId, string url);
         Task<bool> UpdateDescription(int playbillEntityId, string description);

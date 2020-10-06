@@ -86,7 +86,7 @@ namespace theatrel.DataUpdater
             {
                 if (await playbillRepository.UpdateCast(playbillEntry, data))
                 {
-                    await playbillRepository.AddChange(playbillEntry, new PlaybillChangeEntity
+                    await playbillRepository.AddChange(playbillEntry.Id, new PlaybillChangeEntity
                     {
                         LastUpdate = DateTime.Now,
                         MinPrice = data.MinPrice,
@@ -105,7 +105,7 @@ namespace theatrel.DataUpdater
                     return;
             }
 
-            await playbillRepository.AddChange(playbillEntry, new PlaybillChangeEntity
+            await playbillRepository.AddChange(playbillEntry.Id, new PlaybillChangeEntity
             {
                 LastUpdate = DateTime.Now,
                 MinPrice = data.MinPrice,
