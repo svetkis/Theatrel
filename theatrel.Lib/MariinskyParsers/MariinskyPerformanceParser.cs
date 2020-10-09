@@ -8,11 +8,11 @@ using theatrel.Common;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
 
-namespace theatrel.Lib.Parsers
+namespace theatrel.Lib.MariinskyParsers
 {
-    internal class PerformanceParser : IPerformanceParser
+    internal class MariinskyPerformanceParser : IPerformanceParser
     {
-        public IPerformanceData Parse(object element)
+        public IPerformanceData Parse(object element, int year, int month)
         {
             try
             {
@@ -66,17 +66,13 @@ namespace theatrel.Lib.Parsers
         {
             string ticketsButtonContent = ticketsTButton?.TextContent.Trim();
 
-            switch (ticketsButtonContent)
+            return ticketsButtonContent switch
             {
-                case CommonTags.BuyTicket:
-                    return ProcessUrl(ticketsTButton.Children);
-                case CommonTags.WasMoved:
-                    return CommonTags.WasMovedTag;
-                case CommonTags.NoTickets:
-                    return CommonTags.NoTicketsTag;
-                default:
-                    return CommonTags.NotDefinedTag;
-            }
+                CommonTags.BuyTicket => ProcessUrl(ticketsTButton.Children),
+                CommonTags.WasMoved => CommonTags.WasMovedTag,
+                CommonTags.NoTickets => CommonTags.NoTicketsTag,
+                _ => CommonTags.NotDefinedTag
+            };
         }
 
         private string ProcessUrl(IHtmlCollection<IElement> urlData)

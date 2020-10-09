@@ -33,8 +33,8 @@ namespace theatrel.DataUpdater
 
             using var dbRepository = _dbService.GetPlaybillRepository();
 
-            IPerformanceData[] performances = await _dataResolver.RequestProcess(_filterService.GetFilter(startDate, endDate), cancellationToken);
-            foreach (var freshPerformanceData in performances)
+            IPerformanceData[] performancesMichailovsky = await _dataResolver.RequestProcess(theaterId, _filterService.GetFilter(startDate, endDate), cancellationToken);
+            foreach (var freshPerformanceData in performancesMichailovsky)
             {
                 await ProcessData(freshPerformanceData, dbRepository);
             }

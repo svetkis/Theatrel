@@ -15,8 +15,20 @@ using theatrel.TLBot.Interfaces;
 
 namespace theatrel.Worker
 {
-    public class UpdateJob : IJob
+    public class UpdateMariinskyJob : UpdateJobBase
     {
+        protected override int TheatreId => 1;
+    }
+
+    public class UpdateMichailovskyJob : UpdateJobBase
+    {
+        protected override int TheatreId => 2;
+    }
+
+    public abstract class UpdateJobBase : IJob
+    {
+        protected abstract int TheatreId { get; }
+
         public async Task Execute(IJobExecutionContext context)
         {
             Trace.TraceInformation("UpdateJob was started");
@@ -64,7 +76,7 @@ namespace theatrel.Worker
                         IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
                         Trace.TraceInformation($"Update playbill for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
-                        await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, cToken);
+                        await updater.UpdateAsync(TheatreId, filter.StartDate, filter.EndDate, cToken);
                     }
 
                     //we need to be care with memory because heroku has memory limit for free app

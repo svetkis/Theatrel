@@ -1,24 +1,18 @@
-﻿using AngleSharp;
-using AngleSharp.Dom;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AngleSharp;
+using AngleSharp.Dom;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
 
-namespace theatrel.Lib.Parsers
+namespace theatrel.Lib.MariinskyParsers
 {
-    public class PlaybillParser : IPlaybillParser
+    public class MariinskyPlaybillParser : IPlaybillParser
     {
-        public IPerformanceParser PerformanceParser { get; set; }
-
-        public PlaybillParser(IPerformanceParser performanceParser)
-        {
-            PerformanceParser = performanceParser;
-        }
-
-        public async Task<IPerformanceData[]> Parse(string playbill, CancellationToken cancellationToken)
+        public async Task<IPerformanceData[]> Parse(string playbill, IPerformanceParser performanceParser,
+            int year, int month, CancellationToken cancellationToken)
         {
             IBrowsingContext context = BrowsingContext.New(Configuration.Default);
             IDocument document = await context.OpenAsync(req => req.Content(playbill), cancellationToken);
@@ -40,7 +34,7 @@ namespace theatrel.Lib.Parsers
                 Parallel.ForEach(spects.Children, new ParallelOptions { CancellationToken = cancellationToken },
                     performance =>
                     {
-                        IPerformanceData parsed = PerformanceParser.Parse(performance);
+                        IPerformanceData parsed = performanceParser.Parse(performance, 0, 0);
                         if (null != parsed)
                             performances.Add(parsed);
                     });

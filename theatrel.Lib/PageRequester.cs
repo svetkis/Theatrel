@@ -3,6 +3,7 @@ using RestSharp;
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,13 +36,21 @@ namespace theatrel.Lib
                             if (response.Content.Contains("Страница не найдена"))
                                 throw new HttpRequestException();
 
-                            if (response.StatusCode == HttpStatusCode.OK)
-                                return response.Content;
-
                             if (response.StatusCode == HttpStatusCode.ServiceUnavailable || response.StatusCode == HttpStatusCode.NotFound)
                                 throw new HttpRequestException();
 
-                            return null;
+                            if (response.StatusCode != HttpStatusCode.OK)
+                                return null;
+
+                            if (!response.ContentType.Contains("1251"))
+                                return response.Content;
+
+                            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                            Encoding encoding = Encoding.GetEncoding("windows-1251");
+                            string result = Encoding.UTF8.GetString(Encoding.Convert(encoding, Encoding.UTF8, response.RawBytes))
+                                .Replace("windows-1251", "utf-8");
+
+                            return result;
                         });
             }
             catch (Exception ex)

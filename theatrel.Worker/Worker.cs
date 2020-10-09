@@ -45,6 +45,7 @@ namespace theatrel.Worker
             MemoryHelper.LogMemoryUsage();
 
             await ScheduleDataUpdates(cancellationToken);
+            await ScheduleMichailovskyDataUpdates(cancellationToken);
             await ScheduleOneTimeDataUpdate(cancellationToken);
         }
 
@@ -68,32 +69,62 @@ namespace theatrel.Worker
 
         private async Task ScheduleDataUpdates(CancellationToken cancellationToken)
         {
-            string upgradeJobCron = Environment.GetEnvironmentVariable("UpdateJobSchedule");
+            string upgradeJobCron = Environment.GetEnvironmentVariable("MariinskyJobSchedule");
             if (string.IsNullOrWhiteSpace(upgradeJobCron))
             {
                 _logger.LogInformation("UpdateJobSchedule not found");
                 return;
             }
 
-            string group = "updateJobGroup";
+            string group = "updateJob1Group";
 
             ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
 
             IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
             await scheduler.Start(cancellationToken);
 
-            IJobDetail job = JobBuilder.Create<UpdateJob>()
-                .WithIdentity("updateJob", group)
+            IJobDetail job = JobBuilder.Create<UpdateMariinskyJob>()
+                .WithIdentity("UpdateMariinskyJob", group)
                 .Build();
 
             ITrigger trigger = TriggerBuilder.Create()
-                .WithIdentity("updateJobTrigger", group)
+                .WithIdentity("updateJob1Trigger", group)
                 .WithCronSchedule(upgradeJobCron, cron => { cron.InTimeZone(Bootstrapper.Resolve<ITimeZoneService>().TimeZone); })
                 .Build();
 
             await scheduler.ScheduleJob(job, trigger, cancellationToken);
 
-            _logger.LogInformation($"Update job {upgradeJobCron} was scheduled");
+            _logger.LogInformation($"UpdateMariinskyJob {upgradeJobCron} was scheduled");
+        }
+
+        private async Task ScheduleMichailovskyDataUpdates(CancellationToken cancellationToken)
+        {
+            string upgradeJobCron = Environment.GetEnvironmentVariable("MichailovskyJobSchedule");
+            if (string.IsNullOrWhiteSpace(upgradeJobCron))
+            {
+                _logger.LogInformation("UpdateJobSchedule not found");
+                return;
+            }
+
+            string group = "updateJob2Group";
+
+            ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
+
+            IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
+            await scheduler.Start(cancellationToken);
+
+            IJobDetail job = JobBuilder.Create<UpdateMichailovskyJob>()
+                .WithIdentity("UpdateMichailovskyJob", group)
+                .Build();
+
+            ITrigger trigger = TriggerBuilder.Create()
+                .WithIdentity("updateJob2Trigger", group)
+                .WithCronSchedule(upgradeJobCron, cron => { cron.InTimeZone(Bootstrapper.Resolve<ITimeZoneService>().TimeZone); })
+                .Build();
+
+            await scheduler.ScheduleJob(job, trigger, cancellationToken);
+
+            _logger.LogInformation($"UpdateMariinskyJob {upgradeJobCron} was scheduled");
         }
 
         private async Task ScheduleOneTimeDataUpdate(CancellationToken cancellationToken)
@@ -105,7 +136,7 @@ namespace theatrel.Worker
             IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
             await scheduler.Start(cancellationToken);
 
-            IJobDetail job = JobBuilder.Create<UpdateJob>()
+            IJobDetail job = JobBuilder.Create<UpdateJobBase>()
                 .WithIdentity("updateJobOnce", group)
                 .Build();
 

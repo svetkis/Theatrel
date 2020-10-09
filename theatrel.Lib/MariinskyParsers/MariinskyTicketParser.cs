@@ -2,22 +2,13 @@
 using System.Threading;
 using AngleSharp.Dom;
 using theatrel.Interfaces.Tickets;
+using theatrel.Lib.Tickets;
 using theatrel.Lib.Utils;
 
-namespace theatrel.Lib.Tickets
+namespace theatrel.Lib.MariinskyParsers
 {
-    public class TicketParser : ITicketParser
+    public class MariinskyTicketParser : ITicketParser
     {
-        private class Ticket : ITicket
-        {
-            public string Id { get; set; }
-            public string Region { get; set; }
-            public string Side { get; set; }
-            public string Row { get; set; }
-            public string Place { get; set; }
-            public int MinPrice { get; set; }
-        }
-
         private string ControlContent(string data) => data == null || data.Contains('<') ? string.Empty : data.Trim();
 
         public ITicket Parse(object ticket, CancellationToken cancellationToken)

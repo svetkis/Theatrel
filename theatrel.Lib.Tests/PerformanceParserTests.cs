@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
+using theatrel.Lib.Enums;
 using Xunit;
 
 namespace theatrel.Lib.Tests
@@ -18,9 +19,13 @@ namespace theatrel.Lib.Tests
         {
             string text = await System.IO.File.ReadAllTextAsync(file);
 
-            var parser = DIContainerHolder.Resolve<IPlaybillParser>();
+            var playbillParserFactory = DIContainerHolder.Resolve<Func<Theatre, IPlaybillParser>>();
+            var parser = playbillParserFactory(Theatre.Mariinsky);
 
-            IPerformanceData[] performances = await parser.Parse(text, CancellationToken.None);
+            var performanceParserFactory = DIContainerHolder.Resolve<Func<Theatre, IPerformanceParser>>();
+            var performanceParser = performanceParserFactory(Theatre.Mariinsky);
+
+            IPerformanceData[] performances = await parser.Parse(text, performanceParser, 0, 0, CancellationToken.None);
             foreach (var performance in performances.Where(p => p.Name == name))
                 Assert.Equal(expected, performance.Type);
         }
@@ -31,9 +36,13 @@ namespace theatrel.Lib.Tests
         {
             string text = await System.IO.File.ReadAllTextAsync(file);
 
-            var parser = DIContainerHolder.Resolve<IPlaybillParser>();
+            var playbillParserFactory = DIContainerHolder.Resolve<Func<Theatre, IPlaybillParser>>();
+            var parser = playbillParserFactory(Theatre.Mariinsky);
 
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await parser.Parse(text, new CancellationTokenSource(15).Token));
+            var performanceParserFactory = DIContainerHolder.Resolve<Func<Theatre, IPerformanceParser>>();
+            var performanceParser = performanceParserFactory(Theatre.Mariinsky);
+
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await parser.Parse(text, performanceParser, 0, 0, new CancellationTokenSource(15).Token));
         }
 
         [Theory]
@@ -43,9 +52,13 @@ namespace theatrel.Lib.Tests
         {
             string text = await System.IO.File.ReadAllTextAsync(file);
 
-            var parser = DIContainerHolder.Resolve<IPlaybillParser>();
+            var playbillParserFactory = DIContainerHolder.Resolve<Func<Theatre, IPlaybillParser>>();
+            var parser = playbillParserFactory(Theatre.Mariinsky);
 
-            var performances = await parser.Parse(text, CancellationToken.None);
+            var performanceParserFactory = DIContainerHolder.Resolve<Func<Theatre, IPerformanceParser>>();
+            var performanceParser = performanceParserFactory(Theatre.Mariinsky);
+
+            var performances = await parser.Parse(text, performanceParser, 0, 0, CancellationToken.None);
 
             var timeZone = TimeZoneInfo.CreateCustomTimeZone("Moscow Time", new TimeSpan(03, 00, 00),
                 "(GMT+03:00) Moscow Time", "Moscow Time");

@@ -9,15 +9,16 @@ using AngleSharp.Dom;
 using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.Interfaces.Cast;
+using theatrel.Lib.Cast;
 
-namespace theatrel.Lib.Cast
+namespace theatrel.Lib.MihailovkyParsers
 {
-    internal class PerformanceCastParser : IPerformanceCastParser
+    internal class MihailovskyCastParser : IPerformanceCastParser
     {
         public async Task<IPerformanceCast> ParseFromUrl(string url, bool wasMoved, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(url) || wasMoved)
-                return new PerformanceCast {State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>()};
+                return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
 
             switch (url)
             {
@@ -29,13 +30,18 @@ namespace theatrel.Lib.Cast
 
             string content = await PageRequester.Request(url, cancellationToken);
             if (null == content)
-                return new PerformanceCast {State = CastState.TechnicalError};
+                return new PerformanceCast { State = CastState.TechnicalError };
 
             return await PrivateParse(content, cancellationToken);
         }
 
         public async Task<IPerformanceCast> Parse(string data, CancellationToken cancellationToken)
-            => await PrivateParse(data, cancellationToken);
+        {
+            if (string.IsNullOrEmpty(data))
+                return new PerformanceCast { State = CastState.CastIsNotSet };
+
+            return await PrivateParse(data, cancellationToken);
+        }
 
         private async Task<IPerformanceCast> PrivateParse(string data, CancellationToken cancellationToken)
         {
@@ -47,42 +53,22 @@ namespace theatrel.Lib.Cast
                 var context = BrowsingContext.New(Configuration.Default);
                 var parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
 
-                var castBlock = parsedDoc.All.FirstOrDefault(m => m.ClassList.Contains("sostav") && m.ClassList.Contains("inf_block"));
+                IElement[] castBlock = parsedDoc.All.Where(c => c.ClassName == " f-ap").ToArray();
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (castBlock == null)
-                    return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>()};
+                if (!castBlock.Any())
+                    return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
 
                 PerformanceCast performanceCast = new PerformanceCast { State = CastState.Ok, Cast = new Dictionary<string, IList<IActor>>() };
 
-                IElement conductor = castBlock.Children.FirstOrDefault(e => e.ClassName == "conductor");
-                if (conductor != null)
-                {
-                    var actors = GetCastInfo(conductor.QuerySelectorAll("*").Where(m => m.LocalName == "a").ToArray());
-                    if (null != actors && actors.Any())
-                        performanceCast.Cast[CommonTags.Conductor] = actors;
-                }
-
-                IElement paragraph = castBlock.Children.Last();
-                if (!paragraph.Children.Any())
-                    return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
-
-                string text = paragraph.InnerHtml.Trim();
-                var lines = text.Split(new[] { "<br/>", "<br>", "</p>", "<p>" }, StringSplitOptions.RemoveEmptyEntries);
+                IEnumerable<string> lines = castBlock.SelectMany(c =>
+                    c.InnerHtml.Split(new[] {"<br/>", "<br>", "</p>", "<p>"}, StringSplitOptions.RemoveEmptyEntries));
 
                 foreach (var line in lines)
                 {
-                    if (line.StartsWith(CommonTags.Phonogram, StringComparison.OrdinalIgnoreCase))
-                    {
-                        performanceCast.Cast[CommonTags.Conductor] = new List<IActor>
-                            {new PerformanceActor{ Name = CommonTags.Phonogram, Url = CommonTags.NotDefinedTag}};
-
-                        continue;
-                    }
-
-                    string characterName = line.Contains('–') || line.Contains(':')
-                        ? line.Split('–', ':').First().Replace("&nbsp;", " ").Trim()
+                    string characterName = line.Contains('—') || line.Contains(':')
+                        ? line.Split('—', ':').First().Replace("&nbsp;", " ").Trim()
                         : CommonTags.Actor;
 
                     IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
@@ -139,7 +125,7 @@ namespace theatrel.Lib.Cast
             if (string.IsNullOrEmpty(url) || url == CommonTags.JavascriptVoid)
                 return CommonTags.NotDefinedTag;
 
-            return url.StartsWith("/") ? $"https://www.mariinsky.ru{url}" : url;
+            return url.StartsWith("/") ? $"https://mikhailovsky.ru{url}" : url;
         }
     }
 }

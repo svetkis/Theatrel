@@ -42,13 +42,13 @@ namespace theatrel.ConsoleTest
 
              for (int i = 0; i < 1; ++i)
              {
-                 Trace.TraceInformation("Before UpdatePlaybill");
+                 Trace.TraceInformation("Before UpdateMariinskiPlaybill");
                  GC.Collect();
-                 MemoryProfiler.GetSnapshot("Before UpdatePlaybill");
+                 MemoryProfiler.GetSnapshot("Before UpdateMariinskiPlaybill");
 
                  var job = new UpdateJob();
 
-                 if (!await job.UpdatePlaybill(cts.Token))
+                 if (!await job.UpdateMariinskiPlaybill(cts.Token))
                      return;
 
                  Trace.TraceInformation("Before ProcessSubscriptions");

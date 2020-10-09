@@ -1,9 +1,8 @@
 ﻿using System.Threading;
-using theatrel.Interfaces.Autofac;
 
 namespace theatrel.Interfaces.Tickets
 {
-    public interface ITicketParser : IDIRegistrable
+    public interface ITicketParser
     {
         ITicket Parse(object ticket, CancellationToken cancellationToken);
     }

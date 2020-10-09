@@ -1,10 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using theatrel.Interfaces.Autofac;
 
 namespace theatrel.Interfaces.Cast
 {
-    public interface IPerformanceCastParser : IDIRegistrable
+    public interface IPerformanceCastParser
     {
         Task<IPerformanceCast> Parse(string data, CancellationToken cancellationToken);
         Task<IPerformanceCast> ParseFromUrl(string url, bool wasMoved, CancellationToken cancellationToken);

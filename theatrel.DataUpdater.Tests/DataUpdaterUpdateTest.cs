@@ -70,7 +70,7 @@ namespace theatrel.DataUpdater.Tests
             DateTime performanceDateTime = DateTime.Now;
 
             Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
-            playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
+            playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<int>(), It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new[]
                 {
                     GetPerformanceMock("testOpera", 300, "testUrl", performanceDateTime, "loc1", "opera")

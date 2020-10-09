@@ -1,10 +1,9 @@
-﻿using theatrel.Interfaces.Autofac;
-using theatrel.Interfaces.Playbill;
+﻿using theatrel.Interfaces.Playbill;
 
 namespace theatrel.Interfaces.Parsers
 {
-    public interface IPerformanceParser : IDIRegistrable
+    public interface IPerformanceParser
     {
-        IPerformanceData Parse(object element);
+        IPerformanceData Parse(object element, int year, int month);
     }
 }

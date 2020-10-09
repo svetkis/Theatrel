@@ -7,6 +7,6 @@ namespace theatrel.Interfaces.Playbill
 {
     public interface IPlayBillDataResolver : IDIRegistrable
     {
-        Task<IPerformanceData[]> RequestProcess(IPerformanceFilter filter, CancellationToken cancellationToken);
+        Task<IPerformanceData[]> RequestProcess(int theatre, IPerformanceFilter filter, CancellationToken cancellationToken);
     }
 }

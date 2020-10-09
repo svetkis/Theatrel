@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using theatrel.Common.Enums;
 using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Playbill;

@@ -26,7 +26,7 @@ namespace theatrel.ConsoleTest
 
             Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
             playBillResolverMock.Setup(h =>
-                    h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
+                    h.RequestProcess(It.IsAny<int>(), It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new[]
                 {
                     GetPerformanceMock(performanceName,0, performanceUrl, performanceWhen, performanceLocation, performanceType),
@@ -60,7 +60,7 @@ namespace theatrel.ConsoleTest
 
             //setup new values
             playBillResolverMock.Setup(h =>
-                    h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
+                    h.RequestProcess(It.IsAny<int>(), It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new[]
                 {
                     minPrice500
@@ -78,7 +78,7 @@ namespace theatrel.ConsoleTest
 
             //setup new values
             playBillResolverMock.Setup(h =>
-                    h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
+                    h.RequestProcess(It.IsAny<int>(), It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new[]
                 {
                     minPrice300

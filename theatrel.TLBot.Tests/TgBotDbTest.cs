@@ -29,7 +29,7 @@ namespace theatrel.TLBot.Tests
                 x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgCommandResponse>(), It.IsAny<CancellationToken>())).Verifiable();
 
             var playBillResolverMock = new Mock<IPlayBillDataResolver>();
-            playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
+            playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<int>(),It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new IPerformanceData[0]));
 
             await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
@@ -55,7 +55,7 @@ namespace theatrel.TLBot.Tests
 
             Assert.Null(exception);
 
-            playBillResolverMock.Verify(x => x.RequestProcess(It.IsAny<IPerformanceFilter>()
+            playBillResolverMock.Verify(x => x.RequestProcess(It.IsAny<int>(), It.IsAny<IPerformanceFilter>()
                     , It.IsAny<CancellationToken>()), Times.Never);
         }
     }

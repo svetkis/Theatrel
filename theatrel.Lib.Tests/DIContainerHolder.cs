@@ -13,6 +13,7 @@ namespace theatrel.Lib.Tests
             ContainerBuilder containerBuilder = new ContainerBuilder();
 
             containerBuilder.RegisterModule<DataResolverTestModule>();
+            containerBuilder.RegisterModule<TheatrelLibModule>();
 
             RootScope = containerBuilder.Build();
         }

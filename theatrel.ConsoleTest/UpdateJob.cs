@@ -22,37 +22,22 @@ namespace theatrel.ConsoleTest
         {
             Trace.TraceInformation("UpdateJob was started");
 
-            GC.Collect();
-            MemoryProfiler.GetSnapshot("Before UpdatePlaybill");
-
-            if (!await UpdatePlaybill(context.CancellationToken))
+            if (!await UpdateMariinskiPlaybill(context.CancellationToken))
                 return;
-
-            GC.Collect();
-            MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
 
             if (!await ProcessSubscriptions(context.CancellationToken))
                 return;
 
-            GC.Collect();
-            MemoryProfiler.GetSnapshot("Before Playbill cleanup");
-
             if (!await PlaybillCleanup(context.CancellationToken))
                 return;
-
-            GC.Collect();
-            MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
 
             if (!await SubscriptionsCleanup(context.CancellationToken))
                 return;
 
-            GC.Collect();
-            MemoryProfiler.GetSnapshot("Update finished");
-
             Trace.TraceInformation("UpdateJob was finished");
         }
 
-        public async Task<bool> UpdatePlaybill(CancellationToken cToken)
+        public async Task<bool> UpdateMariinskiPlaybill(CancellationToken cToken)
         {
             try
             {
@@ -66,7 +51,7 @@ namespace theatrel.ConsoleTest
                     {
                         IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
-                        Trace.TraceInformation($"Update playbill for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
+                        Trace.TraceInformation($"Update playbill 1 for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
                         await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, cToken);
                     }
 
@@ -79,8 +64,8 @@ namespace theatrel.ConsoleTest
             }
             catch (Exception ex)
             {
-                await SendExceptionMessageToOwner("UpdatePlaybill", ex);
-                Trace.TraceError($"UpdatePlaybill failed {ex.Message}");
+                await SendExceptionMessageToOwner("UpdateMariinskiPlaybill", ex);
+                Trace.TraceError($"UpdateMariinskiPlaybill failed {ex.Message}");
                 return false;
             }
         }

@@ -29,7 +29,7 @@ namespace theatrel.TLBot.Tests.Settings
                 .InstancePerDependency();
 
             var playBillResolverMock = new Mock<IPlayBillDataResolver>();
-            playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
+            playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<int>(), It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(new IPerformanceData[0]));
 
             containerBuilder.RegisterInstance(playBillResolverMock.Object).As<IPlayBillDataResolver>().AsImplementedInterfaces();
