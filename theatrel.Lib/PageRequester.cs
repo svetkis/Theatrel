@@ -36,7 +36,8 @@ namespace theatrel.Lib
                             if (response.Content.Contains("Страница не найдена"))
                                 throw new HttpRequestException();
 
-                            if (response.StatusCode == HttpStatusCode.ServiceUnavailable || response.StatusCode == HttpStatusCode.NotFound)
+                            if (response.StatusCode == HttpStatusCode.ServiceUnavailable || response.StatusCode == HttpStatusCode.NotFound
+                                || response.ContentLength == 0)
                                 throw new HttpRequestException();
 
                             if (response.StatusCode != HttpStatusCode.OK)

@@ -112,7 +112,7 @@ namespace theatrel.Lib.Playbill
 
             IRestResponse response = await client.ExecuteAsync(request, cancellationToken);
 
-            if (!string.Equals(response.ResponseUri.AbsoluteUri, url))
+            if (response.ResponseUri == null || !string.Equals(response.ResponseUri.AbsoluteUri, url))
                 return null;
 
             if (!response.ContentType.Contains("1251"))

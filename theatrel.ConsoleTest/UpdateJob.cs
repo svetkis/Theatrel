@@ -25,6 +25,9 @@ namespace theatrel.ConsoleTest
             if (!await UpdateMariinskiPlaybill(context.CancellationToken))
                 return;
 
+            if (!await UpdateMichailovskyPlaybill(context.CancellationToken))
+                return;
+
             if (!await ProcessSubscriptions(context.CancellationToken))
                 return;
 
@@ -52,7 +55,7 @@ namespace theatrel.ConsoleTest
                         IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
                         Trace.TraceInformation($"Update playbill 1 for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
-                        await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, cToken);
+                        await updater.UpdateAsync(2, filter.StartDate, filter.EndDate, cToken);
                     }
 
                     //we need to care about memory because heroku has memory limit for free app
@@ -66,6 +69,40 @@ namespace theatrel.ConsoleTest
             {
                 await SendExceptionMessageToOwner("UpdateMariinskiPlaybill", ex);
                 Trace.TraceError($"UpdateMariinskiPlaybill failed {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateMichailovskyPlaybill(CancellationToken cToken)
+        {
+            try
+            {
+                ISubscriptionService subscriptionServices = Bootstrapper.Resolve<ISubscriptionService>();
+                IPerformanceFilter[] filters = subscriptionServices.GetUpdateFilters();
+
+                var culture = CultureInfo.CreateSpecificCulture("ru");
+                foreach (var filter in AddFiltersForNearestMonths(filters, 3))
+                {
+                    await using (var scope = Bootstrapper.RootScope.BeginLifetimeScope())
+                    {
+                        IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
+
+                        Trace.TraceInformation($"Update playbill 2 for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
+                        await updater.UpdateAsync(2, filter.StartDate, filter.EndDate, cToken);
+
+                    }
+
+                    //we need to care about memory because heroku has memory limit for free app
+                    GC.Collect();
+                    MemoryHelper.LogMemoryUsage();
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await SendExceptionMessageToOwner("UpdateMichailovskyPlaybill", ex);
+                Trace.TraceError($"UpdateMichailovskyPlaybill failed {ex.Message}");
                 return false;
             }
         }

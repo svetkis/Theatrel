@@ -124,7 +124,7 @@ namespace theatrel.Worker
 
             await scheduler.ScheduleJob(job, trigger, cancellationToken);
 
-            _logger.LogInformation($"UpdateMariinskyJob {upgradeJobCron} was scheduled");
+            _logger.LogInformation($"UpdateMichailovskyJob {upgradeJobCron} was scheduled");
         }
 
         private async Task ScheduleOneTimeDataUpdate(CancellationToken cancellationToken)
