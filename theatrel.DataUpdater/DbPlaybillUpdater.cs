@@ -140,6 +140,9 @@ namespace theatrel.DataUpdater
                     if (lastChange.MinPrice == 0)
                         return freshData.MinPrice == 0 ? ReasonOfChanges.NothingChanged : ReasonOfChanges.StartSales;
 
+                    if (freshData.MinPrice == 0)
+                        return ReasonOfChanges.StopSale;
+
                     if (lastChange.MinPrice > freshData.MinPrice)
                         return ReasonOfChanges.PriceDecreased;
 
