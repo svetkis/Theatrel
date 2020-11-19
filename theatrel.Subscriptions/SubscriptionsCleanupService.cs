@@ -20,8 +20,8 @@ namespace theatrel.Subscriptions
         {
             using ISubscriptionsRepository repo = _dbService.GetSubscriptionRepository();
 
-            IEnumerable<SubscriptionEntity> oldEntities = repo.GetOutdatedList().ToArray();
-            var filters = oldEntities.Select(item => item.PerformanceFilter).ToArray();
+            IEnumerable<SubscriptionEntity> oldEntities = repo.GetOutdatedList().Distinct().ToArray();
+            var filters = oldEntities.Select(item => item.PerformanceFilter).Distinct().ToArray();
             bool result = true;
             foreach (SubscriptionEntity entity in oldEntities)
             {
