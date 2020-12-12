@@ -68,8 +68,6 @@ namespace theatrel.ConsoleTest
                  if (!await job.PlaybillCleanup(cts.Token))
                      return;
 
-                await Task.Delay(1000);
-
                  GC.Collect();
                  MemoryProfiler.GetSnapshot("Update finished");
              }
@@ -80,10 +78,7 @@ namespace theatrel.ConsoleTest
                 await Task.Delay(10000, cts.Token);
             }
 
-            GC.Collect();
-            MemoryProfiler.GetSnapshot();
-
-            Bootstrapper.Stop();
+            //   Bootstrapper.Stop();
         }
 
         private async Task ScheduleDataUpdates(CancellationToken cancellationToken)

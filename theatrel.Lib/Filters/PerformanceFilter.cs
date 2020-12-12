@@ -5,6 +5,7 @@ namespace theatrel.Lib.Filters
 {
     internal class PerformanceFilter : IPerformanceFilter
     {
+        public int PlaybillId { get; set; } = -1;
         public string PerformanceName { get; set; }
 
         public DayOfWeek[] DaysOfWeek { get; set; }

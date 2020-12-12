@@ -29,5 +29,7 @@ namespace theatrel.Interfaces.Filters
         int PartOfDay { get; set; }
         DateTime StartDate { get; set; }
         DateTime EndDate { get; set; }
+
+        int PlaybillId { get; set; }
     }
 }

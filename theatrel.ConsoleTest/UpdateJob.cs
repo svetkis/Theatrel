@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using JetBrains.Profiler.Api;
 using Quartz;
 using System;
 using System.Collections.Generic;
@@ -55,6 +54,7 @@ namespace theatrel.ConsoleTest
                         IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
                         Trace.TraceInformation($"Update playbill 1 for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
+                        await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, cToken);
                         await updater.UpdateAsync(2, filter.StartDate, filter.EndDate, cToken);
                     }
 

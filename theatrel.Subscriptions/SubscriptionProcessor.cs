@@ -54,7 +54,7 @@ namespace theatrel.Subscriptions
                 {
                     performanceChanges = changes.Where(p =>
                         string.Equals(p.PlaybillEntity.Performance.Name, filter.PerformanceName, StringComparison.OrdinalIgnoreCase)
-                        && _filterChecker.IsDataSuitable(p.PlaybillEntity.Performance.Name, p.PlaybillEntity.Performance.Location.Name,
+                        && _filterChecker.IsDataSuitable(p.PlaybillEntity.Id, p.PlaybillEntity.Performance.Name, p.PlaybillEntity.Performance.Location.Name,
                             p.PlaybillEntity.Performance.Type.TypeName, p.PlaybillEntity.When, filter)
                         && p.LastUpdate > subscription.LastUpdate
                         && (subscription.TrackingChanges & p.ReasonOfChanges) != 0
@@ -73,7 +73,7 @@ namespace theatrel.Subscriptions
                 else
                 {
                     performanceChanges = changes
-                        .Where(p => _filterChecker.IsDataSuitable(p.PlaybillEntity.Performance.Name, p.PlaybillEntity.Performance.Location.Name,
+                        .Where(p => _filterChecker.IsDataSuitable(p.PlaybillEntityId, p.PlaybillEntity.Performance.Name, p.PlaybillEntity.Performance.Location.Name,
                                         p.PlaybillEntity.Performance.Type.TypeName, p.PlaybillEntity.When, filter)
                                     && p.LastUpdate > subscription.LastUpdate
                                     && (subscription.TrackingChanges & p.ReasonOfChanges) != 0

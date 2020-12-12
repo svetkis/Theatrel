@@ -12,7 +12,7 @@ namespace theatrel.Lib.MihailovkyParsers
 {
     public class MihailovskyPlaybillParser : IPlaybillParser
     {
-        private IPerformanceCastParser _castParser = new MihailovskyCastParser();
+        private readonly IPerformanceCastParser _castParser = new MihailovskyCastParser();
 
         public async Task<IPerformanceData[]> Parse(string playbill, IPerformanceParser performanceParser,
             int year, int month, CancellationToken cancellationToken)

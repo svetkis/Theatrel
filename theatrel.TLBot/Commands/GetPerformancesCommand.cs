@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -55,8 +54,6 @@ namespace theatrel.TLBot.Commands
 
         public override async Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
-            Trace.TraceInformation("GetPerformancesCommand.ApplyResult");
-
             int trackingChanges;
 
             switch (message)
@@ -67,13 +64,13 @@ namespace theatrel.TLBot.Commands
                 case NewInPlaybillSubscription:
                     trackingChanges = (int)(ReasonOfChanges.StartSales | ReasonOfChanges.Creation);
                     break;
-
                 case CastSubscription:
                     trackingChanges = (int)(ReasonOfChanges.CastWasSet | ReasonOfChanges.CastWasChanged);
                     break;
-
-                default:
+                case No:
                     return new TgCommandResponse("Приятно было пообщаться. Обращайтесь еще.");
+                default:
+                    return await AddOnePlaybillEntrySubscription(chatInfo, message, cancellationToken);
             }
 
             using var subscriptionRepository = DbService.GetSubscriptionRepository();
@@ -86,31 +83,25 @@ namespace theatrel.TLBot.Commands
                 : new TgCommandResponse("Подписка добавлена.");
         }
 
-        public override bool IsMessageCorrect(string message) => true;
+        public override bool IsMessageCorrect(string message)
+        {
+            string[] cmds =
+            {
+                DecreasePriceSubscription, NewInPlaybillSubscription, CastSubscription, No
+            };
+
+            if (cmds.Contains(message))
+                return true;
+
+            var userCommands = ParseSubscriptionsCommandLine(message);
+
+            return userCommands.Any();
+        }
 
         public override async Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
             IPerformanceFilter filter = _filterService.GetFilter(chatInfo);
-
-            using var playbillRepo = DbService.GetPlaybillRepository();
-
-            PlaybillEntity[] performances = !string.IsNullOrEmpty(chatInfo.PerformanceName)
-                ? playbillRepo.GetListByName(chatInfo.PerformanceName).ToArray()
-                : playbillRepo.GetList(filter.StartDate, filter.EndDate).ToArray();
-
-            PlaybillEntity[] filteredPerformances = performances.Where(x =>
-            {
-                if (!_filterService.IsDataSuitable(x.Performance.Name, x.Performance.Location.Name,
-                    x.Performance.Type.TypeName,
-                    x.When, filter))
-                    return false;
-
-                if (!x.Changes.Any())
-                    return true;
-
-                var lastChange = x.Changes.OrderBy(ch => ch.LastUpdate).Last();
-                return lastChange.ReasonOfChanges != (int) ReasonOfChanges.WasMoved;
-            }).ToArray();
+            var filteredPerformances = GetFilteredPerformances(chatInfo, filter);
 
             List<KeyboardButton> buttons = new List<KeyboardButton> { new KeyboardButton(NewInPlaybillSubscription) };
             if (filteredPerformances.Any())
@@ -129,6 +120,155 @@ namespace theatrel.TLBot.Commands
             };
 
             return new TgCommandResponse(await PerformancesMessage(filteredPerformances, filter, chatInfo.When, chatInfo.Culture), keys) { IsEscaped = true };
+        }
+
+        private async Task<TgCommandResponse> AddOnePlaybillEntrySubscription(IChatDataInfo chatInfo, string commandLine, CancellationToken cancellationToken)
+        {
+            StringBuilder sb = new StringBuilder();
+            SubscriptionEntry[] entries = ParseSubscriptionsCommandLine(commandLine, sb);
+
+            if (!entries.Any())
+                return new TgCommandResponse(sb.ToString());
+
+            using var subscriptionRepository = DbService.GetSubscriptionRepository();
+
+            foreach (var entry in entries)
+            {
+                int trackingChanges = 0;
+
+                switch (entry.SubscriptionType)
+                {
+                    case 1:
+                        trackingChanges = (int)ReasonOfChanges.StartSales;
+                        break;
+                    case 2:
+                        trackingChanges = (int)ReasonOfChanges.PriceDecreased;
+                        break;
+                    case 3:
+                        trackingChanges = (int)(ReasonOfChanges.CastWasSet | ReasonOfChanges.CastWasChanged);
+                        break;
+
+                    case 4:
+                        trackingChanges = (int)(ReasonOfChanges.StartSales | ReasonOfChanges.PriceDecreased |
+                                                ReasonOfChanges.CastWasSet | ReasonOfChanges.CastWasChanged);
+                        break;
+                }
+
+                SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.UserId, trackingChanges,
+                    _filterService.GetFilter(entry.PlaybillEntryId), cancellationToken);
+
+                if (subscription != null)
+                    sb.AppendLine($"Успешно добавлена подписка на {entry.Name}:{entry.PlaybillEntryId}");
+                else
+                    sb.AppendLine($"Не вышло добавить подписку на {entry.Name}:{entry.PlaybillEntryId}");
+            }
+
+            return new TgCommandResponse(sb.ToString());
+        }
+
+        private class SubscriptionEntry
+        {
+            public int PlaybillEntryId;
+            public int SubscriptionType;
+            public string Name;
+        }
+
+        private SubscriptionEntry[] ParseSubscriptionsCommandLine(string commandLine, StringBuilder sb = null)
+        {
+            List<SubscriptionEntry> entriesList = new List<SubscriptionEntry>();
+            string[] parsedCommands = commandLine.Split(' ');
+
+            foreach (var cmd in parsedCommands)
+            {
+                string[] split = cmd.Split('-');
+                if (split.Length != 2)
+                {
+                    sb?.AppendLine($"Не распознанная команда {cmd}");
+                    continue;
+                }
+
+                string playbillEntryId = split[0];
+                string subscriptionType = split[1];
+
+                if (!int.TryParse(playbillEntryId, out int entryId))
+                {
+                    sb?.AppendLine($"Ошибка парсинга {cmd}");
+                    continue;
+                }
+
+                if (!int.TryParse(subscriptionType, out int subscriptionCode))
+                {
+                    sb?.AppendLine($"Ошибка парсинга {cmd}");
+                    continue;
+                }
+
+                entriesList.Add(new SubscriptionEntry{PlaybillEntryId = entryId, SubscriptionType = subscriptionCode });
+            }
+
+            SetNames(entriesList);
+            return RemoveWrongSubscriptionCommands(entriesList.ToArray(), sb);
+        }
+
+        private SubscriptionEntry[] RemoveWrongSubscriptionCommands(SubscriptionEntry[] entriesList, StringBuilder sb)
+        {
+            if (!entriesList.Any())
+                return new SubscriptionEntry[0];
+
+            List<SubscriptionEntry> wrongList = new List<SubscriptionEntry>();
+            foreach (var entry in entriesList)
+            {
+                if (string.IsNullOrEmpty(entry.Name))
+                {
+                    sb?.AppendLine($"Не найден спектакль для индекса {entry.PlaybillEntryId}");
+                    wrongList.Add(entry);
+                    continue;
+                }
+
+                if (entry.SubscriptionType < 1 || entry.SubscriptionType > 4)
+                {
+                    sb?.AppendLine($"Неправильный код подписки {entry.SubscriptionType} для спектакля {entry.PlaybillEntryId}:{entry.Name}");
+                    wrongList.Add(entry);
+                }
+            }
+
+            return entriesList.Except(wrongList).ToArray();
+        }
+
+        private void SetNames(IList<SubscriptionEntry> entriesList)
+        {
+            if (!entriesList.Any())
+                return;
+
+            using var playbillRepository = DbService.GetPlaybillRepository();
+
+            foreach (var entry in entriesList)
+            {
+                var pbEntity = playbillRepository.GetWithName(entry.PlaybillEntryId);
+                entry.Name = pbEntity?.Performance.Name;
+            }
+        }
+
+        private PlaybillEntity[] GetFilteredPerformances(IChatDataInfo chatInfo, IPerformanceFilter filter)
+        {
+            using var playbillRepo = DbService.GetPlaybillRepository();
+
+            PlaybillEntity[] performances = !string.IsNullOrEmpty(chatInfo.PerformanceName)
+                ? playbillRepo.GetListByName(chatInfo.PerformanceName).ToArray()
+                : playbillRepo.GetList(filter.StartDate, filter.EndDate).ToArray();
+
+            return performances.Where(x =>
+            {
+                if (!_filterService.IsDataSuitable(x.PerformanceId, x.Performance.Name, x.Performance.Location.Name,
+                    x.Performance.Type.TypeName,
+                    x.When, filter))
+                    return false;
+
+                if (!x.Changes.Any())
+                    return true;
+
+                var lastChange = x.Changes.OrderBy(ch => ch.LastUpdate).Last();
+                return lastChange.ReasonOfChanges != (int)ReasonOfChanges.WasMoved;
+            }).ToArray();
         }
 
         private Task<string> PerformancesMessage(PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)
@@ -193,14 +333,21 @@ namespace theatrel.TLBot.Commands
                         : $"от [{minPrice}]({item.TicketsUrl.EscapeMessageForMarkupV2()})"
                     : "Нет билетов в продаже";
 
+                string subscriptionIndexPart = $"Индекс для подписки {item.Id}";
+
                 stringBuilder.AppendLine($"{firstPart} {performanceString}{description} {lastPart}");
+                stringBuilder.AppendLine(subscriptionIndexPart);
                 stringBuilder.AppendLine();
             }
 
-            return Task.FromResult(
-                !performances.Any()
-                    ? "Увы, я ничего не нашел. Попробуем поискать еще?".EscapeMessageForMarkupV2()
-                    : stringBuilder.ToString());
+            if (!performances.Any())
+                return Task.FromResult("Увы, я ничего не нашел. Попробуем поискать еще?".EscapeMessageForMarkupV2());
+
+            stringBuilder.AppendLine("Для подписки на конкретный спектакль напишите индекс подписки-код подписки, например: 713-1".EscapeMessageForMarkupV2());
+            stringBuilder.AppendLine("Или сразу несколько кодов и подписок например: 713-1 890-4 345-2".EscapeMessageForMarkupV2());
+            stringBuilder.AppendLine("Коды подписки: 1 появление билетов в продаже, 2 снижение цены, 3 изменения состава исполнителей, 4 все события".EscapeMessageForMarkupV2());
+
+            return Task.FromResult(stringBuilder.ToString());
         }
     }
 }

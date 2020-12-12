@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -13,6 +12,10 @@ namespace theatrel.TLBot.Commands
 {
     internal class LocationCommand : DialogCommandBase
     {
+        private const string GoodDay = "Добрый день! ";
+        private const string IWillHelpYou = "Я помогу вам подобрать билеты в Мариинский театр. ";
+        private const string Msg = "Какую площадку вы желаете посетить?";
+
         private readonly string[] _types;
         private readonly string[] _every = { "Любую", "Все", "всё", "любой", "любое", "не важно" };
 
@@ -45,10 +48,15 @@ namespace theatrel.TLBot.Commands
 
         public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine("Какую площадку вы желаете посетить?");
-
-            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup));
+            switch (chatInfo.DialogState)
+            {
+                case DialogStateEnum.DialogReturned:
+                    return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(Msg, CommandKeyboardMarkup));
+                case DialogStateEnum.DialogStarted:
+                    return Task.FromResult<ITgCommandResponse>(new TgCommandResponse($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup));
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         private string[] ParseMessage(string message)

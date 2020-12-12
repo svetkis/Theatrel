@@ -13,10 +13,7 @@ namespace theatrel.TLBot.Commands.SearchByDate
 {
     internal class MonthCommand : DialogCommandBase
     {
-        private string GoodDay = "Добрый день! ";
-        private string IWillHelpYou = "Я помогу вам подобрать билеты в Мариинский театр. ";
-        private string Msg = "Какой месяц вас интересует?";
-
+        private const string Msg = "Какой месяц Вас интересует?";
         private readonly string[] _monthNames;
         private readonly string[] _monthNamesAbbreviated;
 
@@ -76,15 +73,7 @@ namespace theatrel.TLBot.Commands.SearchByDate
 
         public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
-            switch (chatInfo.DialogState)
-            {
-                case DialogStateEnum.DialogReturned:
-                    return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(Msg, CommandKeyboardMarkup));
-                case DialogStateEnum.DialogStarted:
-                    return Task.FromResult<ITgCommandResponse>(new TgCommandResponse($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup));
-                default:
-                    throw new NotImplementedException();
-            }
+            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(Msg, CommandKeyboardMarkup));
         }
 
         private int CheckEnumerable(string[] checkedData, string msg)

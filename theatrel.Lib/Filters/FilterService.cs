@@ -48,17 +48,26 @@ namespace theatrel.Lib.Filters
                 EndDate = end
             };
 
+        public IPerformanceFilter GetFilter(int playbillEntryId) =>
+            new PerformanceFilter
+            {
+                PlaybillId = playbillEntryId
+            };
+
         public bool IsDataSuitable(IPerformanceData performance, IPerformanceFilter filter) =>
-            IsDataSuitable(performance.Name, performance.Location, performance.Type, performance.DateTime, filter);
+            IsDataSuitable(-1,performance.Name, performance.Location, performance.Type, performance.DateTime, filter);
 
         private bool CheckLocation(string[] filterLocations, string location)
             => filterLocations == null || !filterLocations.Any() ||
                filterLocations.Select(l => l.ToLower()).Contains(location.ToLower());
 
-        public bool IsDataSuitable(string name, string location, string type, DateTime when, IPerformanceFilter filter)
+        public bool IsDataSuitable(int playbillEntryId, string name, string location, string type, DateTime when, IPerformanceFilter filter)
         {
             if (filter == null)
                 return true;
+
+            if (filter.PlaybillId != -1 && playbillEntryId != -1)
+                return filter.PlaybillId == playbillEntryId;
 
             if (!string.IsNullOrEmpty(filter.PerformanceName))
                 return name.ToLower().Contains(filter.PerformanceName.ToLower()) && CheckLocation(filter.Locations, location);

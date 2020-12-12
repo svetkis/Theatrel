@@ -163,8 +163,14 @@ namespace theatrel.TLBot.Commands.Subscriptions
                 else
                 {
                     var playbillEntry = playbillRepository.GetWithName(filter.PlaybillId);
-                    var date = playbillEntry.When.AddHours(3).ToString("ddMMM HH:mm", culture);
-                    stringBuilder.AppendLine($" {i + 1}. {playbillEntry.Performance.Name} {date}, отслеживаемые события: {changesDescription}");
+
+                    if (playbillEntry == null)
+                        stringBuilder.AppendLine($" {i + 1}. Подписка на уже прошедший спектакль, отслеживаемые события: {changesDescription}");
+                    else
+                    {
+                        var date = playbillEntry.When.AddHours(3).ToString("ddMMM HH:mm", culture);
+                        stringBuilder.AppendLine($" {i + 1}. {playbillEntry.Performance.Name} {date}, отслеживаемые события: {changesDescription}");
+                    }
                 }
 
                 buttons.Add(new KeyboardButton($"Удалить {i + 1}"));

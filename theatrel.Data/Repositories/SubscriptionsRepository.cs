@@ -75,7 +75,8 @@ namespace theatrel.DataAccess.Repositories
                 .AsNoTracking().ToArray();
 
             SubscriptionEntity[] byPlaybillId = _dbContext.Subscriptions.Where(s =>
-                s.PerformanceFilter.PlaybillId != -1).Include(s => s.PerformanceFilter).AsNoTracking().ToArray();
+                s.PerformanceFilter.PlaybillId != -1).Include(s => s.PerformanceFilter).AsNoTracking()
+                .ToArray();
 
             if (!byPlaybillId.Any())
                 return outdatedByDate;
@@ -101,6 +102,7 @@ namespace theatrel.DataAccess.Repositories
                 PerformanceFilterEntity filterEntity = new PerformanceFilterEntity
                 {
                     PerformanceName = filter.PerformanceName,
+                    PlaybillId = filter.PlaybillId,
                     StartDate = filter.StartDate,
                     EndDate = filter.EndDate,
                     DaysOfWeek = filter.DaysOfWeek,
@@ -108,6 +110,16 @@ namespace theatrel.DataAccess.Repositories
                     PerformanceTypes = filter.PerformanceTypes,
                     PartOfDay = filter.PartOfDay
                 };
+
+                //check if playbillEntry exists
+                if (filter.PlaybillId != -1)
+                {
+                    var pbEntity = 
+                        _dbContext.Playbill.AsNoTracking().FirstOrDefault(u => u.Id == filter.PlaybillId);
+
+                    if (pbEntity == null)
+                        return null;
+                }
 
                 TelegramUserEntity userEntity = await _dbContext.TlUsers.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken: cancellationToken);
                 bool newUserEntity = null == userEntity;
@@ -132,6 +144,9 @@ namespace theatrel.DataAccess.Repositories
                     _dbContext.Add(userEntity);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+
+                _dbContext.Entry(userEntity).State = EntityState.Detached;
+
                 return entity;
             }
             catch (Exception ex)

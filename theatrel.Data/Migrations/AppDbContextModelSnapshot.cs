@@ -2,7 +2,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace theatrel.DataAccess.Migrations
 {
@@ -13,16 +12,16 @@ namespace theatrel.DataAccess.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
-                .HasAnnotation("ProductVersion", "3.1.8")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .UseIdentityByDefaultColumns()
+                .HasAnnotation("Relational:MaxIdentifierLength", 63)
+                .HasAnnotation("ProductVersion", "3.1.8");
 
             modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.ActorEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .UseIdentityByDefaultColumn();
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -60,7 +59,7 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<long>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .UseIdentityByDefaultColumn();
 
                     b.Property<int>("CommandLine")
                         .HasColumnType("integer");
@@ -105,7 +104,7 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .UseIdentityByDefaultColumn();
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -120,7 +119,7 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .UseIdentityByDefaultColumn();
 
                     b.Property<int>("LocationId")
                         .HasColumnType("integer");
@@ -145,7 +144,7 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .UseIdentityByDefaultColumn();
 
                     b.Property<string>("DbDaysOfWeek")
                         .HasColumnType("text");
@@ -181,7 +180,7 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .UseIdentityByDefaultColumn();
 
                     b.Property<string>("TypeName")
                         .HasColumnType("text");
@@ -196,7 +195,7 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .UseIdentityByDefaultColumn();
 
                     b.Property<DateTime>("LastUpdate")
                         .HasColumnType("timestamp without time zone");
@@ -222,7 +221,7 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .UseIdentityByDefaultColumn();
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -251,7 +250,7 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .UseIdentityByDefaultColumn();
 
                     b.Property<string>("CharacterName")
                         .HasColumnType("text");
@@ -271,7 +270,7 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .UseIdentityByDefaultColumn();
 
                     b.Property<DateTime>("LastUpdate")
                         .HasColumnType("timestamp without time zone");
@@ -299,7 +298,7 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .UseIdentityByDefaultColumn();
 
                     b.Property<string>("Culture")
                         .HasColumnType("text");
@@ -328,6 +327,12 @@ namespace theatrel.DataAccess.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Actor");
+
+                    b.Navigation("Playbill");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.PerformanceEntity", b =>
@@ -343,6 +348,10 @@ namespace theatrel.DataAccess.Migrations
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Location");
+
+                    b.Navigation("Type");
                 });
 
             modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.PlaybillChangeEntity", b =>
@@ -352,6 +361,8 @@ namespace theatrel.DataAccess.Migrations
                         .HasForeignKey("PlaybillEntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("PlaybillEntity");
                 });
 
             modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.PlaybillEntity", b =>
@@ -361,6 +372,8 @@ namespace theatrel.DataAccess.Migrations
                         .HasForeignKey("PerformanceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Performance");
                 });
 
             modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.RoleEntity", b =>
@@ -370,6 +383,8 @@ namespace theatrel.DataAccess.Migrations
                         .HasForeignKey("PerformanceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Performance");
                 });
 
             modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.SubscriptionEntity", b =>
@@ -385,6 +400,27 @@ namespace theatrel.DataAccess.Migrations
                         .HasForeignKey("TelegramUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("PerformanceFilter");
+
+                    b.Navigation("TelegramUser");
+                });
+
+            modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.ActorEntity", b =>
+                {
+                    b.Navigation("ActorInRole");
+                });
+
+            modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.PlaybillEntity", b =>
+                {
+                    b.Navigation("Cast");
+
+                    b.Navigation("Changes");
+                });
+
+            modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.RoleEntity", b =>
+                {
+                    b.Navigation("ActorInRole");
                 });
 #pragma warning restore 612, 618
         }

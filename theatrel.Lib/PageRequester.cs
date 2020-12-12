@@ -54,7 +54,7 @@ namespace theatrel.Lib
                             return result;
                         });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }

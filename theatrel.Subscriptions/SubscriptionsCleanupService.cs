@@ -29,12 +29,6 @@ namespace theatrel.Subscriptions
                     result = false;
             }
 
-            foreach (var filter in filters)
-            {
-                if (!await repo.DeleteFilter(filter))
-                    result = false;
-            }
-
             return result;
         }
     }
