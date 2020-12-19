@@ -64,7 +64,7 @@ namespace theatrel.Subscriptions
                 else if (filter.PlaybillId > 0)
                 {
                     performanceChanges = changes
-                        .Where(p => p.PlaybillEntity.PerformanceId == filter.PlaybillId
+                        .Where(p => p.PlaybillEntity.Id == filter.PlaybillId
                                     && p.LastUpdate > subscription.LastUpdate
                                     && (subscription.TrackingChanges & p.ReasonOfChanges) != 0
                                     && subscription.TrackingChanges != 0)
