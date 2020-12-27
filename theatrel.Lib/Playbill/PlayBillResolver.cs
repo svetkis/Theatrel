@@ -91,7 +91,7 @@ namespace theatrel.Lib.Playbill
                 await Task.WhenAll(resolveCastTasks.ToArray());
             }
 
-            Trace.TraceInformation(" PlayBillResolver.RequestProcess finished");
+            Trace.TraceInformation("PlayBillResolver.RequestProcess finished");
             return filtered.ToArray();
         }
 

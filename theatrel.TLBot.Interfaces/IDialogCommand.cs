@@ -11,7 +11,7 @@ namespace theatrel.TLBot.Interfaces
         Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken);
         Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken);
 
-        bool IsMessageCorrect(string message);
+        bool IsMessageCorrect(IChatDataInfo chatInfo, string message);
         bool IsReturnCommand(string message);
     }
 }

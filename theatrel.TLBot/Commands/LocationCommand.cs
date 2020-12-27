@@ -13,7 +13,7 @@ namespace theatrel.TLBot.Commands
     internal class LocationCommand : DialogCommandBase
     {
         private const string GoodDay = "Добрый день! ";
-        private const string IWillHelpYou = "Я помогу вам подобрать билеты в Мариинский театр. ";
+        private const string IWillHelpYou = "Я помогу вам подобрать билеты в Мариинский или Михайловский театр. ";
         private const string Msg = "Какую площадку вы желаете посетить?";
 
         private readonly string[] _types;
@@ -44,19 +44,18 @@ namespace theatrel.TLBot.Commands
             return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(null));
         }
 
-        public override bool IsMessageCorrect(string message) => SplitMessage(message).Any();
+        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => SplitMessage(message).Any();
 
         public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {
-            switch (chatInfo.DialogState)
+            return chatInfo.DialogState switch
             {
-                case DialogStateEnum.DialogReturned:
-                    return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(Msg, CommandKeyboardMarkup));
-                case DialogStateEnum.DialogStarted:
-                    return Task.FromResult<ITgCommandResponse>(new TgCommandResponse($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup));
-                default:
-                    throw new NotImplementedException();
-            }
+                DialogStateEnum.DialogReturned => Task.FromResult<ITgCommandResponse>(
+                    new TgCommandResponse(Msg, CommandKeyboardMarkup)),
+                DialogStateEnum.DialogStarted => Task.FromResult<ITgCommandResponse>(
+                    new TgCommandResponse($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup)),
+                _ => throw new NotImplementedException()
+            };
         }
 
         private string[] ParseMessage(string message)

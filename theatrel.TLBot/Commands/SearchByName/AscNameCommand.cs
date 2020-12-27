@@ -24,7 +24,7 @@ namespace theatrel.TLBot.Commands.SearchByName
             return Task.FromResult<ITgCommandResponse>(new TgCommandResponse($"{YouSelected} {chatInfo.PerformanceName}"));
         }
 
-        public override bool IsMessageCorrect(string message) => true;
+        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => true;
 
         public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {

@@ -20,7 +20,7 @@ namespace theatrel.TLBot.Commands.SearchByName
         {
         }
 
-        public override bool IsMessageCorrect(string message) =>
+        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) =>
             string.Compare(MainCommandKey, message, StringComparison.InvariantCultureIgnoreCase) == 0;
 
         public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)

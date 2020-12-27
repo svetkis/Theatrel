@@ -83,17 +83,17 @@ namespace theatrel.TLBot.Commands
                 : new TgCommandResponse("Подписка добавлена.");
         }
 
-        public override bool IsMessageCorrect(string message)
+        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message)
         {
-            string[] cmds =
+            string[] commands =
             {
                 DecreasePriceSubscription, NewInPlaybillSubscription, CastSubscription, No
             };
 
-            if (cmds.Contains(message))
+            if (commands.Contains(message))
                 return true;
 
-            var userCommands = ParseSubscriptionsCommandLine(message);
+            var userCommands = ParseSubscriptionsCommandLine(chatInfo, message);
 
             return userCommands.Any();
         }
@@ -119,13 +119,13 @@ namespace theatrel.TLBot.Commands
                 ResizeKeyboard = true
             };
 
-            return new TgCommandResponse(await PerformancesMessage(filteredPerformances, filter, chatInfo.When, chatInfo.Culture), keys) { IsEscaped = true };
+            return new TgCommandResponse(await CreatePerformancesMessage(chatInfo, filteredPerformances, filter, chatInfo.When, chatInfo.Culture), keys) { IsEscaped = true };
         }
 
         private async Task<TgCommandResponse> AddOnePlaybillEntrySubscription(IChatDataInfo chatInfo, string commandLine, CancellationToken cancellationToken)
         {
             StringBuilder sb = new StringBuilder();
-            SubscriptionEntry[] entries = ParseSubscriptionsCommandLine(commandLine, sb);
+            SubscriptionEntry[] entries = ParseSubscriptionsCommandLine(chatInfo, commandLine, sb);
 
             if (!entries.Any())
                 return new TgCommandResponse(sb.ToString());
@@ -157,10 +157,9 @@ namespace theatrel.TLBot.Commands
                 SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.UserId, trackingChanges,
                     _filterService.GetFilter(entry.PlaybillEntryId), cancellationToken);
 
-                if (subscription != null)
-                    sb.AppendLine($"Успешно добавлена подписка на {entry.Name}:{entry.PlaybillEntryId}");
-                else
-                    sb.AppendLine($"Не вышло добавить подписку на {entry.Name}:{entry.PlaybillEntryId}");
+                sb.AppendLine(subscription != null
+                    ? $"Успешно добавлена подписка на {entry.When.AddHours(3):ddMMM HH:mm} {entry.Name}"
+                    : $"Не вышло добавить подписку на {entry.When.AddHours(3):ddMMM HH:mm} {entry.Name}");
             }
 
             return new TgCommandResponse(sb.ToString());
@@ -170,11 +169,17 @@ namespace theatrel.TLBot.Commands
         {
             public int PlaybillEntryId;
             public int SubscriptionType;
+            public DateTime When;
             public string Name;
         }
 
-        private SubscriptionEntry[] ParseSubscriptionsCommandLine(string commandLine, StringBuilder sb = null)
+        private SubscriptionEntry[] ParseSubscriptionsCommandLine(IChatDataInfo chatInfo, string commandLine, StringBuilder sb = null)
         {
+            if (string.IsNullOrEmpty(chatInfo.Info))
+                return new SubscriptionEntry[0];
+
+            string[] splitIds = chatInfo.Info.Split(',');
+
             List<SubscriptionEntry> entriesList = new List<SubscriptionEntry>();
             string[] parsedCommands = commandLine.Split(' ');
 
@@ -187,14 +192,16 @@ namespace theatrel.TLBot.Commands
                     continue;
                 }
 
-                string playbillEntryId = split[0];
+                string playbillEntryIdIdx = split[0];
                 string subscriptionType = split[1];
 
-                if (!int.TryParse(playbillEntryId, out int entryId))
+                if (!int.TryParse(playbillEntryIdIdx, out int entryIdIdx))
                 {
                     sb?.AppendLine($"Ошибка парсинга {cmd}");
                     continue;
                 }
+
+                int entryId = splitIds.Length >= entryIdIdx ? int.Parse(splitIds[entryIdIdx-1]) : -1;
 
                 if (!int.TryParse(subscriptionType, out int subscriptionCode))
                 {
@@ -205,7 +212,7 @@ namespace theatrel.TLBot.Commands
                 entriesList.Add(new SubscriptionEntry{PlaybillEntryId = entryId, SubscriptionType = subscriptionCode });
             }
 
-            SetNames(entriesList);
+            ResolvePlaybillInfo(entriesList);
             return RemoveWrongSubscriptionCommands(entriesList.ToArray(), sb);
         }
 
@@ -219,14 +226,14 @@ namespace theatrel.TLBot.Commands
             {
                 if (string.IsNullOrEmpty(entry.Name))
                 {
-                    sb?.AppendLine($"Не найден спектакль для индекса {entry.PlaybillEntryId}");
+                    sb?.AppendLine("Не найден спектакль");
                     wrongList.Add(entry);
                     continue;
                 }
 
                 if (entry.SubscriptionType < 1 || entry.SubscriptionType > 4)
                 {
-                    sb?.AppendLine($"Неправильный код подписки {entry.SubscriptionType} для спектакля {entry.PlaybillEntryId}:{entry.Name}");
+                    sb?.AppendLine($"Неправильный код подписки {entry.SubscriptionType} для спектакля {entry.When.AddHours(3):ddMMM HH:mm} {entry.Name}");
                     wrongList.Add(entry);
                 }
             }
@@ -234,7 +241,7 @@ namespace theatrel.TLBot.Commands
             return entriesList.Except(wrongList).ToArray();
         }
 
-        private void SetNames(IList<SubscriptionEntry> entriesList)
+        private void ResolvePlaybillInfo(IList<SubscriptionEntry> entriesList)
         {
             if (!entriesList.Any())
                 return;
@@ -245,6 +252,7 @@ namespace theatrel.TLBot.Commands
             {
                 var pbEntity = playbillRepository.GetWithName(entry.PlaybillEntryId);
                 entry.Name = pbEntity?.Performance.Name;
+                entry.When = pbEntity?.When ?? new DateTime();
             }
         }
 
@@ -271,7 +279,7 @@ namespace theatrel.TLBot.Commands
             }).ToArray();
         }
 
-        private Task<string> PerformancesMessage(PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)
+        private Task<string> CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)
         {
             var cultureRu = CultureInfo.CreateSpecificCulture(culture);
 
@@ -300,7 +308,9 @@ namespace theatrel.TLBot.Commands
 
             stringBuilder.AppendLine();
 
-            foreach (var item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.Now))
+            int i = 0;
+            StringBuilder savedInfo = new StringBuilder();
+            foreach (PlaybillEntity item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.Now))
             {
                 if (!item.Changes.Any())
                     continue;
@@ -333,7 +343,8 @@ namespace theatrel.TLBot.Commands
                         : $"от [{minPrice}]({item.TicketsUrl.EscapeMessageForMarkupV2()})"
                     : "Нет билетов в продаже";
 
-                string subscriptionIndexPart = $"Индекс для подписки {item.Id}";
+                savedInfo.Append($"{item.Id},");
+                string subscriptionIndexPart = $"Индекс для подписки {++i}";
 
                 stringBuilder.AppendLine($"{firstPart} {performanceString}{description} {lastPart}");
                 stringBuilder.AppendLine(subscriptionIndexPart);
@@ -343,9 +354,11 @@ namespace theatrel.TLBot.Commands
             if (!performances.Any())
                 return Task.FromResult("Увы, я ничего не нашел. Попробуем поискать еще?".EscapeMessageForMarkupV2());
 
-            stringBuilder.AppendLine("Для подписки на конкретный спектакль напишите индекс подписки-код подписки, например: 713-1".EscapeMessageForMarkupV2());
-            stringBuilder.AppendLine("Или сразу несколько кодов и подписок например: 713-1 890-4 345-2".EscapeMessageForMarkupV2());
+            stringBuilder.AppendLine("Для подписки на конкретный спектакль напишите индекс подписки-код подписки, например: 5-1".EscapeMessageForMarkupV2());
+            stringBuilder.AppendLine("Или сразу несколько кодов и подписок например: 5-1 6-4 10-2".EscapeMessageForMarkupV2());
             stringBuilder.AppendLine("Коды подписки: 1 появление билетов в продаже, 2 снижение цены, 3 изменения состава исполнителей, 4 все события".EscapeMessageForMarkupV2());
+
+            chatInfo.Info = savedInfo.ToString();
 
             return Task.FromResult(stringBuilder.ToString());
         }

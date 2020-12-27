@@ -20,7 +20,7 @@ namespace theatrel.TLBot.Commands.IntroduceBot
         {
         }
 
-        public override bool IsMessageCorrect(string message) => StartCommandVariants.Any(variant => message.ToLower().StartsWith(variant));
+        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => StartCommandVariants.Any(variant => message.ToLower().StartsWith(variant));
 
         public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
             => Task.FromResult<ITgCommandResponse>(new TgCommandResponse(null));

@@ -56,7 +56,7 @@ namespace theatrel.TLBot.Commands.SearchByDate
                new TgCommandResponse($"{YouSelected} {responseDays}. {ReturnMsg}", ReturnCommandMessage));
         }
 
-        public override bool IsMessageCorrect(string message)
+        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message)
         {
             DayOfWeek[] days = ParseMessage(message);
             return days.Any();

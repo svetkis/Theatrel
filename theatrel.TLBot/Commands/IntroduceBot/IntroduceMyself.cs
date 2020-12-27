@@ -44,7 +44,7 @@ namespace theatrel.TLBot.Commands.IntroduceBot
             };
         }
 
-        public override bool IsMessageCorrect(string message) => true;
+        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => true;
 
         public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
             => Task.FromResult<ITgCommandResponse>(new TgCommandResponse(null));

@@ -18,6 +18,8 @@ namespace theatrel.DataAccess.Structures.Entities
         public int CurrentStepId { get; set; }
         public int PreviousStepId { get; set; }
 
+        public string Info { get; set; }
+
         public DateTime When { get; set; }
 
         [NotMapped]

@@ -24,6 +24,8 @@ namespace theatrel.Interfaces.TgBot
         DateTime LastMessage { get; set; }
         DialogStateEnum DialogState { get; set; }
 
+        public string Info { get; set; }
+
         void Clear();
     }
 }

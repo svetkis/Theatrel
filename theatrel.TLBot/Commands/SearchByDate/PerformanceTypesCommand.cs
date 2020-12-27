@@ -38,7 +38,7 @@ namespace theatrel.TLBot.Commands.SearchByDate
             return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(null));
         }
 
-        public override bool IsMessageCorrect(string message) => SplitMessage(message).Any();
+        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => SplitMessage(message).Any();
 
         public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
         {

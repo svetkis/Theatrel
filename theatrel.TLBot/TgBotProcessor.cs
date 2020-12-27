@@ -102,7 +102,7 @@ namespace theatrel.TLBot
             chatInfo.LastMessage = DateTime.Now;
 
             //check if user wants to return to first step
-            int idxFirstCorrectBlock = _commands.IndexWhere(commandBlock => commandBlock.First().IsMessageCorrect(message));
+            int idxFirstCorrectBlock = _commands.IndexWhere(commandBlock => commandBlock.First().IsMessageCorrect(chatInfo, message));
             if (-1 != idxFirstCorrectBlock)
             {
                 await EnsureDbUserExists(chatInfo.UserId, chatInfo.Culture);
@@ -131,7 +131,7 @@ namespace theatrel.TLBot
                 return;
             }
 
-            if (!command.IsMessageCorrect(message))
+            if (!command.IsMessageCorrect(chatInfo, message))
             {
                 SendWrongCommandMessage(chatId, message, chatInfo.CurrentStepId);
                 return;
@@ -152,8 +152,8 @@ namespace theatrel.TLBot
 
             if (nextCommand != null)
             {
-                await chatsRepository.Update(chatInfo);
                 await CommandAskQuestion(nextCommand, chatInfo, acknowledgement);
+                await chatsRepository.Update(chatInfo);
             }
             else
             {

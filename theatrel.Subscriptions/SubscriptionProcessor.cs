@@ -102,7 +102,7 @@ namespace theatrel.Subscriptions
 
             foreach (var userData in messagesDictionary)
             {
-                var changesToProcess = userData.Value.SelectMany(d => d.Value.ToArray()).ToArray();
+                var changesToProcess = userData.Value.SelectMany(d => d.Value.ToArray()).Distinct().ToArray();
                 if (!await SendMessages(userData.Key, changesToProcess))
                     continue;
 

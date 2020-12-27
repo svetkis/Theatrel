@@ -59,7 +59,7 @@ namespace theatrel.TLBot.Commands
 
         protected readonly char[] WordSplitters = { ' ', ',', '.' };
 
-        public abstract bool IsMessageCorrect(string message);
+        public abstract bool IsMessageCorrect(IChatDataInfo chatInfo, string message);
 
         public abstract Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken);
 

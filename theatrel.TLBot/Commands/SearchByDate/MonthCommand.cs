@@ -37,7 +37,7 @@ namespace theatrel.TLBot.Commands.SearchByDate
             };
         }
 
-        public override bool IsMessageCorrect(string message) => 0 != GetMonth(message.Trim().ToLower());
+        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => 0 != GetMonth(message.Trim().ToLower());
 
         private int GetMonth(string msg)
         {

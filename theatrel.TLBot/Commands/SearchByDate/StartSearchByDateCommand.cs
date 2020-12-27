@@ -23,7 +23,7 @@ namespace theatrel.TLBot.Commands.SearchByDate
         {
         }
 
-        public override bool IsMessageCorrect(string message) =>
+        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) =>
             string.Compare(MainCommandKey, message, StringComparison.InvariantCultureIgnoreCase) == 0
             || StartCommandVariants.Any(variant => message.ToLower().StartsWith(variant));
 

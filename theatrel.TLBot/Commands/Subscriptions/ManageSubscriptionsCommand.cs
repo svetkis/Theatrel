@@ -29,7 +29,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
         {
         }
 
-        public override bool IsMessageCorrect(string message)
+        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message)
         {
             string trimMsg = message.Trim();
             if (string.Equals(trimMsg, DeleteAll, StringComparison.InvariantCultureIgnoreCase))

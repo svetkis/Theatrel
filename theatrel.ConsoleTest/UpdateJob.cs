@@ -55,7 +55,6 @@ namespace theatrel.ConsoleTest
 
                         Trace.TraceInformation($"Update playbill 1 for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
                         await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, cToken);
-                        await updater.UpdateAsync(2, filter.StartDate, filter.EndDate, cToken);
                     }
 
                     //we need to care about memory because heroku has memory limit for free app
