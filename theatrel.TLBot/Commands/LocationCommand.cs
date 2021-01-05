@@ -67,7 +67,7 @@ namespace theatrel.TLBot.Commands
             return parts.Select(ParseMessagePart).Where(idx => idx > -1).Select(idx => _types[idx]).ToArray();
         }
 
-        private string[] SplitMessage(string message)
+        private static string[] SplitMessage(string message)
             => message.Split(",")
             .Where(p => !string.IsNullOrWhiteSpace(p))
             .Select(s => s.Trim())
@@ -81,7 +81,7 @@ namespace theatrel.TLBot.Commands
             return CheckEnumerable(_types, messagePart);
         }
 
-        private int CheckEnumerable(string[] checkedData, string msg)
+        private static int CheckEnumerable(string[] checkedData, string msg)
         {
             var data = checkedData.Select((item, idx) => new { idx, item })
                 .FirstOrDefault(data => 0 == string.Compare(data.item, msg, StringComparison.OrdinalIgnoreCase));

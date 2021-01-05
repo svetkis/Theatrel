@@ -30,7 +30,7 @@ namespace theatrel.TLBot.Tests
 
             var playBillResolverMock = new Mock<IPlayBillDataResolver>();
             playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<int>(),It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(new IPerformanceData[0]));
+                .Returns(() => Task.FromResult(Array.Empty<IPerformanceData>()));
 
             await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
             {

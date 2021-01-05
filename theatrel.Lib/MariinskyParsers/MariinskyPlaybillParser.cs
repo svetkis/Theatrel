@@ -24,9 +24,6 @@ namespace theatrel.Lib.MariinskyParsers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                string day = GetClassValueFromAllChildren(row, "d");
-                int.TryParse(day, out _);
-
                 IElement spects = GetFirstClassFromAllChildren(row, Spects);
                 if (spects == null)
                     continue;
@@ -43,12 +40,6 @@ namespace theatrel.Lib.MariinskyParsers
             return performances.ToArray();
         }
 
-        private static string GetClassValueFromAllChildren(IElement element, string className)
-        {
-            var allElementChildren = element.QuerySelectorAll("*");
-            return allElementChildren.FirstOrDefault(m => m.ClassName == className)?.TextContent;
-        }
-
         private static IElement GetFirstClassFromAllChildren(IElement element, string[] classNames)
         {
             var allElementChildren = element.QuerySelectorAll("*");
@@ -59,7 +50,7 @@ namespace theatrel.Lib.MariinskyParsers
         private static readonly string[] Spects = { "col-md-10", "spects" };
 
         private static bool CheckClassList(IElement element, string[] tags)
-            => element.ClassList.Intersect(tags).Count() == tags.Count();
+            => element.ClassList.Intersect(tags).Count() == tags.Length;
 
         private static bool CheckClassListContains(IElement element, string[] tags)
             => tags.All(tag => element.ClassList.Contains(tag));

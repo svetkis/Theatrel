@@ -216,7 +216,7 @@ namespace theatrel.TLBot.Commands
             return RemoveWrongSubscriptionCommands(entriesList.ToArray(), sb);
         }
 
-        private SubscriptionEntry[] RemoveWrongSubscriptionCommands(SubscriptionEntry[] entriesList, StringBuilder sb)
+        private static SubscriptionEntry[] RemoveWrongSubscriptionCommands(SubscriptionEntry[] entriesList, StringBuilder sb)
         {
             if (!entriesList.Any())
                 return Array.Empty<SubscriptionEntry>();

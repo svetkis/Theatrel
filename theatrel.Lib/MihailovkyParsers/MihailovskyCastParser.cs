@@ -103,7 +103,7 @@ namespace theatrel.Lib.MihailovkyParsers
             return new PerformanceCast { State = CastState.TechnicalError };
         }
 
-        private IList<IActor> GetCastInfo(IElement[] allElementChildren)
+        private static IList<IActor> GetCastInfo(IElement[] allElementChildren)
         {
             IElement[] aTags = allElementChildren.Where(m => m.LocalName == "a").ToArray();
 
@@ -119,7 +119,7 @@ namespace theatrel.Lib.MihailovkyParsers
             return actors;
         }
 
-        private string ProcessUrl(IElement urlData)
+        private static string ProcessUrl(IElement urlData)
         {
             string url = urlData?.GetAttribute("href").Trim();
             if (string.IsNullOrEmpty(url) || url == CommonTags.JavascriptVoid)

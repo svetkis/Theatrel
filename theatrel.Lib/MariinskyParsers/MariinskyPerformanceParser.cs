@@ -62,7 +62,7 @@ namespace theatrel.Lib.MariinskyParsers
             }
         }
 
-        private string GetTicketsUrl(IElement ticketsTButton)
+        private static string GetTicketsUrl(IElement ticketsTButton)
         {
             string ticketsButtonContent = ticketsTButton?.TextContent.Trim();
 
@@ -75,7 +75,7 @@ namespace theatrel.Lib.MariinskyParsers
             };
         }
 
-        private string ProcessUrl(IHtmlCollection<IElement> urlData)
+        private static string ProcessUrl(IHtmlCollection<IElement> urlData)
         {
             if (!urlData.Any())
                 return CommonTags.NotDefinedTag;
@@ -87,7 +87,7 @@ namespace theatrel.Lib.MariinskyParsers
             return url.StartsWith("//") ? $"https:{url}" : url;
         }
 
-        private string ProcessSpectsUrl(IHtmlCollection<IElement> urlData)
+        private static string ProcessSpectsUrl(IHtmlCollection<IElement> urlData)
         {
             if (!urlData.Any())
                 return CommonTags.NotDefinedTag;
@@ -116,7 +116,7 @@ namespace theatrel.Lib.MariinskyParsers
                 {"Мариинский-2", "Мариинский-2" }
             }, true);
 
-        public string GetType(string[] types)
+        private static string GetType(string[] types)
         {
             foreach (var type in types)
             {
@@ -127,7 +127,7 @@ namespace theatrel.Lib.MariinskyParsers
             return types.Reverse().Skip(1).First();
         }
 
-        public string GetLocation(string location)
+        private static string GetLocation(string location)
             => PerformanceLocations.Value.ContainsKey(location) ? PerformanceLocations.Value[location] : location;
     }
 }

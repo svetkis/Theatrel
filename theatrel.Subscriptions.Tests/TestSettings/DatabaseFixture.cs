@@ -8,7 +8,7 @@ namespace theatrel.Subscriptions.Tests.TestSettings
 {
     public class DatabaseFixture : IDisposable
     {
-        public ILifetimeScope RootScope { get; }
+        public ILifetimeScope RootScope { get; private set; }
 
         public DatabaseFixture()
         {
@@ -33,6 +33,9 @@ namespace theatrel.Subscriptions.Tests.TestSettings
         public void Dispose()
         {
             RootScope.Dispose();
+            RootScope = null;
+
+            GC.SuppressFinalize(this);
         }
     }
 }

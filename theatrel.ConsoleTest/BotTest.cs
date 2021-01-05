@@ -22,7 +22,7 @@ namespace theatrel.ConsoleTest
         {
             await using var scope = await Setup();
             {
-                foreach (var i in Enumerable.Range(0, 1))
+                foreach (var unused in Enumerable.Range(0, 1))
                 {
                     await ProcessChats("прИвет", "апрель", "Нет!", "май", "Суббота", "нет", "понедельник", "кОнцерт",
                         "Подписаться на снижение цены");

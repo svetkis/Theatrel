@@ -13,8 +13,8 @@ namespace theatrel.TLBot.Tests.Settings
 {
     public class DatabaseFixture : IDisposable
     {
-        public AppDbContext Db { get; }
-        public ILifetimeScope RootScope { get; }
+        public AppDbContext Db { get; private set; }
+        public ILifetimeScope RootScope { get; private set; }
 
         public DatabaseFixture()
         {
@@ -30,7 +30,7 @@ namespace theatrel.TLBot.Tests.Settings
 
             var playBillResolverMock = new Mock<IPlayBillDataResolver>();
             playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<int>(), It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(new IPerformanceData[0]));
+                .Returns(() => Task.FromResult(Array.Empty<IPerformanceData>()));
 
             containerBuilder.RegisterInstance(playBillResolverMock.Object).As<IPlayBillDataResolver>().AsImplementedInterfaces();
             containerBuilder.RegisterModule<TlBotModule>();
@@ -42,7 +42,12 @@ namespace theatrel.TLBot.Tests.Settings
         public void Dispose()
         {
             RootScope.Dispose();
+            RootScope = null;
+
             Db.Dispose();
+            Db = null;
+
+            GC.SuppressFinalize(this);
         }
     }
 }

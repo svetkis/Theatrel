@@ -95,7 +95,7 @@ namespace theatrel.Lib.Playbill
             return filtered.ToArray();
         }
 
-        private async Task<string> Request(Theatre id, DateTime date, CancellationToken cancellationToken)
+        private static async Task<string> Request(Theatre id, DateTime date, CancellationToken cancellationToken)
         {
             string url = id switch
             {

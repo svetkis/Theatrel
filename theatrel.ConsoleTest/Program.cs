@@ -1,6 +1,4 @@
 ﻿using JetBrains.Profiler.Api;
-using Quartz;
-using Quartz.Impl;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -83,59 +81,5 @@ namespace theatrel.ConsoleTest
 
             //   Bootstrapper.Stop();
         }
-
-        private async Task ScheduleDataUpdates(CancellationToken cancellationToken)
-        {
-            string upgradeJobCron = Environment.GetEnvironmentVariable("UpdateJobSchedule");
-            if (string.IsNullOrWhiteSpace(upgradeJobCron))
-            {
-                Trace.TraceInformation("UpdateJobSchedule not found");
-                return;
-            }
-
-            string group = "updateJobGroup";
-
-            ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
-
-            IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
-            await scheduler.Start(cancellationToken);
-
-            IJobDetail job = JobBuilder.Create<UpdateJob>()
-                .WithIdentity("updateJob", group)
-                .Build();
-
-            ITrigger trigger = TriggerBuilder.Create()
-                .WithIdentity("updateJobTrigger", group)
-                .WithCronSchedule(upgradeJobCron, cron => { cron.InTimeZone(Bootstrapper.Resolve<ITimeZoneService>().TimeZone); })
-                .Build();
-
-            await scheduler.ScheduleJob(job, trigger, cancellationToken);
-
-            Trace.TraceInformation($"Update job {upgradeJobCron} was scheduled");
-        }
-
-        private static async Task ScheduleOneTimeDataUpdate(CancellationToken cancellationToken)
-        {
-            string group = "updateJobGroup2";
-
-            ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
-
-            IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
-            await scheduler.Start(cancellationToken);
-
-            IJobDetail job = JobBuilder.Create<UpdateJob>()
-                .WithIdentity("updateJobOnce", group)
-                .Build();
-
-            ITrigger trigger = TriggerBuilder.Create()
-                .WithIdentity("updateJobOnceTrigger", group)
-                .StartNow()
-                .Build();
-
-            await scheduler.ScheduleJob(job, trigger, cancellationToken);
-
-            Trace.TraceInformation($"Update job once was scheduled");
-        }
-
     }
 }

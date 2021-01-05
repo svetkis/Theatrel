@@ -94,7 +94,7 @@ namespace theatrel.Worker
             }
         }
 
-        private IPerformanceFilter[] AddFiltersForNearestMonths(IEnumerable<IPerformanceFilter> filters, int monthsCount)
+        private static IPerformanceFilter[] AddFiltersForNearestMonths(IEnumerable<IPerformanceFilter> filters, int monthsCount)
         {
             IFilterService filterService = Bootstrapper.Resolve<IFilterService>();
 
@@ -127,7 +127,7 @@ namespace theatrel.Worker
             return newFilters.ToArray();
         }
 
-        private int NormalizeMonth(int month)
+        private static int NormalizeMonth(int month)
         {
             int m = month % 12;
             return m == 0 ? 12 : m;
@@ -194,7 +194,7 @@ namespace theatrel.Worker
             }
         }
 
-        private async Task SendExceptionMessageToOwner(string jobName, Exception ex)
+        private static async Task SendExceptionMessageToOwner(string jobName, Exception ex)
         {
             if (long.TryParse(Environment.GetEnvironmentVariable("OwnerTelegramgId"), out var ownerId))
             {

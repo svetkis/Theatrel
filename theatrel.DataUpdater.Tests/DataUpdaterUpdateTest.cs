@@ -23,7 +23,7 @@ namespace theatrel.DataUpdater.Tests
         {
         }
 
-        private async Task<int> ConfigureDb(AppDbContext dbContext, string url, DateTime performanceDateTime)
+        private static async Task<int> ConfigureDb(AppDbContext dbContext, string url, DateTime performanceDateTime)
         {
             DateTime dt1 = performanceDateTime.AddDays(-3);
             DateTime dt2 = performanceDateTime.AddDays(-2);

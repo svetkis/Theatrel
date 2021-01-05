@@ -27,7 +27,7 @@ namespace theatrel.Subscriptions.Tests
             _fixture = fixture;
         }
 
-        private async Task<long[]> ConfigureDb(AppDbContext dbContext)
+        private static async Task<long[]> ConfigureDb(AppDbContext dbContext)
         {
             DateTime dt1 = DateTime.Now.AddDays(-3);
             DateTime dt2 = DateTime.Now.AddDays(-2);

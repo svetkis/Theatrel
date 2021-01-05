@@ -115,7 +115,7 @@ namespace theatrel.TLBot
             => await SendMessageAsync(chatId, new TgOutboundMessage(message) { IsEscaped = true }, cancellationToken);
 
         private const int MaxMessageSize = 4096;
-        private string[] SplitMessage(string message)
+        private static string[] SplitMessage(string message)
         {
             if (message.Length < MaxMessageSize || string.IsNullOrEmpty(message))
                 return new[] { message };

@@ -43,7 +43,7 @@ namespace theatrel.DataUpdater
             return true;
         }
 
-        private async Task ProcessData(IPerformanceData data, IPlaybillRepository playbillRepository)
+        private static async Task ProcessData(IPerformanceData data, IPlaybillRepository playbillRepository)
         {
             if (data.DateTime < DateTime.Now)
                 return;
@@ -113,7 +113,7 @@ namespace theatrel.DataUpdater
             });
         }
 
-        private ReasonOfChanges ComparePerformanceData(PlaybillChangeEntity lastChange, IPerformanceData freshData)
+        private static ReasonOfChanges ComparePerformanceData(PlaybillChangeEntity lastChange, IPerformanceData freshData)
         {
             switch (freshData.State)
             {
@@ -155,7 +155,7 @@ namespace theatrel.DataUpdater
             return ReasonOfChanges.NothingChanged;
         }
 
-        private ReasonOfChanges CompareCast(IPlaybillRepository playbillRepository, PlaybillEntity playbillEntity, IPerformanceData freshData)
+        private static ReasonOfChanges CompareCast(IPlaybillRepository playbillRepository, PlaybillEntity playbillEntity, IPerformanceData freshData)
         {
             switch (freshData.Cast.State)
             {

@@ -27,7 +27,7 @@ namespace theatrel.Subscriptions.Tests
             _fixture = fixture;
         }
 
-        public IDbService ConfigureDbService(params int[] months)
+        private static IDbService ConfigureDbService(params int[] months)
         {
             List<SubscriptionEntity> subscriptionEntities = new List<SubscriptionEntity>{new SubscriptionEntity
             {

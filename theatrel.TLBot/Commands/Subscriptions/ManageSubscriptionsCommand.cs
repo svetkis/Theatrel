@@ -44,7 +44,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
             return false;
         }
 
-        private int GetInt(string msg)
+        private static int GetInt(string msg)
         {
             if (int.TryParse(msg, out var value))
             {
@@ -54,7 +54,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
             return -1;
         }
 
-        private int[] GetInts(string msg)
+        private static int[] GetInts(string msg)
         {
             if (string.IsNullOrEmpty(msg))
                 return null;

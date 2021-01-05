@@ -31,7 +31,7 @@ namespace theatrel.Lib.Filters
             if (dataInfo.Days != null && dataInfo.Days.Any())
             {
                 var days = dataInfo.Days.Distinct().ToArray();
-                if (days.Count() < 7)
+                if (days.Length < 7)
                     filter.DaysOfWeek = days.ToArray();
             }
 
@@ -57,7 +57,7 @@ namespace theatrel.Lib.Filters
         public bool IsDataSuitable(IPerformanceData performance, IPerformanceFilter filter) =>
             IsDataSuitable(-1,performance.Name, performance.Location, performance.Type, performance.DateTime, filter);
 
-        private bool CheckLocation(string[] filterLocations, string location)
+        private static bool CheckLocation(string[] filterLocations, string location)
             => filterLocations == null || !filterLocations.Any() ||
                filterLocations.Select(l => l.ToLower()).Contains(location.ToLower());
 
