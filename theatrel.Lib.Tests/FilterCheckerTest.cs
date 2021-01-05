@@ -24,7 +24,7 @@ namespace theatrel.Lib.Tests
             filter.SetupGet(x => x.PerformanceName).Returns(string.Empty);
             filter.SetupGet(x => x.DaysOfWeek).Returns(filterDays);
             filter.SetupGet(x => x.PerformanceTypes).Returns(filterTypes);
-            filter.SetupGet(x => x.Locations).Returns(new string[0]);
+            filter.SetupGet(x => x.Locations).Returns(Array.Empty<string>());
             filter.SetupGet(x => x.StartDate).Returns(dt.AddDays(-2));
             filter.SetupGet(x => x.EndDate).Returns(dt.AddDays(2));
 

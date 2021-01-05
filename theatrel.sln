@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.DataAccess.Structu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.DataAccess.Tests", "theatrel.DataAccess.Tests\theatrel.DataAccess.Tests.csproj", "{59BD325A-AF6C-4AEA-B6DE-AC95223305AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "theatrel.ConsoleTest", "theatrel.ConsoleTest\theatrel.ConsoleTest.csproj", "{E8A498C3-009D-4ED4-9B00-1F898CB0C9AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "theatrel.ConsoleTest", "theatrel.ConsoleTest\theatrel.ConsoleTest.csproj", "{E8A498C3-009D-4ED4-9B00-1F898CB0C9AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

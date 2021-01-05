@@ -42,3 +42,5 @@
 /theatrel.ConsoleTest/bin
 /theatrel.ConsoleTest/obj
 /theatrel.ConsoleTest/Properties/launchSettings.json
+/theatrel.Worker/Properties/PublishProfiles/FolderProfile.pubxml
+/theatrel.Worker/Properties/PublishProfiles/*.user

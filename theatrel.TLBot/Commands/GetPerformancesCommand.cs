@@ -176,7 +176,7 @@ namespace theatrel.TLBot.Commands
         private SubscriptionEntry[] ParseSubscriptionsCommandLine(IChatDataInfo chatInfo, string commandLine, StringBuilder sb = null)
         {
             if (string.IsNullOrEmpty(chatInfo.Info))
-                return new SubscriptionEntry[0];
+                return Array.Empty<SubscriptionEntry>();
 
             string[] splitIds = chatInfo.Info.Split(',');
 
@@ -219,7 +219,7 @@ namespace theatrel.TLBot.Commands
         private SubscriptionEntry[] RemoveWrongSubscriptionCommands(SubscriptionEntry[] entriesList, StringBuilder sb)
         {
             if (!entriesList.Any())
-                return new SubscriptionEntry[0];
+                return Array.Empty<SubscriptionEntry>();
 
             List<SubscriptionEntry> wrongList = new List<SubscriptionEntry>();
             foreach (var entry in entriesList)
