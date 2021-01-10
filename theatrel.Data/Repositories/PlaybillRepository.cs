@@ -217,7 +217,7 @@ namespace theatrel.DataAccess.Repositories
 
         public bool IsCastEqual(PlaybillEntity playbillEntry, IPerformanceData data)
         {
-            var checkList = playbillEntry.Cast.Select(a => new CheckData { Exists = false, ActorInRole = a}).ToArray();
+            CheckData[] checkList = playbillEntry.Cast.Select(a => new CheckData { Exists = false, ActorInRole = a}).ToArray();
             foreach (KeyValuePair<string, IList<IActor>> castDataFresh in data.Cast.Cast)
             {
                 string character = castDataFresh.Key;

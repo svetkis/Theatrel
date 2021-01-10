@@ -12,7 +12,7 @@ namespace theatrel.ConsoleTest
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main()
         {
             Trace.Listeners.Add(new Trace2StdoutLogger());
 
@@ -36,7 +36,6 @@ namespace theatrel.ConsoleTest
                 MemoryProfiler.GetSnapshot("OnMessage");
             };
             tLBotProcessor.Start(tlBotService, cts.Token);
-
 
              for (int i = 0; i < 1; ++i)
              {
@@ -76,7 +75,10 @@ namespace theatrel.ConsoleTest
 
             while (true)
             {
-                await Task.Delay(10000, cts.Token);
+                await Task.Delay(100000, cts.Token);
+                GC.Collect();
+                MemoryProfiler.GetSnapshot("");
+
             }
 
             //   Bootstrapper.Stop();

@@ -33,29 +33,28 @@ namespace theatrel.Worker
         {
             Trace.TraceInformation("UpdateJob was started");
 
+            if (!await ProlongSubscriptions(context.CancellationToken))
+                return;
+
             MemoryHelper.LogMemoryUsage();
             if (!await UpdatePlaybill(context.CancellationToken))
                 return;
 
-            GC.Collect();
             MemoryHelper.LogMemoryUsage();
 
             if (!await ProcessSubscriptions(context.CancellationToken))
                 return;
 
-            GC.Collect();
             MemoryHelper.LogMemoryUsage();
 
             if (!await PlaybillCleanup(context.CancellationToken))
                 return;
 
-            GC.Collect();
             MemoryHelper.LogMemoryUsage();
 
             if (!await SubscriptionsCleanup(context.CancellationToken))
                 return;
 
-            GC.Collect();
             MemoryHelper.LogMemoryUsage();
 
             Trace.TraceInformation("UpdateJob was finished");
@@ -137,10 +136,10 @@ namespace theatrel.Worker
         {
             try
             {
-                Trace.TraceInformation("PlaybillCleanup CleanUp");
+                Trace.TraceInformation("PlaybillCleanup CleanUpOutDatedSubscriptions");
 
                 await using var scope = Bootstrapper.BeginLifetimeScope();
-                using IPlaybillCleanUpService cleanUpService = scope.Resolve<IPlaybillCleanUpService>();
+                IPlaybillCleanUpService cleanUpService = scope.Resolve<IPlaybillCleanUpService>();
                 await cleanUpService.CleanUp();
 
                 return true;
@@ -157,11 +156,31 @@ namespace theatrel.Worker
         {
             try
             {
-                Trace.TraceInformation("Subscriptions CleanUp");
+                Trace.TraceInformation("Subscriptions CleanUpOutDatedSubscriptions");
 
                 await using var scope = Bootstrapper.BeginLifetimeScope();
-                ISubscriptionsCleanupService cleanUpService = scope.Resolve<ISubscriptionsCleanupService>();
-                await cleanUpService.CleanUp();
+                ISubscriptionsUpdaterService cleanUpService = scope.Resolve<ISubscriptionsUpdaterService>();
+                await cleanUpService.CleanUpOutDatedSubscriptions();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await SendExceptionMessageToOwner("SubscriptionsCleanup", ex);
+                Trace.TraceError($"SubscriptionsCleanup failed {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> ProlongSubscriptions(CancellationToken cToken)
+        {
+            try
+            {
+                Trace.TraceInformation("Subscriptions CleanUpOutDatedSubscriptions");
+
+                await using var scope = Bootstrapper.BeginLifetimeScope();
+                ISubscriptionsUpdaterService subscriptionsUpdaterService = scope.Resolve<ISubscriptionsUpdaterService>();
+                await subscriptionsUpdaterService.ProlongSubscriptions();
 
                 return true;
             }

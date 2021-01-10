@@ -8,20 +8,19 @@ using theatrel.Interfaces.Subscriptions;
 
 namespace theatrel.Subscriptions
 {
-    internal class SubscriptionsCleanupService : ISubscriptionsCleanupService
+    internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
     {
         private readonly IDbService _dbService;
-        public SubscriptionsCleanupService(IDbService dbService)
+        public SubscriptionsUpdaterService(IDbService dbService)
         {
             _dbService = dbService;
         }
 
-        public async Task<bool> CleanUp()
+        public async Task<bool> CleanUpOutDatedSubscriptions()
         {
             using ISubscriptionsRepository repo = _dbService.GetSubscriptionRepository();
 
             IEnumerable<SubscriptionEntity> oldEntities = repo.GetOutdatedList().Distinct().ToArray();
-            var filters = oldEntities.Select(item => item.PerformanceFilter).Distinct().ToArray();
             bool result = true;
             foreach (SubscriptionEntity entity in oldEntities)
             {
@@ -30,6 +29,13 @@ namespace theatrel.Subscriptions
             }
 
             return result;
+        }
+
+        public Task<bool> ProlongSubscriptions()
+        {
+            using ISubscriptionsRepository repo = _dbService.GetSubscriptionRepository();
+
+            return repo.ProlongSubscriptions();
         }
     }
 }

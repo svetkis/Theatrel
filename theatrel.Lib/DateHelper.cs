@@ -10,6 +10,8 @@ namespace theatrel.Lib
             if (from > to)
                 return new DateTime[0];
 
+            to = to.AddSeconds(-1); // for skipping next month if date is only first day of month 00:00:00
+
             var monthDiff = Math.Abs(to.Year * 12 + (to.Month - 1) - (from.Year * 12 + (from.Month - 1)));
 
             List<DateTime> results = new List<DateTime>();

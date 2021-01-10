@@ -67,10 +67,37 @@ namespace theatrel.DataAccess.Repositories
             }
         }
 
+        public async Task<bool> ProlongSubscriptions()
+        {
+            SubscriptionEntity[] prolongationList = _dbContext.Subscriptions.Where(s => s.AutoProlongation > 0)
+                .Include(s => s.PerformanceFilter)
+                .AsNoTracking().ToArray();
+
+            if (!prolongationList.Any())
+                return true;
+
+            foreach (var item in prolongationList)
+            {
+                item.PerformanceFilter.EndDate = item.PerformanceFilter.StartDate.AddMonths(item.AutoProlongation);
+                _dbContext.Entry(item.PerformanceFilter).State = EntityState.Modified;
+            }
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Failed to prolong subscriptions {e.Message}");
+                return false;
+            }
+        }
+
         public IEnumerable<SubscriptionEntity> GetOutdatedList()
         {
             SubscriptionEntity[] outdatedByDate = _dbContext.Subscriptions.Where(s =>
-                s.PerformanceFilter.PlaybillId == -1 && null == s.PerformanceFilter.PerformanceName && s.PerformanceFilter.EndDate < DateTime.Now)
+                s.PerformanceFilter.PlaybillId == -1 && null == s.PerformanceFilter.PerformanceName && s.PerformanceFilter.EndDate < DateTime.Now && s.AutoProlongation == 0)
                 .Include(s => s.PerformanceFilter)
                 .AsNoTracking().ToArray();
 

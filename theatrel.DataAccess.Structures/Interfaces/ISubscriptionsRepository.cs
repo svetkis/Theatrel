@@ -17,6 +17,8 @@ namespace theatrel.DataAccess.Structures.Interfaces
 
         IEnumerable<SubscriptionEntity> GetOutdatedList();
 
+        Task<bool> ProlongSubscriptions();
+
         Task<SubscriptionEntity> Create(long userId, int reasonOfChange, IPerformanceFilter filter,
             CancellationToken cancellationToken);
 

@@ -149,10 +149,10 @@ namespace theatrel.ConsoleTest
         {
             try
             {
-                Trace.TraceInformation("PlaybillCleanup CleanUp");
+                Trace.TraceInformation("PlaybillCleanup CleanUpOutDatedSubscriptions");
 
                 await using var scope = Bootstrapper.RootScope.BeginLifetimeScope();
-                using IPlaybillCleanUpService cleanUpService = scope.Resolve<IPlaybillCleanUpService>();
+                IPlaybillCleanUpService cleanUpService = scope.Resolve<IPlaybillCleanUpService>();
                 await cleanUpService.CleanUp();
 
                 return true;
@@ -169,11 +169,11 @@ namespace theatrel.ConsoleTest
         {
             try
             {
-                Trace.TraceInformation("Subscriptions CleanUp");
+                Trace.TraceInformation("Subscriptions CleanUpOutDatedSubscriptions");
 
                 await using var scope = Bootstrapper.RootScope.BeginLifetimeScope();
-                ISubscriptionsCleanupService cleanUpService = scope.Resolve<ISubscriptionsCleanupService>();
-                await cleanUpService.CleanUp();
+                ISubscriptionsUpdaterService cleanUpService = scope.Resolve<ISubscriptionsUpdaterService>();
+                await cleanUpService.CleanUpOutDatedSubscriptions();
 
                 return true;
             }

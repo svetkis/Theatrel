@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using theatrel.DataAccess.DbService;
+using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.DataUpdater;
 
 namespace theatrel.DataUpdater
@@ -14,7 +15,7 @@ namespace theatrel.DataUpdater
 
         public async Task<bool> CleanUp()
         {
-            using var repo = _dbService.GetPlaybillRepository();
+            using IPlaybillRepository repo = _dbService.GetPlaybillRepository();
 
             var oldPlaybillEntities = repo.GetOutdatedList();
             bool result = true;
@@ -25,10 +26,6 @@ namespace theatrel.DataUpdater
             }
 
             return result;
-        }
-
-        public void Dispose()
-        {
         }
     }
 }
