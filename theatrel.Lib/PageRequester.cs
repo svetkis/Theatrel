@@ -47,8 +47,8 @@ namespace theatrel.Lib
                                 return response.Content;
 
                             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                            Encoding encoding = Encoding.GetEncoding("windows-1251");
-                            string result = Encoding.UTF8.GetString(Encoding.Convert(encoding, Encoding.UTF8, response.RawBytes))
+                            Encoding encoding1251 = Encoding.GetEncoding("windows-1251");
+                            string result = Encoding.UTF8.GetString(Encoding.Convert(encoding1251, Encoding.UTF8, response.RawBytes))
                                 .Replace("windows-1251", "utf-8");
 
                             return result;

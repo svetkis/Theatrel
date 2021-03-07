@@ -176,18 +176,19 @@ namespace theatrel.Worker
         {
             try
             {
-                Trace.TraceInformation("Subscriptions CleanUpOutDatedSubscriptions");
+                Trace.TraceInformation("ProlongSubscriptions");
 
                 await using var scope = Bootstrapper.BeginLifetimeScope();
                 ISubscriptionsUpdaterService subscriptionsUpdaterService = scope.Resolve<ISubscriptionsUpdaterService>();
+
                 await subscriptionsUpdaterService.ProlongSubscriptions();
 
                 return true;
             }
             catch (Exception ex)
             {
-                await SendExceptionMessageToOwner("SubscriptionsCleanup", ex);
-                Trace.TraceError($"SubscriptionsCleanup failed {ex.Message}");
+                await SendExceptionMessageToOwner("ProlongSubscriptions failed", ex);
+                Trace.TraceError($"ProlongSubscriptions failed {ex.Message}");
                 return false;
             }
         }

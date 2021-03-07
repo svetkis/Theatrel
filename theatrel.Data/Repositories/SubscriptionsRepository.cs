@@ -78,13 +78,13 @@ namespace theatrel.DataAccess.Repositories
 
             foreach (var item in prolongationList)
             {
-                item.PerformanceFilter.EndDate = item.PerformanceFilter.StartDate.AddMonths(item.AutoProlongation);
-                _dbContext.Entry(item.PerformanceFilter).State = EntityState.Modified;
+               //item.PerformanceFilter.EndDate = item.PerformanceFilter.StartDate.AddMonths(item.AutoProlongation);
+               // _dbContext.Entry(item.PerformanceFilter).State = EntityState.Modified;
             }
 
             try
             {
-                await _dbContext.SaveChangesAsync();
+                //await _dbContext.SaveChangesAsync();
                 return true;
             }
             catch (Exception e)
