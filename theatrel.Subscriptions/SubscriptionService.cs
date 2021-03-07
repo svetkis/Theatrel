@@ -27,7 +27,7 @@ namespace theatrel.Subscriptions
 
             var subscriptions = subscriptionRepository.GetAllWithFilter().ToArray();
             if (!subscriptions.Any())
-                return new IPerformanceFilter[0];
+                return Array.Empty<IPerformanceFilter>();
 
             List<IPerformanceFilter> mergedFilters = new List<IPerformanceFilter>();
             foreach (var subscription in subscriptions)
