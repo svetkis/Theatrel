@@ -46,7 +46,7 @@ namespace theatrel.DataAccess.Repositories
                 Trace.TraceInformation($"GetList subscription with filter DbException {ex.Message}");
             }
 
-            return new SubscriptionEntity[0];
+            return Array.Empty<SubscriptionEntity>();
         }
 
         private Task<SubscriptionEntity> GetById(int id)

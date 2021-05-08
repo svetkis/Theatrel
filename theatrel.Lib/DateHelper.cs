@@ -8,7 +8,7 @@ namespace theatrel.Lib
         public static DateTime[] GetMonthsBetween(this DateTime from, DateTime to)
         {
             if (from > to)
-                return new DateTime[0];
+                return Array.Empty<DateTime>();
 
             to = to.AddSeconds(-1); // for skipping next month if date is only first day of month 00:00:00
 
