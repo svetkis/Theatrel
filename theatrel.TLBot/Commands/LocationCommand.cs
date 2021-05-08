@@ -41,7 +41,8 @@ namespace theatrel.TLBot.Commands
         {
             chatInfo.Locations = ParseMessage(message);
 
-            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(null));
+            return Task.FromResult<ITgCommandResponse>(
+                new TgCommandResponse($"{YouSelected} {string.Join(", ", chatInfo.Locations)}. {ReturnMsg}", ReturnCommandMessage));
         }
 
         public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => SplitMessage(message).Any();
@@ -60,7 +61,14 @@ namespace theatrel.TLBot.Commands
 
         private string[] ParseMessage(string message)
         {
-            var parts = SplitMessage(message);
+            string[] parts = SplitMessage(message).ToArray();
+
+            if (parts.Any(p => int.TryParse(p, out int idx) && idx < _types.Length))
+            {
+                return parts.Where(p => int.TryParse(p, out int idx) && idx < _types.Length && idx > 0)
+                            .Select(p => _types[int.Parse(p) - 1]).ToArray();
+            }
+
             if (parts.Any(p => _every.Any(e => e.ToLower().Contains(p.ToLower()))))
                 return null;
 

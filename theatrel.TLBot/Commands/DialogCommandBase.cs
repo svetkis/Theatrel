@@ -12,6 +12,8 @@ namespace theatrel.TLBot.Commands
 {
     internal abstract class DialogCommandBase : IDialogCommand
     {
+        internal const string YouSelected = "Вы выбрали";
+
         protected const string ReturnMsg = "Для того что бы выбрать другой вариант напишите Нет.";
 
         protected const int ButtonsInLine = 3;

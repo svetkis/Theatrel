@@ -43,7 +43,6 @@ namespace theatrel.TLBot.Commands.SearchByDate
             };
         }
 
-        private const string YouSelected = "Вы выбрали";
         public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             var days = ParseMessage(message);
