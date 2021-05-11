@@ -101,6 +101,13 @@ namespace theatrel.TLBot
             }
             catch (Exception exception)
             {
+                if (exception.Message.Contains("Forbidden: bot was blocked by the user"))
+                {
+                    //ToDo clean up DB
+                    Trace.TraceInformation($"SendMessage: {chatId} failed. Bot was blocked by the user.");
+                    return true;
+                }
+
                 Trace.TraceInformation($"SendMessage: {chatId} {message} failed. Exception {exception.Message}{Environment.NewLine}{exception.StackTrace}");
                 return false;
             }

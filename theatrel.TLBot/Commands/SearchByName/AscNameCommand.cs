@@ -17,7 +17,6 @@ namespace theatrel.TLBot.Commands.SearchByName
         {
         }
 
-        private const string YouSelected = "Вы выбрали";
         public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
         {
             chatInfo.PerformanceName = message.Trim();
