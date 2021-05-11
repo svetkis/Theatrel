@@ -41,8 +41,9 @@ namespace theatrel.TLBot.Commands
         {
             chatInfo.Locations = ParseMessage(message);
 
+            var selected = chatInfo.Locations != null ? string.Join(" или ", chatInfo.Locations) : "любую площадку";
             return Task.FromResult<ITgCommandResponse>(
-                new TgCommandResponse($"{YouSelected} {string.Join(", ", chatInfo.Locations)}. {ReturnMsg}", ReturnCommandMessage));
+                new TgCommandResponse($"{YouSelected} {selected}. {ReturnMsg}", ReturnCommandMessage));
         }
 
         public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => SplitMessage(message).Any();
