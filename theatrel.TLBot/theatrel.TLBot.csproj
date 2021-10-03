@@ -11,7 +11,7 @@
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
     <PackageReference Include="Polly" Version="7.2.2" />
     <PackageReference Include="RestClient" Version="3.446.20952" />
-    <PackageReference Include="Telegram.Bot" Version="15.7.1" />
+    <PackageReference Include="Telegram.Bot" Version="16.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\theatrel.Data\theatrel.DataAccess.csproj" />
