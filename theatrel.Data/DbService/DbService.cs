@@ -15,7 +15,7 @@ namespace theatrel.DataAccess.DbService
             _optionsFactory = optionsFactory;
         }
 
-        public AppDbContext GetDbContext() => new AppDbContext(_optionsFactory.Get());
+        public AppDbContext GetDbContext() => new(_optionsFactory.Get());
 
         public ITgChatsRepository GetChatsRepository() => new TgChatsRepository(GetDbContext());
         public ITgUsersRepository GetUsersRepository() => new TgUsersRepository(GetDbContext());
