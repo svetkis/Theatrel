@@ -21,10 +21,9 @@ namespace theatrel.DataAccess.DbSettings
                 Username = userInfo[0],
                 Password = userInfo[1],
                 Database = databaseUri.LocalPath.TrimStart('/'),
-                //SslMode = SslMode.Require,
+                SslMode = SslMode.Require,
                 TrustServerCertificate = true,
-                KeepAlive = 300,
-                CommandTimeout = 300
+                KeepAlive = 300
             };
 
             return builder.ToString();
