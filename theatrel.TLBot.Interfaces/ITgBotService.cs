@@ -13,7 +13,7 @@ namespace theatrel.TLBot.Interfaces
         Task<bool> SendMessageAsync(long chatId, string message, CancellationToken cancellationToken);
         Task<bool> SendEscapedMessageAsync(long chatId, string message, CancellationToken cancellationToken);
 
-        void Start(CancellationToken cancellationToken);
+        void Start();
         void Stop();
     }
 }

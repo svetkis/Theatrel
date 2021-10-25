@@ -57,7 +57,7 @@ namespace theatrel.TLBot.Tests
 
             bool sent = false;
             var tgBotServiceMock = new Mock<ITgBotService>();
-            tgBotServiceMock.Setup(x => x.Start(CancellationToken.None)).Verifiable();
+            tgBotServiceMock.Setup(x => x.Start()).Verifiable();
             tgBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgCommandResponse>(), It.IsAny<CancellationToken>()))
                 .Callback(() => { sent = true; });
 

@@ -46,7 +46,7 @@ namespace theatrel.ConsoleTest
                 .Returns(() => performanceFilterMock.Object);
 
             _tgBotServiceMock = new Mock<ITgBotService>();
-            _tgBotServiceMock.Setup(x => x.Start(CancellationToken.None)).Verifiable();
+            _tgBotServiceMock.Setup(x => x.Start()).Verifiable();
             _tgBotServiceMock.Setup(x => x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgCommandResponse>(), It.IsAny<CancellationToken>()))
                 .Callback(() => { _isSent = true; });
 

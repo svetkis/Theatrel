@@ -7,19 +7,22 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Telegram.Bot;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.Common.FormatHelper;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Extensions.Polling;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InlineQueryResults;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace theatrel.TLBot
 {
     internal class TgBotService : ITgBotService
     {
         private readonly ITelegramBotClient _botClient;
+        private CancellationTokenSource _cst;
 
         public event EventHandler<ITgInboundMessage> OnMessage;
 
@@ -35,39 +38,80 @@ namespace theatrel.TLBot
             }
         }
 
-        public void Start(CancellationToken cancellationToken)
+        public void Start()
         {
-            Trace.TraceInformation("Start TgBotService");
+            Trace.TraceInformation("TgBotService is starting");
 
-            _botClient.OnMessage += BotOnMessage;
-            _botClient.OnCallbackQuery += BotOnCallbackQuery;
+            _cst = new CancellationTokenSource();
+            _botClient.StartReceiving(new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync), _cst.Token);
 
-            if (_botClient.IsReceiving)
-                return;
-
-            Trace.TraceInformation("TLBot StartReceiving");
-            _botClient.StartReceiving(new[] { UpdateType.Message }, cancellationToken);
+            Trace.TraceInformation("TLBot Started");
         }
 
         public void Stop()
         {
-            if (!_botClient.IsReceiving)
-                return;
-
-            Trace.TraceInformation("TLBot StopReceiving");
-            _botClient.StopReceiving();
+            _cst.Cancel();
         }
 
-        private void BotOnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
+        private Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
+            switch(update.Type)
+            {
+                // UpdateType.Unknown:
+                // UpdateType.ChannelPost:
+                // UpdateType.EditedChannelPost:
+                // UpdateType.ShippingQuery:
+                // UpdateType.PreCheckoutQuery:
+                // UpdateType.Poll:
+                case UpdateType.Message:
+                    BotOnMessageReceived(botClient, update.Message);
+                    break;
+                case UpdateType.EditedMessage:
+                    BotOnMessageReceived(botClient, update.EditedMessage);
+                    break;
+                //UpdateType.CallbackQuery => BotOnCallbackQueryReceived(botClient, update.CallbackQuery),
+                case UpdateType.InlineQuery:
+                    //BotOnInlineQueryReceived(botClient, update.InlineQuery);
+                    break;
+                //UpdateType.ChosenInlineResult => BotOnChosenInlineResultReceived(botClient, update.ChosenInlineResult),
+            };
+
+            return Task.FromResult(true);
         }
 
-        private void BotOnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
+        private static async Task BotOnInlineQueryReceived(ITelegramBotClient botClient, InlineQuery inlineQuery)
         {
-            if (e.Message.Text == null) //as example messages about adding bot to channel
+            Console.WriteLine($"Received inline query from: {inlineQuery.From.Id}");
+
+            InlineQueryResultBase[] results = {
+                // displayed result
+                new InlineQueryResultArticle(
+                    id: "3",
+                    title: "TgBots",
+                    inputMessageContent: new InputTextMessageContent(
+                        "hello"
+                    )
+                )
+            };
+
+            await botClient.AnswerInlineQueryAsync(
+                inlineQueryId: inlineQuery.Id,
+                results: results,
+                isPersonal: true,
+                cacheTime: 0);
+        }
+
+        private Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(1);
+        }
+
+        private void BotOnMessageReceived(ITelegramBotClient botClient, Message message)
+        {
+            if (message.Text == null) //as example messages about adding bot to channel
                 return;
 
-            OnMessage?.Invoke(sender, new TgInboundMessage {ChatId = e.Message.Chat.Id, Message = e.Message.Text.Trim()});
+            OnMessage?.Invoke(botClient, new TgInboundMessage { ChatId = message.Chat.Id, Message = message.Text.Trim() });
         }
 
         public async Task<bool> SendMessageAsync(long chatId, ITgOutboundMessage message, CancellationToken cancellationToken)

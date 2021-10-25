@@ -47,3 +47,4 @@
 /theatrel.Worker/Properties/PublishProfiles/FolderProfile.pubxml
 /theatrel.Worker/Properties/PublishProfiles/*.user
 /Backup
+/theatrel.Data/Properties/launchSettings.json

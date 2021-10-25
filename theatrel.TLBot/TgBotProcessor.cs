@@ -39,7 +39,7 @@ namespace theatrel.TLBot
 
             _botService = botService;
             _botService.OnMessage += OnMessage;
-            _botService.Start(cancellationToken);
+            _botService.Start();
         }
 
         public void Stop()

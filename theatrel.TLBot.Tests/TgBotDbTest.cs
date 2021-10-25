@@ -24,7 +24,7 @@ namespace theatrel.TLBot.Tests
         public async Task ParallelWritingToDb()
         {
             var tgBotServiceMock = new Mock<ITgBotService>();
-            tgBotServiceMock.Setup(x => x.Start(CancellationToken.None)).Verifiable();
+            tgBotServiceMock.Setup(x => x.Start()).Verifiable();
             tgBotServiceMock.Setup(x =>
                 x.SendMessageAsync(It.IsAny<long>(), It.IsAny<ITgCommandResponse>(), It.IsAny<CancellationToken>())).Verifiable();
 

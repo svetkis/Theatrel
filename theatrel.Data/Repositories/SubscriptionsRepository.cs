@@ -67,14 +67,14 @@ namespace theatrel.DataAccess.Repositories
             }
         }
 
-        public async Task<bool> ProlongSubscriptions()
+        public Task<bool> ProlongSubscriptions()
         {
             SubscriptionEntity[] prolongationList = _dbContext.Subscriptions.Where(s => s.AutoProlongation > 0)
                 .Include(s => s.PerformanceFilter)
                 .AsNoTracking().ToArray();
 
             if (!prolongationList.Any())
-                return true;
+                return Task.FromResult(true);
 
             foreach (var item in prolongationList)
             {
@@ -85,12 +85,12 @@ namespace theatrel.DataAccess.Repositories
             try
             {
                 //await _dbContext.SaveChangesAsync();
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Failed to prolong subscriptions {e.Message}");
-                return false;
+                return Task.FromResult(false);
             }
         }
 
@@ -108,7 +108,7 @@ namespace theatrel.DataAccess.Repositories
             if (!byPlaybillId.Any())
                 return outdatedByDate;
 
-            List<SubscriptionEntity> outdatedList = new List<SubscriptionEntity>(outdatedByDate);
+            List<SubscriptionEntity> outdatedList = new (outdatedByDate);
             foreach (var subscription in byPlaybillId)
             {
                 var pb = _dbContext.Playbill.Where(p => p.Id == subscription.PerformanceFilter.PlaybillId)

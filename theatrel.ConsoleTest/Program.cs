@@ -30,11 +30,7 @@ namespace theatrel.ConsoleTest
 
             var tLBotProcessor = Bootstrapper.Resolve<ITgBotProcessor>();
             var tlBotService = Bootstrapper.Resolve<ITgBotService>();
-            tlBotService.OnMessage += (sender, message) =>
-            {
-                GC.Collect();
-                MemoryProfiler.GetSnapshot("OnMessage");
-            };
+
             tLBotProcessor.Start(tlBotService, cts.Token);
 
              for (int i = 0; i < 1; ++i)

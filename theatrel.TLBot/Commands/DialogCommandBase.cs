@@ -43,7 +43,7 @@ namespace theatrel.TLBot.Commands
 
         protected KeyboardButton[][] GroupKeyboardButtons(int maxCount, params IEnumerable<KeyboardButton>[] buttons)
         {
-            List<List<KeyboardButton>> groupedButtons = new List<List<KeyboardButton>> { new List<KeyboardButton>() };
+            List<List<KeyboardButton>> groupedButtons = new List<List<KeyboardButton>> { new() };
             foreach (var buttonsEnumerable in buttons)
             {
                 foreach (var keyboardButton in buttonsEnumerable)
