@@ -8,7 +8,7 @@
     <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="0.16.0" />
+    <PackageReference Include="AngleSharp" Version="0.16.1" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
     <PackageReference Include="Polly" Version="7.2.2" />
     <PackageReference Include="RestSharp" Version="106.12.0" />

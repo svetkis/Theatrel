@@ -41,6 +41,9 @@
 /theatrel.DataAccess.Tests/obj
 /theatrel.ConsoleTest/bin
 /theatrel.ConsoleTest/obj
+/theatrel.Storage/obj
+/theatrel.Storage/bin
 /theatrel.ConsoleTest/Properties/launchSettings.json
 /theatrel.Worker/Properties/PublishProfiles/FolderProfile.pubxml
 /theatrel.Worker/Properties/PublishProfiles/*.user
+/Backup

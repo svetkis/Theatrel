@@ -10,8 +10,8 @@
     <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="6.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.7">
+    <PackageReference Include="Autofac" Version="6.3.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

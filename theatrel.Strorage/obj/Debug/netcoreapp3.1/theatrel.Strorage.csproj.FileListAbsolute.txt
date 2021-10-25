@@ -1,4 +1,0 @@
-C:\Projects\GitHub\Theatrel\theatrel.Strorage\bin\Debug\netcoreapp3.1\theatrel.Strorage.deps.json
-C:\Projects\GitHub\Theatrel\theatrel.Strorage\bin\Debug\netcoreapp3.1\theatrel.Strorage.dll
-C:\Projects\GitHub\Theatrel\theatrel.Strorage\obj\Debug\netcoreapp3.1\theatrel.Strorage.AssemblyInfoInputs.cache
-C:\Projects\GitHub\Theatrel\theatrel.Strorage\obj\Debug\netcoreapp3.1\theatrel.Strorage.AssemblyInfo.cs
