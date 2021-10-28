@@ -19,7 +19,7 @@ namespace theatrel.Worker
             // look for .NET Garbage Collection events
             if (eventSource.Name.Equals("Microsoft-Windows-DotNETRuntime"))
             {
-                EnableEvents(eventSource, EventLevel.Verbose, (EventKeywords)(GC_KEYWORD | GCHEAPANDTYPENAMES_KEYWORD | TYPE_KEYWORD));
+                EnableEvents(eventSource, EventLevel.Informational, (EventKeywords)(GC_KEYWORD | GCHEAPANDTYPENAMES_KEYWORD | TYPE_KEYWORD));
             }
         }
 
