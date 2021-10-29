@@ -4,13 +4,13 @@ using System.Diagnostics.Tracing;
 
 namespace theatrel.Worker
 {
-    internal sealed class GSEventListener : EventListener
+    internal sealed class GarbageCollectorEventListener : EventListener
     {
         //https://docs.microsoft.com/en-us/dotnet/framework/performance/garbage-collection-etw-events
 
-        private const int GC_KEYWORD = 0x0000001;
-        private const int TYPE_KEYWORD = 0x0080000;
-        private const int GCHEAPANDTYPENAMES_KEYWORD = 0x1000000;
+        private const int GcKeyword = 0x0000001;
+        private const int TypeKeyword = 0x0080000;
+        private const int GcHeapAndTypeNamesKeyword = 0x1000000;
 
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
@@ -19,7 +19,7 @@ namespace theatrel.Worker
             // look for .NET Garbage Collection events
             if (eventSource.Name.Equals("Microsoft-Windows-DotNETRuntime"))
             {
-                EnableEvents(eventSource, EventLevel.Informational, (EventKeywords)(GC_KEYWORD | GCHEAPANDTYPENAMES_KEYWORD | TYPE_KEYWORD));
+                EnableEvents(eventSource, EventLevel.Informational, (EventKeywords)(GcKeyword | GcHeapAndTypeNamesKeyword | TypeKeyword));
             }
         }
 
@@ -27,7 +27,7 @@ namespace theatrel.Worker
         // Called whenever an event is written.
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
-            Trace.TraceInformation($"GS Event: {eventData.EventName}");
+            Trace.TraceInformation($"GS Event: {eventData.EventName} {eventData.Message}");
         }
     }
 }

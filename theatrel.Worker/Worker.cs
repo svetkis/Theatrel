@@ -17,7 +17,7 @@ namespace theatrel.Worker
     {
         private readonly ILogger<Worker> _logger;
         private ITgBotProcessor _tLBotProcessor;
-        private GSEventListener _listener;
+        private GarbageCollectorEventListener _listener;
 
         public Worker(ILogger<Worker> logger)
         {
@@ -31,7 +31,7 @@ namespace theatrel.Worker
 
             Trace.Listeners.Add(new Trace2StdoutLogger());
 
-            _listener = new GSEventListener();
+            _listener = new GarbageCollectorEventListener();
 
             Trace.TraceInformation("Worker.StartAsync");
 
