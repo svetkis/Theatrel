@@ -14,7 +14,7 @@ namespace theatrel.Worker
 
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
-            Console.WriteLine($"{eventSource.Guid} | {eventSource.Name}");
+            //Console.WriteLine($"{eventSource.Guid} | {eventSource.Name}");
 
             // look for .NET Garbage Collection events
             if (eventSource.Name.Equals("Microsoft-Windows-DotNETRuntime"))
@@ -27,7 +27,32 @@ namespace theatrel.Worker
         // Called whenever an event is written.
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
-            Trace.TraceInformation($"GS Event: {eventData.EventName} {eventData.Message}");
+
+            switch (eventData.EventName)
+            {
+                case "GCHeapStats_V1":
+                    ProcessHeapStats(eventData);
+                    break;
+                case "GCAllocationTick_V3":
+                    ProcessAllocationEvent(eventData);
+                    break;
+            }
+            
+        }
+
+        private void ProcessAllocationEvent(EventWrittenEventArgs eventData)
+        {
+            Trace.TraceInformation($"GS Event: {eventData.EventName} AllocatedMemory {(ulong)eventData.Payload[3]} {(string)eventData.Payload[5]}");
+        }
+
+        private void ProcessHeapStats(EventWrittenEventArgs eventData)
+        {
+            Trace.TraceInformation($"GS Event: {eventData.EventName}");
+
+            Trace.TraceInformation($"Gen0 Size {(ulong)eventData.Payload[0]} Gen0 Promoted {(ulong)eventData.Payload[1]}");
+            Trace.TraceInformation($"Gen1 Size {(ulong)eventData.Payload[2]} Gen1 Promoted {(ulong)eventData.Payload[3]}");
+            Trace.TraceInformation($"Gen2 Size {(ulong)eventData.Payload[4]} Gen2 Survived {(ulong)eventData.Payload[5]}");
+            Trace.TraceInformation($"LOH Size {(ulong)eventData.Payload[6]} LOH Survived {(ulong)eventData.Payload[7]}");
         }
     }
 }
