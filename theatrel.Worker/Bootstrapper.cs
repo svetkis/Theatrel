@@ -47,7 +47,7 @@ namespace theatrel.Worker
             if (RootScope == null)
                 throw new Exception("Bootstrapper hasn't been started!");
 
-            return RootScope.Resolve<T>(new Parameter[0]);
+            return RootScope.Resolve<T>(Array.Empty<Parameter>());
         }
 
         public static T Resolve<T>(Parameter[] parameters)

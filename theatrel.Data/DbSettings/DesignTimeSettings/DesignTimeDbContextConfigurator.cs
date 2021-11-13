@@ -16,7 +16,7 @@ namespace theatrel.DataAccess.DbSettings.DesignTimeSettings
                 Port = 5432,
                 Username = "postgres",
                 Password = "",
-                Database = "TheatrelTest"
+                Database = "theatrel"
             }.ToString();
         }
     }
