@@ -99,11 +99,11 @@ namespace theatrel.Worker
 
             List<int> addedMonths = new List<int>();
             var performanceFilters = filters as IPerformanceFilter[] ?? filters.ToArray();
-            foreach (var month in Enumerable.Range(0, monthsCount).Select(n => DateTime.Now.Month + n))
+            foreach (var month in Enumerable.Range(0, monthsCount).Select(n => DateTime.UtcNow.Month + n))
             {
                 int m = NormalizeMonth(month);
-                int y = month > 12 ? DateTime.Now.Year + 1 : DateTime.Now.Year;
-                var date = new DateTime(y, m, 1);
+                int y = month > 12 ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
+                var date = new DateTime(y, m, 1, 0, 0, 0, DateTimeKind.Utc);
                 if (performanceFilters.All(f => f.StartDate != date))
                     addedMonths.Add(month);
             }
@@ -117,8 +117,8 @@ namespace theatrel.Worker
             {
                 int m = NormalizeMonth(month);
 
-                int y = month > 12 ? DateTime.Now.Year + 1 : DateTime.Now.Year;
-                var date = new DateTime(y, m, 1);
+                int y = month > 12 ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
+                var date = new DateTime(y, m, 1, 0, 0, 0, DateTimeKind.Utc);
 
                 newFilters.Add(filterService.GetFilter(date, date.AddMonths(1)));
             }

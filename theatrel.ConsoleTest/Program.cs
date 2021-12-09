@@ -47,7 +47,7 @@ namespace theatrel.ConsoleTest
                  if (!await job.UpdateMichailovskyPlaybill(cts.Token))
                      return;
 
-                Trace.TraceInformation("Before ProcessSubscriptions");
+                 Trace.TraceInformation("Before ProcessSubscriptions");
                  GC.Collect();
                  MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
 

@@ -37,7 +37,7 @@ namespace theatrel.DataAccess.Repositories
         {
             try
             {
-                var entity = new ChatInfoEntity { UserId = chatId, Culture = culture };
+                var entity = new ChatInfoEntity { UserId = chatId, Culture = culture, LastMessage = DateTime.UtcNow };
                 _dbContext.TlChats.Add(entity);
                 await _dbContext.SaveChangesAsync(cancellationToken);
 

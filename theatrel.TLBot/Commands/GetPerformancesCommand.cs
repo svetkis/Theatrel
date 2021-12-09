@@ -40,13 +40,11 @@ namespace theatrel.TLBot.Commands
             _filterService = filterService;
             _timeZoneService = timeZoneService;
 
-            CommandKeyboardMarkup = new ReplyKeyboardMarkup
-            {
-                Keyboard = GroupKeyboardButtons(1, new[]
-                {
+            CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(1, new[] {
                     new KeyboardButton(DecreasePriceSubscription),
                     new KeyboardButton(No),
-                }),
+                }))
+            {
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             };
@@ -112,9 +110,8 @@ namespace theatrel.TLBot.Commands
 
             buttons.Add(new KeyboardButton(No));
 
-            var keys = new ReplyKeyboardMarkup
+            var keys = new ReplyKeyboardMarkup(GroupKeyboardButtons(1, buttons))
             {
-                Keyboard = GroupKeyboardButtons(1, buttons),
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             };
@@ -157,9 +154,11 @@ namespace theatrel.TLBot.Commands
                 SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.UserId, trackingChanges,
                     _filterService.GetFilter(entry.PlaybillEntryId), cancellationToken);
 
+                var when = _timeZoneService.GetLocalTime(entry.When);
+
                 sb.AppendLine(subscription != null
-                    ? $"Успешно добавлена подписка на {entry.When.AddHours(3):ddMMM HH:mm} {entry.Name}"
-                    : $"Не вышло добавить подписку на {entry.When.AddHours(3):ddMMM HH:mm} {entry.Name}");
+                    ? $"Успешно добавлена подписка на {when:ddMMM HH:mm} {entry.Name}"
+                    : $"Не вышло добавить подписку на {when:ddMMM HH:mm} {entry.Name}");
             }
 
             return new TgCommandResponse(sb.ToString());
@@ -216,7 +215,7 @@ namespace theatrel.TLBot.Commands
             return RemoveWrongSubscriptionCommands(entriesList.ToArray(), sb);
         }
 
-        private static SubscriptionEntry[] RemoveWrongSubscriptionCommands(SubscriptionEntry[] entriesList, StringBuilder sb)
+        private SubscriptionEntry[] RemoveWrongSubscriptionCommands(SubscriptionEntry[] entriesList, StringBuilder sb)
         {
             if (!entriesList.Any())
                 return Array.Empty<SubscriptionEntry>();
@@ -233,7 +232,9 @@ namespace theatrel.TLBot.Commands
 
                 if (entry.SubscriptionType < 1 || entry.SubscriptionType > 4)
                 {
-                    sb?.AppendLine($"Неправильный код подписки {entry.SubscriptionType} для спектакля {entry.When.AddHours(3):ddMMM HH:mm} {entry.Name}");
+                    var when = _timeZoneService.GetLocalTime(entry.When);
+
+                    sb?.AppendLine($"Неправильный код подписки {entry.SubscriptionType} для спектакля {when:ddMMM HH:mm} {entry.Name}");
                     wrongList.Add(entry);
                 }
             }
@@ -252,7 +253,7 @@ namespace theatrel.TLBot.Commands
             {
                 var pbEntity = playbillRepository.GetWithName(entry.PlaybillEntryId);
                 entry.Name = pbEntity?.Performance.Name;
-                entry.When = pbEntity?.When ?? new DateTime();
+                entry.When = pbEntity?.When ?? DateTime.UtcNow;
             }
         }
 
@@ -310,7 +311,7 @@ namespace theatrel.TLBot.Commands
 
             int i = 0;
             StringBuilder savedInfo = new StringBuilder();
-            foreach (PlaybillEntity item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.Now))
+            foreach (PlaybillEntity item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.UtcNow))
             {
                 if (!item.Changes.Any())
                     continue;
@@ -321,9 +322,7 @@ namespace theatrel.TLBot.Commands
 
                 int minPrice = lastChange.MinPrice;
 
-                DateTime dt = item.When.Kind == DateTimeKind.Utc
-                    ? TimeZoneInfo.ConvertTimeFromUtc(item.When, _timeZoneService.TimeZone)
-                    : item.When.AddHours(3);
+                DateTime dt = _timeZoneService.GetLocalTime(item.When);
 
                 string firstPart = $"{dt.ToString("ddMMM HH:mm", cultureRu)} {item.Performance.Location.Name} {item.Performance.Type.TypeName}"
                     .EscapeMessageForMarkupV2();

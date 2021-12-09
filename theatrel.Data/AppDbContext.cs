@@ -1,10 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System;
 using theatrel.DataAccess.Structures.Entities;
 
 namespace theatrel.DataAccess
 {
     public class AppDbContext : DbContext
     {
+        private static double _timeZoneOffSet = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalHours;
+
         public DbSet<TelegramUserEntity> TlUsers { get; set; } = null!;
         public DbSet<ChatInfoEntity> TlChats { get; set; } = null!;
         public DbSet<PerformanceEntity> Performances { get; set; } = null!;
@@ -23,9 +27,45 @@ namespace theatrel.DataAccess
         {
         }
 
+        private DateTime ConvertDateTime(DateTime value)
+        {
+            return value.ToUniversalTime().AddHours(-_timeZoneOffSet);
+        }
+
+        private DateTime ConvertDateTimeBack(DateTime value)
+        {
+            return DateTime.SpecifyKind(value, DateTimeKind.Utc);
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ActorInRoleEntity>().HasKey(actorInRole => new { actorInRole.ActorId, actorInRole.RoleId, actorInRole.PlaybillId });
+
+            var dateTimeConverter = new ValueConverter<DateTime, DateTime>(v => ConvertDateTime(v), v => ConvertDateTimeBack(v));
+
+            var nullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
+                v => v.HasValue ? v.Value.ToUniversalTime() : v,
+                v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (entityType.IsKeyless)
+                {
+                    continue;
+                }
+
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime))
+                    {
+                        property.SetValueConverter(dateTimeConverter);
+                    }
+                    else if (property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(nullableDateTimeConverter);
+                    }
+                }
+            }
         }
     }
 }

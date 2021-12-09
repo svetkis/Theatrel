@@ -57,7 +57,7 @@ namespace theatrel.Subscriptions
 
                     int year = playbillEntry.When.Year;
                     int month = playbillEntry.When.Month;
-                    startDate = new DateTime(year, month, 1);
+                    startDate = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
                     endDate = startDate.AddMonths(1);
                 }
 

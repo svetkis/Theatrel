@@ -32,20 +32,20 @@ namespace theatrel.Subscriptions.Tests
             List<SubscriptionEntity> subscriptionEntities = new List<SubscriptionEntity>{new SubscriptionEntity
             {
                 TelegramUserId = 1,
-                LastUpdate = DateTime.Now.AddDays(-1),
+                LastUpdate = DateTime.UtcNow.AddDays(-1),
                 PerformanceFilter = new PerformanceFilterEntity { PlaybillId = 100 },
                 TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
             }};
 
             foreach (var month in months.Skip(1))
             {
-                DateTime startDate = new DateTime(2020, month, 1);
+                DateTime startDate = new DateTime(2020, month, 1, 0, 0, 0, DateTimeKind.Utc);
                 DateTime endDateTime = startDate.AddMonths(1);
 
                 subscriptionEntities.Add(new SubscriptionEntity
                 {
                     TelegramUserId = 2,
-                    LastUpdate = DateTime.Now,
+                    LastUpdate = DateTime.UtcNow,
                     PerformanceFilter = new PerformanceFilterEntity { StartDate = startDate, EndDate = endDateTime },
                     TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
                 });
@@ -57,7 +57,7 @@ namespace theatrel.Subscriptions.Tests
             var playbillRepo = new Mock<IPlaybillRepository>();
             playbillRepo.Setup(x => x.Get(It.IsAny<int>())).Returns(new PlaybillEntity()
             {
-                When = new DateTime(2020, months.First(), 1)
+                When = new DateTime(2020, months.First(), 1, 0, 0, 0, DateTimeKind.Utc)
             });
 
             var dbService = new Mock<IDbService>();
@@ -103,12 +103,12 @@ namespace theatrel.Subscriptions.Tests
                 new SubscriptionEntity
                 {
                     TelegramUserId = 1,
-                    LastUpdate = DateTime.Now,
+                    LastUpdate = DateTime.UtcNow,
                     PerformanceFilter = new PerformanceFilterEntity
                     {
                         PlaybillId = -1,
-                        StartDate = new DateTime(2020,9,1),
-                        EndDate = new DateTime(2020,11,15)
+                        StartDate = new DateTime(2020,9,1, 0, 0, 0, DateTimeKind.Utc),
+                        EndDate = new DateTime(2020,11,15, 0, 0, 0, DateTimeKind.Utc)
                     },
                     TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
                 }

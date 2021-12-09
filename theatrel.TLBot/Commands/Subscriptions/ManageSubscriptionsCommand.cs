@@ -10,6 +10,7 @@ using theatrel.Common.FormatHelper;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.TgBot;
+using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
@@ -20,13 +21,15 @@ namespace theatrel.TLBot.Commands.Subscriptions
         private const string DeleteAll = "Удалить все";
         private const string DeleteMany = "Удалить";
         private const string NothingTodo = "Оставить как есть";
+        private readonly ITimeZoneService _timeZoneService;
 
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
 
         public override string Name => "Редактировать подписки";
 
-        public ManageSubscriptionsCommand(IDbService dbService) : base(dbService)
+        public ManageSubscriptionsCommand(IDbService dbService, ITimeZoneService timeZoneService) : base(dbService)
         {
+            _timeZoneService = timeZoneService;
         }
 
         public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message)
@@ -168,7 +171,7 @@ namespace theatrel.TLBot.Commands.Subscriptions
                         stringBuilder.AppendLine($" {i + 1}. Подписка на уже прошедший спектакль, отслеживаемые события: {changesDescription}");
                     else
                     {
-                        var date = playbillEntry.When.AddHours(3).ToString("ddMMM HH:mm", culture);
+                        var date = _timeZoneService.GetLocalTime(playbillEntry.When).ToString("ddMMM HH:mm", culture);
                         stringBuilder.AppendLine($" {i + 1}. {playbillEntry.Performance.Name} {date}, отслеживаемые события: {changesDescription}");
                     }
                 }
@@ -178,9 +181,10 @@ namespace theatrel.TLBot.Commands.Subscriptions
 
             stringBuilder.AppendLine(" Что бы удалить несколько подписок напишите текстом Удалить и номера через запятую, например Удалить 1,2,3");
 
-            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse($"{stringBuilder}", new ReplyKeyboardMarkup
+            return Task.FromResult<ITgCommandResponse>(
+                new TgCommandResponse($"{stringBuilder}",
+                new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons, new[] { new KeyboardButton(DeleteAll), new KeyboardButton(NothingTodo)}))
             {
-                Keyboard = GroupKeyboardButtons(ButtonsInLine, buttons, new[] { new KeyboardButton(DeleteAll), new KeyboardButton(NothingTodo), }),
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             }));

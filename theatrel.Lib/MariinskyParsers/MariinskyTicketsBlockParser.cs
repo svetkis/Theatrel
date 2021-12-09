@@ -73,7 +73,7 @@ namespace theatrel.Lib.MariinskyParsers
             if (!tickets.Any())
                 performanceTickets.State = TicketsState.TechnicalError;
 
-            performanceTickets.LastUpdate = DateTime.Now;
+            performanceTickets.LastUpdate = DateTime.UtcNow;
 
             return performanceTickets;
         }

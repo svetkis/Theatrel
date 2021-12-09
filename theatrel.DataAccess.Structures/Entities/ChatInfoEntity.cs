@@ -20,7 +20,7 @@ namespace theatrel.DataAccess.Structures.Entities
 
         public string Info { get; set; }
 
-        public DateTime When { get; set; }
+        public DateTime When { get; set; } = DateTime.UtcNow;
 
         [NotMapped]
         public DayOfWeek[] Days
@@ -53,7 +53,7 @@ namespace theatrel.DataAccess.Structures.Entities
 
         public string DbLocations { get; set; }
 
-        public DateTime LastMessage { get; set; }
+        public DateTime LastMessage { get; set; } = DateTime.UtcNow;
         public DialogStateEnum DialogState { get; set; }
 
         public void Clear()
@@ -68,7 +68,7 @@ namespace theatrel.DataAccess.Structures.Entities
             Types = null;
             DialogState = DialogStateEnum.DialogStarted;
 
-            LastMessage = new DateTime();
+            LastMessage = DateTime.UtcNow;
         }
     }
 }

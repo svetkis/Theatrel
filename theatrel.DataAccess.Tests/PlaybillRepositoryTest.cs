@@ -27,8 +27,8 @@ namespace theatrel.DataAccess.Tests
         {
             using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
 
-            var performance2 = GetPerformanceMock("TestPerformance2", 800, "url2", DateTime.Now, TestLocationName, TestTypeName);
-            var performance3 = GetPerformanceMock("TestPerformance3", 800, "url3", DateTime.Now, TestLocationName, TestTypeName);
+            var performance2 = GetPerformanceMock("TestPerformance2", 800, "url2", DateTime.UtcNow, TestLocationName, TestTypeName);
+            var performance3 = GetPerformanceMock("TestPerformance3", 800, "url3", DateTime.UtcNow, TestLocationName, TestTypeName);
 
             var exceptions = await Record.ExceptionAsync(async () =>
             {
@@ -46,7 +46,7 @@ namespace theatrel.DataAccess.Tests
         {
             using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
 
-            var performance4 = GetPerformanceMock("TestPerformance4", 800, "url4", DateTime.Now, TestLocationName, TestTypeName);
+            var performance4 = GetPerformanceMock("TestPerformance4", 800, "url4", DateTime.UtcNow, TestLocationName, TestTypeName);
 
             var pb4 = await pbRepository.AddPlaybill(performance4, (int)ReasonOfChanges.StartSales);
             var change = pb4.Changes.Last();
@@ -61,11 +61,11 @@ namespace theatrel.DataAccess.Tests
         {
             using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
 
-            var performance2 = GetPerformanceMock("TestPerformance2", 500, "url2", DateTime.Now.AddDays(50), TestLocationName, TestTypeName);
+            var performance2 = GetPerformanceMock("TestPerformance2", 500, "url2", DateTime.UtcNow.AddDays(50), TestLocationName, TestTypeName);
 
             await pbRepository.AddPlaybill(performance2, (int)ReasonOfChanges.StartSales);
 
-            var list = pbRepository.GetList(DateTime.Now.AddDays(49), DateTime.Now.AddDays(51));
+            var list = pbRepository.GetList(DateTime.UtcNow.AddDays(49), DateTime.UtcNow.AddDays(51));
 
             Assert.NotNull(list);
             Assert.Single(list);
@@ -110,7 +110,7 @@ namespace theatrel.DataAccess.Tests
         {
             using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
 
-            var performance = GetPerformanceMock("TestPerformance", 500, "url", DateTime.Now, TestLocationName, TestTypeName);
+            var performance = GetPerformanceMock("TestPerformance", 500, "url", DateTime.UtcNow, TestLocationName, TestTypeName);
 
             await pbRepository.AddPlaybill(performance, (int)ReasonOfChanges.StartSales);
         }

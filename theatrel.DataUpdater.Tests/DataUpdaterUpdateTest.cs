@@ -67,7 +67,7 @@ namespace theatrel.DataUpdater.Tests
         public async Task TestUpdate()
         {
             string testPerformanceUrl = "testUrl";
-            DateTime performanceDateTime = DateTime.Now;
+            DateTime performanceDateTime = DateTime.UtcNow;
 
             Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
             playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<int>(), It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))

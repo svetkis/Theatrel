@@ -8,7 +8,7 @@ namespace theatrel.Common
         public override void Write(string message)
         {
             Console.WriteLine();
-            Console.Write($"{DateTime.Now:MM/dd hh:mm:ss} ");
+            Console.Write($"{DateTime.UtcNow:MM/dd hh:mm:ss} ");
         }
 
         public override void WriteLine(string message)

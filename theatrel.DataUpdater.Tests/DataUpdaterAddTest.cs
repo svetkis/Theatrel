@@ -28,8 +28,8 @@ namespace theatrel.DataUpdater.Tests
             string performanceLocation = "locAdd";
             string performanceType = "operaTestTypeAdd";
 
-            DateTime performanceWhen = DateTime.Now.AddMonths(1);
-            DateTime filterFrom = new DateTime(performanceWhen.Year, performanceWhen.Month, 1);
+            DateTime performanceWhen = DateTime.UtcNow.AddMonths(1);
+            DateTime filterFrom = new DateTime(performanceWhen.Year, performanceWhen.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             DateTime filterTo = filterFrom.AddMonths(1);
 
             Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
@@ -38,7 +38,7 @@ namespace theatrel.DataUpdater.Tests
                 .Returns(() => Task.FromResult(new[]
                 {
                     GetPerformanceMock(performanceName,0, performanceUrl, performanceWhen, performanceLocation, performanceType),
-                    GetPerformanceMock("TestOpera2",0, "op2", DateTime.Now.AddDays(-2), performanceLocation, performanceType)
+                    GetPerformanceMock("TestOpera2",0, "op2", DateTime.UtcNow.AddDays(-2), performanceLocation, performanceType)
                 }));
 
             var minPrice500 = GetPerformanceMock(

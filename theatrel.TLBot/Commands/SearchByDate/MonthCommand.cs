@@ -29,9 +29,8 @@ namespace theatrel.TLBot.Commands.SearchByDate
             _monthNamesAbbreviated = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetAbbreviatedMonthName(num)).ToArray();
 
             var buttons = _monthNames.Select(m => new KeyboardButton(m)).ToArray();
-            CommandKeyboardMarkup = new ReplyKeyboardMarkup
+            CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
             {
-                Keyboard = GroupKeyboardButtons(ButtonsInLine, buttons),
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             };
@@ -62,13 +61,15 @@ namespace theatrel.TLBot.Commands.SearchByDate
         {
             int month = GetMonth(message.Trim().ToLower());
 
-            int year = DateTime.Now.Month > month ? DateTime.Now.Year + 1 : DateTime.Now.Year;
+            int year = DateTime.UtcNow.Month > month ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
 
-            chatInfo.When = new DateTime(year, month, 1);
+            chatInfo.When = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
 
             var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
-            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(
-                $"Вы выбрали {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}", ReturnKeyboardMarkup));
+
+            var userMsg = $"{YouSelected} {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}";
+
+            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(userMsg, ReturnKeyboardMarkup));
         }
 
         public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)

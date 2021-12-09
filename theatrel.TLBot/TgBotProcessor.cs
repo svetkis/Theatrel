@@ -62,7 +62,7 @@ namespace theatrel.TLBot
         {
             using var usersRepository = _dbService.GetUsersRepository();
 
-            var userEntity = usersRepository.Get(userId);
+            TelegramUserEntity userEntity = await usersRepository.Get(userId);
             if (null == userEntity)
                 await usersRepository.Create(userId, culture, _cancellationTokenSource.Token);
         }
@@ -99,7 +99,7 @@ namespace theatrel.TLBot
             ChatInfoEntity chatInfo = await chatsRepository.Get(chatId)
                                       ?? await chatsRepository.Create(chatId, "ru", _cancellationTokenSource.Token);
 
-            chatInfo.LastMessage = DateTime.Now;
+            chatInfo.LastMessage = DateTime.UtcNow;
 
             //check if user wants to return to first step
             int idxFirstCorrectBlock = _commands.IndexWhere(commandBlock => commandBlock.First().IsMessageCorrect(chatInfo, message));
@@ -187,11 +187,12 @@ namespace theatrel.TLBot
 
             if (null != previousCmdAcknowledgement?.ReplyKeyboard)
             {
-                botResponse.ReplyKeyboard = new ReplyKeyboardMarkup
-                {
-                    Keyboard = botResponse.ReplyKeyboard?.Keyboard != null
+                var keyboard = botResponse.ReplyKeyboard?.Keyboard != null
                         ? previousCmdAcknowledgement.ReplyKeyboard.Keyboard.Concat(botResponse.ReplyKeyboard.Keyboard)
-                        : previousCmdAcknowledgement.ReplyKeyboard?.Keyboard,
+                        : previousCmdAcknowledgement.ReplyKeyboard?.Keyboard;
+
+                botResponse.ReplyKeyboard = new ReplyKeyboardMarkup(keyboard)
+                {
                     OneTimeKeyboard = botResponse.ReplyKeyboard?.OneTimeKeyboard ?? true,
                     ResizeKeyboard = botResponse.ReplyKeyboard?.ResizeKeyboard ?? true
                 };

@@ -97,7 +97,7 @@ namespace theatrel.DataAccess.Repositories
         public IEnumerable<SubscriptionEntity> GetOutdatedList()
         {
             SubscriptionEntity[] outdatedByDate = _dbContext.Subscriptions.Where(s =>
-                s.PerformanceFilter.PlaybillId == -1 && null == s.PerformanceFilter.PerformanceName && s.PerformanceFilter.EndDate < DateTime.Now && s.AutoProlongation == 0)
+                s.PerformanceFilter.PlaybillId == -1 && null == s.PerformanceFilter.PerformanceName && s.PerformanceFilter.EndDate < DateTime.UtcNow && s.AutoProlongation == 0)
                 .Include(s => s.PerformanceFilter)
                 .AsNoTracking().ToArray();
 
@@ -114,7 +114,7 @@ namespace theatrel.DataAccess.Repositories
                 var pb = _dbContext.Playbill.Where(p => p.Id == subscription.PerformanceFilter.PlaybillId)
                     .AsNoTracking().FirstOrDefault();
 
-                if (pb == null || pb.When < DateTime.Now)
+                if (pb == null || pb.When < DateTime.UtcNow)
                     outdatedList.Add(subscription);
             }
 
@@ -161,7 +161,7 @@ namespace theatrel.DataAccess.Repositories
                 {
                     TelegramUser = userEntity,
                     PerformanceFilter = filterEntity,
-                    LastUpdate = DateTime.Now,
+                    LastUpdate = DateTime.UtcNow,
                     TrackingChanges = reasonOfChange
                 };
 

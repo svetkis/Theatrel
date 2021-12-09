@@ -14,6 +14,7 @@ using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
+using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Interfaces;
 
 namespace theatrel.Subscriptions
@@ -23,12 +24,14 @@ namespace theatrel.Subscriptions
         private readonly ITgBotService _telegramService;
         private readonly IDbService _dbService;
         private readonly IFilterService _filterChecker;
+        private readonly ITimeZoneService _timeZoneService;
 
-        public SubscriptionProcessor(ITgBotService telegramService, IFilterService filterChecker, IDbService dbService)
+        public SubscriptionProcessor(ITgBotService telegramService, IFilterService filterChecker, ITimeZoneService timeZoneService, IDbService dbService)
         {
             _telegramService = telegramService;
             _dbService = dbService;
             _filterChecker = filterChecker;
+            _timeZoneService = timeZoneService;
         }
 
         public async Task<bool> ProcessSubscriptions()
@@ -38,7 +41,10 @@ namespace theatrel.Subscriptions
             using ISubscriptionsRepository subscriptionRepository = _dbService.GetSubscriptionRepository();
             var subscriptions = subscriptionRepository.GetAllWithFilter().ToArray();
 
-            DateTime lastSubscriptionsUpdate = subscriptions.Min(s => s.LastUpdate);
+            if (!subscriptions.Any())
+                return true;
+
+            DateTime lastSubscriptionsUpdate = subscriptions.Min(s => s.LastUpdate).ToUniversalTime();
 
             PlaybillChangeEntity[] changes = subscriptionRepository.GetFreshChanges(lastSubscriptionsUpdate);
 
@@ -109,7 +115,7 @@ namespace theatrel.Subscriptions
                 //if message was sent we should update LastUpdate for users subscriptions
                 foreach (var subscription in subscriptions.Where(s => s.TelegramUserId == userData.Key))
                 {
-                    subscription.LastUpdate = DateTime.Now;
+                    subscription.LastUpdate = DateTime.UtcNow;
                     await subscriptionRepository.Update(subscription);
                 }
             }
@@ -161,7 +167,7 @@ namespace theatrel.Subscriptions
             foreach (var change in changes)
             {
                 PlaybillEntity playbillEntity = change.PlaybillEntity;
-                string formattedDate = playbillEntity.When.AddHours(3).ToString("ddMMM HH:mm", cultureRu);
+                string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When).ToString("ddMMM HH:mm", cultureRu);
 
 
                 string firstPart = $"{formattedDate} {playbillEntity.Performance.Location.Name} {playbillEntity.Performance.Type.TypeName}"

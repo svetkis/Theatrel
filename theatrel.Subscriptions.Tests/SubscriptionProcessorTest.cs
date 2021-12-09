@@ -29,11 +29,11 @@ namespace theatrel.Subscriptions.Tests
 
         private static async Task<long[]> ConfigureDb(AppDbContext dbContext)
         {
-            DateTime dt1 = DateTime.Now.AddDays(-3);
-            DateTime dt2 = DateTime.Now.AddDays(-2);
-            DateTime dt3 = DateTime.Now.AddDays(-1);
+            DateTime dt1 = DateTime.UtcNow.AddDays(-3);
+            DateTime dt2 = DateTime.UtcNow.AddDays(-2);
+            DateTime dt3 = DateTime.UtcNow.AddDays(-1);
 
-            DateTime performanceDateTime = DateTime.Now.AddDays(10);
+            DateTime performanceDateTime = DateTime.UtcNow.AddDays(10);
 
             var tgUser1 = new TelegramUserEntity { Culture = "ru", Id = 103 };
             var tgUser2 = new TelegramUserEntity { Culture = "ru", Id = 205 };

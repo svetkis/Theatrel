@@ -70,7 +70,7 @@ namespace theatrel.Lib.MihailovkyParsers
                 int.TryParse(splitTime[0], out int hourResult);
                 int.TryParse(splitTime[1], out int minutesResult);
 
-                var dt = new DateTime(year, month, dayResult, hourResult-3, minutesResult, 0).ToUniversalTime();
+                var dt = new DateTime(year, month, dayResult, hourResult-3, minutesResult, 0, 0, DateTimeKind.Utc);
 
                 return new PerformanceData
                 {

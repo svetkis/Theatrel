@@ -35,9 +35,8 @@ namespace theatrel.TLBot.Commands.SearchByDate
                 buttons.Add(new KeyboardButton(cultureRu.DateTimeFormat.GetDayName((DayOfWeek)(idx % 7)).ToLower()));
             }
 
-            CommandKeyboardMarkup = new ReplyKeyboardMarkup
+            CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
             {
-                Keyboard = GroupKeyboardButtons(ButtonsInLine, buttons),
                 OneTimeKeyboard = true,
                 ResizeKeyboard = true
             };
@@ -84,7 +83,7 @@ namespace theatrel.TLBot.Commands.SearchByDate
         private DayOfWeek[] ParseMessagePart(string messagePart)
         {
             if (string.IsNullOrEmpty(messagePart))
-                return new DayOfWeek[0];
+                return Array.Empty<DayOfWeek>();
 
             if (DaysOfWeekHelper.WeekendsNames.Any(name => string.Equals(name, messagePart, StringComparison.OrdinalIgnoreCase)))
                 return DaysOfWeekHelper.Weekends;
@@ -97,7 +96,7 @@ namespace theatrel.TLBot.Commands.SearchByDate
 
             string key = messagePart.ToLower();
 
-            return !DaysOfWeekHelper.DaysDictionary.ContainsKey(key) ? new DayOfWeek[0] : DaysOfWeekHelper.DaysDictionary[key];
+            return !DaysOfWeekHelper.DaysDictionary.ContainsKey(key) ? Array.Empty<DayOfWeek>() : DaysOfWeekHelper.DaysDictionary[key];
         }
     }
 }

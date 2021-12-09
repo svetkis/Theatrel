@@ -43,7 +43,7 @@ namespace theatrel.TLBot
             Trace.TraceInformation("TgBotService is starting");
 
             _cst = new CancellationTokenSource();
-            _botClient.StartReceiving(new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync), _cst.Token);
+            _botClient.StartReceiving(new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync), null, _cst.Token);
 
             Trace.TraceInformation("TLBot Started");
         }
@@ -79,26 +79,11 @@ namespace theatrel.TLBot
             return Task.FromResult(true);
         }
 
-        private static async Task BotOnInlineQueryReceived(ITelegramBotClient botClient, InlineQuery inlineQuery)
+        private static Task BotOnInlineQueryReceived(ITelegramBotClient botClient, InlineQuery inlineQuery)
         {
             Console.WriteLine($"Received inline query from: {inlineQuery.From.Id}");
 
-            InlineQueryResultBase[] results = {
-                // displayed result
-                new InlineQueryResultArticle(
-                    id: "3",
-                    title: "TgBots",
-                    inputMessageContent: new InputTextMessageContent(
-                        "hello"
-                    )
-                )
-            };
-
-            await botClient.AnswerInlineQueryAsync(
-                inlineQueryId: inlineQuery.Id,
-                results: results,
-                isPersonal: true,
-                cacheTime: 0);
+            return Task.FromResult(true);
         }
 
         private Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)

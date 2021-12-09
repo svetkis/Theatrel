@@ -45,7 +45,7 @@ namespace theatrel.DataUpdater
 
         private async Task ProcessData(IPerformanceData data, IPlaybillRepository playbillRepository)
         {
-            if (data.DateTime < DateTime.Now)
+            if (data.DateTime < DateTime.UtcNow)
                 return;
 
             PlaybillEntity playbillEntry = playbillRepository.Get(data);
@@ -88,7 +88,7 @@ namespace theatrel.DataUpdater
                 {
                     await playbillRepository.AddChange(playbillEntry.Id, new PlaybillChangeEntity
                     {
-                        LastUpdate = DateTime.Now,
+                        LastUpdate = DateTime.UtcNow,
                         MinPrice = data.MinPrice,
                         ReasonOfChanges = (int)compareCastResult
                     });
@@ -107,7 +107,7 @@ namespace theatrel.DataUpdater
 
             await playbillRepository.AddChange(playbillEntry.Id, new PlaybillChangeEntity
             {
-                LastUpdate = DateTime.Now,
+                LastUpdate = DateTime.UtcNow,
                 MinPrice = data.MinPrice,
                 ReasonOfChanges = (int)compareResult,
             });

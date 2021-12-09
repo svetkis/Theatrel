@@ -16,7 +16,7 @@ namespace theatrel.Lib.Tests
         [InlineData(true, new[] { 2020, 03, 20 }, "опера", new[] { DayOfWeek.Friday, DayOfWeek.Sunday }, new[] { "Опера" })]
         public void Test(bool expected, int[] performanceDate, string performanceType, DayOfWeek[] filterDays, string[] filterTypes)
         {
-            var dt = new DateTime(performanceDate[0], performanceDate[1], performanceDate[2]);
+            var dt = new DateTime(performanceDate[0], performanceDate[1], performanceDate[2], 0, 0, 0, DateTimeKind.Utc);
 
             var filterChecker = DIContainerHolder.Resolve<IFilterService>();
 

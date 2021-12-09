@@ -51,7 +51,7 @@ namespace theatrel.TLBot
                 new IDialogCommand[]
                 {
                     new StartSubscriptionsManagingCommand(_dbService),
-                    new ManageSubscriptionsCommand(_dbService),
+                    new ManageSubscriptionsCommand(_dbService, _timeZoneService),
                 }
             };
         }

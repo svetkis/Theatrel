@@ -182,6 +182,7 @@ namespace theatrel.DataAccess.Repositories
 
                 _dbContext.Entry(playbillEntry).State = EntityState.Modified;
                 _dbContext.Entry(playbillEntry.Performance).State = EntityState.Modified;
+
                 await _dbContext.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -290,7 +291,7 @@ namespace theatrel.DataAccess.Repositories
                     {
                         new PlaybillChangeEntity
                         {
-                            LastUpdate = DateTime.Now,
+                            LastUpdate = DateTime.UtcNow,
                             MinPrice = data.MinPrice,
                             ReasonOfChanges = reasonOfFirstChanges,
                         }
@@ -308,8 +309,7 @@ namespace theatrel.DataAccess.Repositories
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation(
-                    $"AddPlaybill DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+                Trace.TraceInformation($"AddPlaybill DbException {ex.Message} InnerException {ex.InnerException?.Message}");
             }
             finally
             {
@@ -344,7 +344,7 @@ namespace theatrel.DataAccess.Repositories
         {
             try
             {
-                return _dbContext.Playbill.Where(x => x.When < DateTime.Now).AsNoTracking().ToArray();
+                return _dbContext.Playbill.Where(x => x.When < DateTime.UtcNow).AsNoTracking().ToArray();
             }
             catch (Exception ex)
             {
@@ -506,7 +506,7 @@ namespace theatrel.DataAccess.Repositories
 
             try
             {
-                oldValue.LastUpdate = DateTime.Now;
+                oldValue.LastUpdate = DateTime.UtcNow;
                 _dbContext.Entry(oldValue).State = EntityState.Modified;
 
                 await _dbContext.SaveChangesAsync();

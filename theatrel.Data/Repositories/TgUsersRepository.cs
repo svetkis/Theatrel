@@ -31,7 +31,7 @@ namespace theatrel.DataAccess.Repositories
         }
 
         private Task<TelegramUserEntity> GetById(long userId)
-            => _dbContext.TlUsers.AsNoTracking().SingleOrDefaultAsync(u => u.Id == userId);
+            =>  _dbContext.TlUsers.AsNoTracking().SingleOrDefaultAsync(u => u.Id == userId);
 
         public async Task<TelegramUserEntity> Create(long userId, string culture, CancellationToken cancellationToken)
         {
@@ -95,8 +95,15 @@ namespace theatrel.DataAccess.Repositories
             if (_dbContext == null)
                 return;
 
-            _dbContext?.Dispose();
-            _dbContext = null;
+            try
+            {
+                _dbContext?.Dispose();
+                _dbContext = null;
+            }
+            catch(Exception ex)
+            {
+                Trace.TraceError($"Exception while dispose {ex.Message}");
+            }
         }
     }
 }

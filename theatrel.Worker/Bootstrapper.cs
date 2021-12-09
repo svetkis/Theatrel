@@ -11,7 +11,8 @@ namespace theatrel.Worker
 {
     public static class Bootstrapper
     {
-        public static ILifetimeScope RootScope;
+        public static ILifetimeScope RootScope { get; private set; }
+
         public static void Start()
         {
             if (RootScope != null)
