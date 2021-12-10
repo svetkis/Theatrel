@@ -11,7 +11,7 @@
     <PackageReference Include="AngleSharp" Version="0.16.1" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.2.0" />
     <PackageReference Include="Polly" Version="7.2.2" />
-    <PackageReference Include="RestSharp" Version="106.13.0" />
+    <PackageReference Include="RestSharp" Version="106.15.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\theatrel.Interfaces\theatrel.Interfaces.csproj" />

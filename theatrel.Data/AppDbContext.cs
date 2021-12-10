@@ -7,8 +7,6 @@ namespace theatrel.DataAccess
 {
     public class AppDbContext : DbContext
     {
-        private static double _timeZoneOffSet = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalHours;
-
         public DbSet<TelegramUserEntity> TlUsers { get; set; } = null!;
         public DbSet<ChatInfoEntity> TlChats { get; set; } = null!;
         public DbSet<PerformanceEntity> Performances { get; set; } = null!;
@@ -29,7 +27,7 @@ namespace theatrel.DataAccess
 
         private DateTime ConvertDateTime(DateTime value)
         {
-            return value.ToUniversalTime().AddHours(-_timeZoneOffSet);
+            return DateTime.SpecifyKind(value, DateTimeKind.Utc);
         }
 
         private DateTime ConvertDateTimeBack(DateTime value)

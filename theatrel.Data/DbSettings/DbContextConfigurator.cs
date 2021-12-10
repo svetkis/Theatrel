@@ -7,7 +7,10 @@ namespace theatrel.DataAccess.DbSettings
     internal class DbContextConfigurator
     {
         public static void Configure(DbContextOptionsBuilder<AppDbContext> builder)
-            => builder.UseNpgsql(GetConnectionString());
+        {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            builder.UseNpgsql(GetConnectionString());
+        }
 
         private static string GetConnectionString()
         {
@@ -21,7 +24,8 @@ namespace theatrel.DataAccess.DbSettings
                 Username = userInfo[0],
                 Password = userInfo[1],
                 Database = databaseUri.LocalPath.TrimStart('/'),
-                //SslMode = SslMode.Require,
+                SslMode = SslMode.Require,
+
                 TrustServerCertificate = true,
                 KeepAlive = 300
             };

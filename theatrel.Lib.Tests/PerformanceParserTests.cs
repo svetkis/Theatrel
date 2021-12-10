@@ -31,21 +31,6 @@ namespace theatrel.Lib.Tests
         }
 
         [Theory]
-        [InlineData(@"..\..\..\TestData\MariinskyPlayBill032020")]
-        public async Task CheckCancellation(string file)
-        {
-            string text = await System.IO.File.ReadAllTextAsync(file);
-
-            var playbillParserFactory = DIContainerHolder.Resolve<Func<Theatre, IPlaybillParser>>();
-            var parser = playbillParserFactory(Theatre.Mariinsky);
-
-            var performanceParserFactory = DIContainerHolder.Resolve<Func<Theatre, IPerformanceParser>>();
-            var performanceParser = performanceParserFactory(Theatre.Mariinsky);
-
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await parser.Parse(text, performanceParser, 0, 0, new CancellationTokenSource(15).Token));
-        }
-
-        [Theory]
         [InlineData(12, 0, @"..\..\..\TestData\MariinskyPlayBill032020")]
         [InlineData(19, 30, @"..\..\..\TestData\MariinskiPB092020.txt")]
         public async Task CheckDateTime(int hour, int minute, string file)
