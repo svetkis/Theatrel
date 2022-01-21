@@ -1,16 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace theatrel.DataAccess.DbSettings.DesignTimeSettings
+namespace theatrel.DataAccess.DbSettings.DesignTimeSettings;
+
+public class LocalDbContextOptionsFactory
 {
-    public class LocalDbContextOptionsFactory
+    public static DbContextOptions<AppDbContext> Get()
     {
-        public static DbContextOptions<AppDbContext> Get()
-        {
-            var builder = new DbContextOptionsBuilder<AppDbContext>();
+        var builder = new DbContextOptionsBuilder<AppDbContext>();
 
-            DesignTimeDbContextConfigurator.Configure(builder);
+        DesignTimeDbContextConfigurator.Configure(builder);
 
-            return builder.Options;
-        }
+        return builder.Options;
     }
 }

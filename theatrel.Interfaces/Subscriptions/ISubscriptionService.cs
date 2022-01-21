@@ -1,10 +1,9 @@
 ﻿using theatrel.Interfaces.Autofac;
 using theatrel.Interfaces.Filters;
 
-namespace theatrel.Interfaces.Subscriptions
+namespace theatrel.Interfaces.Subscriptions;
+
+public interface ISubscriptionService : IDISingleton
 {
-    public interface ISubscriptionService : IDISingleton
-    {
-        public IPerformanceFilter[] GetUpdateFilters();
-    }
+    public IPerformanceFilter[] GetUpdateFilters();
 }

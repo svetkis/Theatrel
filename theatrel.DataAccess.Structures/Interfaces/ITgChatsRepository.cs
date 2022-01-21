@@ -4,15 +4,14 @@ using System.Threading.Tasks;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Autofac;
 
-namespace theatrel.DataAccess.Structures.Interfaces
+namespace theatrel.DataAccess.Structures.Interfaces;
+
+public interface ITgChatsRepository : IDIRegistrable, IDisposable
 {
-    public interface ITgChatsRepository : IDIRegistrable, IDisposable
-    {
-        Task<ChatInfoEntity> Get(long chatId);
+    Task<ChatInfoEntity> Get(long chatId);
 
-        Task<ChatInfoEntity> Create(long chatId, string locale, CancellationToken cancellationToken);
+    Task<ChatInfoEntity> Create(long chatId, string locale, CancellationToken cancellationToken);
 
-        Task<bool> Delete(ChatInfoEntity chatData);
-        Task<bool> Update(ChatInfoEntity newValue);
-    }
+    Task<bool> Delete(ChatInfoEntity chatData);
+    Task<bool> Update(ChatInfoEntity newValue);
 }

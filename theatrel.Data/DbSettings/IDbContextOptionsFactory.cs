@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using theatrel.Interfaces.Autofac;
 
-namespace theatrel.DataAccess.DbSettings
+namespace theatrel.DataAccess.DbSettings;
+
+public interface IDbContextOptionsFactory : IDIRegistrable
 {
-    public interface IDbContextOptionsFactory : IDIRegistrable
-    {
-        DbContextOptions<AppDbContext> Get();
-    }
+    DbContextOptions<AppDbContext> Get();
 }

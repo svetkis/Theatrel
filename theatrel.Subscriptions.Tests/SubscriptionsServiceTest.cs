@@ -13,127 +13,126 @@ using theatrel.Subscriptions.Tests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace theatrel.Subscriptions.Tests
-{
-    [Collection("Subscriptions Service Tests")]
-    public class SubscriptionsServiceTest : IClassFixture<DatabaseFixture>
-    {
-        private readonly DatabaseFixture _fixture;
-        private readonly ITestOutputHelper _output;
+namespace theatrel.Subscriptions.Tests;
 
-        public SubscriptionsServiceTest(ITestOutputHelper output, DatabaseFixture fixture)
+[Collection("Subscriptions Service Tests")]
+public class SubscriptionsServiceTest : IClassFixture<DatabaseFixture>
+{
+    private readonly DatabaseFixture _fixture;
+    private readonly ITestOutputHelper _output;
+
+    public SubscriptionsServiceTest(ITestOutputHelper output, DatabaseFixture fixture)
+    {
+        _output = output;
+        _fixture = fixture;
+    }
+
+    private static IDbService ConfigureDbService(params int[] months)
+    {
+        List<SubscriptionEntity> subscriptionEntities = new List<SubscriptionEntity>{new SubscriptionEntity
         {
-            _output = output;
-            _fixture = fixture;
+            TelegramUserId = 1,
+            LastUpdate = DateTime.UtcNow.AddDays(-1),
+            PerformanceFilter = new PerformanceFilterEntity { PlaybillId = 100 },
+            TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
+        }};
+
+        foreach (var month in months.Skip(1))
+        {
+            DateTime startDate = new DateTime(2020, month, 1, 0, 0, 0, DateTimeKind.Utc);
+            DateTime endDateTime = startDate.AddMonths(1);
+
+            subscriptionEntities.Add(new SubscriptionEntity
+            {
+                TelegramUserId = 2,
+                LastUpdate = DateTime.UtcNow,
+                PerformanceFilter = new PerformanceFilterEntity { StartDate = startDate, EndDate = endDateTime },
+                TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
+            });
         }
 
-        private static IDbService ConfigureDbService(params int[] months)
+        var subscriptionRepo = new Mock<ISubscriptionsRepository>();
+        subscriptionRepo.Setup(x => x.GetAllWithFilter()).Returns(subscriptionEntities);
+
+        var playbillRepo = new Mock<IPlaybillRepository>();
+        playbillRepo.Setup(x => x.Get(It.IsAny<int>())).Returns(new PlaybillEntity()
         {
-            List<SubscriptionEntity> subscriptionEntities = new List<SubscriptionEntity>{new SubscriptionEntity
+            When = new DateTime(2020, months.First(), 1, 0, 0, 0, DateTimeKind.Utc)
+        });
+
+        var dbService = new Mock<IDbService>();
+        dbService.Setup(x => x.GetSubscriptionRepository()).Returns(subscriptionRepo.Object);
+        dbService.Setup(x => x.GetPlaybillRepository()).Returns(playbillRepo.Object);
+
+        return dbService.Object;
+    }
+
+    [Theory]
+    [InlineData(3, 5, 1, 7, 4, 3, 5)]
+    [InlineData(3, 6, 9)]
+    public async Task SubscriptionServiceTest(params int[] months)
+    {
+        await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
+        {
+            builder.RegisterInstance(ConfigureDbService(months)).As<IDbService>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterModule<SubscriptionModule>();
+        });
+
+        var service = scope.Resolve<ISubscriptionService>();
+
+        //test
+        var filters = service.GetUpdateFilters();
+
+        //check
+        Assert.NotNull(filters);
+
+        var sortedMonths = months.Distinct().OrderBy(x => x).ToArray();
+        var sortedMonthsFromFilter = filters.Select(f => f.StartDate.Month).OrderBy(x => x).ToArray();
+        _output.WriteLine(string.Join(" ", sortedMonths));
+        _output.WriteLine(string.Join(" ", sortedMonthsFromFilter));
+
+        Assert.Equal(sortedMonths, sortedMonthsFromFilter);
+    }
+
+    [Fact]
+    public async Task SubscriptionServiceTest2()
+    {
+        var subscriptionRepo = new Mock<ISubscriptionsRepository>();
+        subscriptionRepo.Setup(x => x.GetAllWithFilter()).Returns(new List<SubscriptionEntity>
+        {
+            new SubscriptionEntity
             {
                 TelegramUserId = 1,
-                LastUpdate = DateTime.UtcNow.AddDays(-1),
-                PerformanceFilter = new PerformanceFilterEntity { PlaybillId = 100 },
+                LastUpdate = DateTime.UtcNow,
+                PerformanceFilter = new PerformanceFilterEntity
+                {
+                    PlaybillId = -1,
+                    StartDate = new DateTime(2020,9,1, 0, 0, 0, DateTimeKind.Utc),
+                    EndDate = new DateTime(2020,11,15, 0, 0, 0, DateTimeKind.Utc)
+                },
                 TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
-            }};
-
-            foreach (var month in months.Skip(1))
-            {
-                DateTime startDate = new DateTime(2020, month, 1, 0, 0, 0, DateTimeKind.Utc);
-                DateTime endDateTime = startDate.AddMonths(1);
-
-                subscriptionEntities.Add(new SubscriptionEntity
-                {
-                    TelegramUserId = 2,
-                    LastUpdate = DateTime.UtcNow,
-                    PerformanceFilter = new PerformanceFilterEntity { StartDate = startDate, EndDate = endDateTime },
-                    TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
-                });
             }
+        });
 
-            var subscriptionRepo = new Mock<ISubscriptionsRepository>();
-            subscriptionRepo.Setup(x => x.GetAllWithFilter()).Returns(subscriptionEntities);
+        var dbService = new Mock<IDbService>();
+        dbService.Setup(x => x.GetSubscriptionRepository()).Returns(subscriptionRepo.Object);
 
-            var playbillRepo = new Mock<IPlaybillRepository>();
-            playbillRepo.Setup(x => x.Get(It.IsAny<int>())).Returns(new PlaybillEntity()
-            {
-                When = new DateTime(2020, months.First(), 1, 0, 0, 0, DateTimeKind.Utc)
-            });
-
-            var dbService = new Mock<IDbService>();
-            dbService.Setup(x => x.GetSubscriptionRepository()).Returns(subscriptionRepo.Object);
-            dbService.Setup(x => x.GetPlaybillRepository()).Returns(playbillRepo.Object);
-
-            return dbService.Object;
-        }
-
-        [Theory]
-        [InlineData(3, 5, 1, 7, 4, 3, 5)]
-        [InlineData(3, 6, 9)]
-        public async Task SubscriptionServiceTest(params int[] months)
+        await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
         {
-            await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
-            {
-                builder.RegisterInstance(ConfigureDbService(months)).As<IDbService>().AsImplementedInterfaces().SingleInstance();
-                builder.RegisterModule<SubscriptionModule>();
-            });
-
-            var service = scope.Resolve<ISubscriptionService>();
-
-            //test
-            var filters = service.GetUpdateFilters();
-
-            //check
-            Assert.NotNull(filters);
-
-            var sortedMonths = months.Distinct().OrderBy(x => x).ToArray();
-            var sortedMonthsFromFilter = filters.Select(f => f.StartDate.Month).OrderBy(x => x).ToArray();
-            _output.WriteLine(string.Join(" ", sortedMonths));
-            _output.WriteLine(string.Join(" ", sortedMonthsFromFilter));
-
-            Assert.Equal(sortedMonths, sortedMonthsFromFilter);
-        }
-
-        [Fact]
-        public async Task SubscriptionServiceTest2()
-        {
-            var subscriptionRepo = new Mock<ISubscriptionsRepository>();
-            subscriptionRepo.Setup(x => x.GetAllWithFilter()).Returns(new List<SubscriptionEntity>
-            {
-                new SubscriptionEntity
-                {
-                    TelegramUserId = 1,
-                    LastUpdate = DateTime.UtcNow,
-                    PerformanceFilter = new PerformanceFilterEntity
-                    {
-                        PlaybillId = -1,
-                        StartDate = new DateTime(2020,9,1, 0, 0, 0, DateTimeKind.Utc),
-                        EndDate = new DateTime(2020,11,15, 0, 0, 0, DateTimeKind.Utc)
-                    },
-                    TrackingChanges = (int)(ReasonOfChanges.PriceDecreased | ReasonOfChanges.StartSales)
-                }
-            });
-
-            var dbService = new Mock<IDbService>();
-            dbService.Setup(x => x.GetSubscriptionRepository()).Returns(subscriptionRepo.Object);
-
-            await using ILifetimeScope scope = _fixture.RootScope.BeginLifetimeScope(builder =>
-            {
-                builder.RegisterInstance(dbService.Object).As<IDbService>().AsImplementedInterfaces().SingleInstance();
-                builder.RegisterModule<SubscriptionModule>();
-            });
+            builder.RegisterInstance(dbService.Object).As<IDbService>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterModule<SubscriptionModule>();
+        });
 
 
-            var service = scope.Resolve<ISubscriptionService>();
+        var service = scope.Resolve<ISubscriptionService>();
 
-            //test
-            var filters = service.GetUpdateFilters();
+        //test
+        var filters = service.GetUpdateFilters();
 
-            //check
-            Assert.NotNull(filters);
+        //check
+        Assert.NotNull(filters);
 
-            Assert.Equal(9, filters.First().StartDate.Month);
-            Assert.Equal(11, filters.First().EndDate.Month);
-        }
+        Assert.Equal(9, filters.First().StartDate.Month);
+        Assert.Equal(11, filters.First().EndDate.Month);
     }
 }

@@ -11,108 +11,107 @@ using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Playbill;
 using Xunit;
 
-namespace theatrel.DataAccess.Tests
+namespace theatrel.DataAccess.Tests;
+
+public class PlaybillRepositoryTest : IClassFixture<DatabaseFixture>
 {
-    public class PlaybillRepositoryTest : IClassFixture<DatabaseFixture>
+    protected readonly DatabaseFixture Fixture;
+    public PlaybillRepositoryTest(DatabaseFixture fixture)
     {
-        protected readonly DatabaseFixture Fixture;
-        public PlaybillRepositoryTest(DatabaseFixture fixture)
+        Fixture = fixture;
+        Task.WaitAll(ConfigureDb());
+    }
+
+    [Fact]
+    public async Task AddTest()
+    {
+        using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
+
+        var performance2 = GetPerformanceMock("TestPerformance2", 800, "url2", DateTime.UtcNow, TestLocationName, TestTypeName);
+        var performance3 = GetPerformanceMock("TestPerformance3", 800, "url3", DateTime.UtcNow, TestLocationName, TestTypeName);
+
+        var exceptions = await Record.ExceptionAsync(async () =>
         {
-            Fixture = fixture;
-            Task.WaitAll(ConfigureDb());
-        }
+            var res2 = await pbRepository.AddPlaybill(performance2, (int)ReasonOfChanges.StartSales);
+            var res3 = await pbRepository.AddPlaybill(performance3, (int)ReasonOfChanges.StartSales);
+            Assert.NotNull(res2);
+            Assert.NotNull(res3);
+        });
 
-        [Fact]
-        public async Task AddTest()
-        {
-            using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
+        Assert.Null(exceptions);
+    }
 
-            var performance2 = GetPerformanceMock("TestPerformance2", 800, "url2", DateTime.UtcNow, TestLocationName, TestTypeName);
-            var performance3 = GetPerformanceMock("TestPerformance3", 800, "url3", DateTime.UtcNow, TestLocationName, TestTypeName);
+    [Fact]
+    public async Task UpdateTest()
+    {
+        using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
 
-            var exceptions = await Record.ExceptionAsync(async () =>
-            {
-                var res2 = await pbRepository.AddPlaybill(performance2, (int)ReasonOfChanges.StartSales);
-                var res3 = await pbRepository.AddPlaybill(performance3, (int)ReasonOfChanges.StartSales);
-                Assert.NotNull(res2);
-                Assert.NotNull(res3);
-            });
+        var performance4 = GetPerformanceMock("TestPerformance4", 800, "url4", DateTime.UtcNow, TestLocationName, TestTypeName);
 
-            Assert.Null(exceptions);
-        }
+        var pb4 = await pbRepository.AddPlaybill(performance4, (int)ReasonOfChanges.StartSales);
+        var change = pb4.Changes.Last();
+        bool updateResult = await pbRepository.UpdateChangeLastUpdate(change.Id);
 
-        [Fact]
-        public async Task UpdateTest()
-        {
-            using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
+        Assert.NotNull(pb4);
+        Assert.True(updateResult);
+    }
 
-            var performance4 = GetPerformanceMock("TestPerformance4", 800, "url4", DateTime.UtcNow, TestLocationName, TestTypeName);
+    [Fact]
+    public async Task GetListTest()
+    {
+        using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
 
-            var pb4 = await pbRepository.AddPlaybill(performance4, (int)ReasonOfChanges.StartSales);
-            var change = pb4.Changes.Last();
-            bool updateResult = await pbRepository.UpdateChangeLastUpdate(change.Id);
+        var performance2 = GetPerformanceMock("TestPerformance2", 500, "url2", DateTime.UtcNow.AddDays(50), TestLocationName, TestTypeName);
 
-            Assert.NotNull(pb4);
-            Assert.True(updateResult);
-        }
+        await pbRepository.AddPlaybill(performance2, (int)ReasonOfChanges.StartSales);
 
-        [Fact]
-        public async Task GetListTest()
-        {
-            using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
+        var list = pbRepository.GetList(DateTime.UtcNow.AddDays(49), DateTime.UtcNow.AddDays(51));
 
-            var performance2 = GetPerformanceMock("TestPerformance2", 500, "url2", DateTime.UtcNow.AddDays(50), TestLocationName, TestTypeName);
-
-            await pbRepository.AddPlaybill(performance2, (int)ReasonOfChanges.StartSales);
-
-            var list = pbRepository.GetList(DateTime.UtcNow.AddDays(49), DateTime.UtcNow.AddDays(51));
-
-            Assert.NotNull(list);
-            Assert.Single(list);
-        }
+        Assert.NotNull(list);
+        Assert.Single(list);
+    }
 
 
-        private const string TestLocationName = "TestLocation";
-        private const string TestTypeName = "TestType";
+    private const string TestLocationName = "TestLocation";
+    private const string TestTypeName = "TestType";
 
-        protected IPerformanceData GetPerformanceMock(string name, int minPrice, string url, DateTime performanceDateTime, string location, string type)
-        {
-            Mock<IPerformanceData> performanceMock = new Mock<IPerformanceData>();
+    protected IPerformanceData GetPerformanceMock(string name, int minPrice, string url, DateTime performanceDateTime, string location, string type)
+    {
+        Mock<IPerformanceData> performanceMock = new Mock<IPerformanceData>();
 
-            performanceMock.SetupGet(x => x.Name).Returns(name);
-            performanceMock.SetupGet(x => x.Type).Returns(type);
-            performanceMock.SetupGet(x => x.Location).Returns(location);
-            performanceMock.SetupGet(x => x.MinPrice).Returns(minPrice);
+        performanceMock.SetupGet(x => x.Name).Returns(name);
+        performanceMock.SetupGet(x => x.Type).Returns(type);
+        performanceMock.SetupGet(x => x.Location).Returns(location);
+        performanceMock.SetupGet(x => x.MinPrice).Returns(minPrice);
 
-            performanceMock.SetupGet(x => x.TicketsUrl).Returns(url);
-            performanceMock.SetupGet(x => x.DateTime).Returns(performanceDateTime);
+        performanceMock.SetupGet(x => x.TicketsUrl).Returns(url);
+        performanceMock.SetupGet(x => x.DateTime).Returns(performanceDateTime);
 
-            Mock<IActor> actor1Mock = new Mock<IActor>();
-            actor1Mock.SetupGet(a => a.Name).Returns("actor1");
-            actor1Mock.SetupGet(a => a.Url).Returns("actor1url");
+        Mock<IActor> actor1Mock = new Mock<IActor>();
+        actor1Mock.SetupGet(a => a.Name).Returns("actor1");
+        actor1Mock.SetupGet(a => a.Url).Returns("actor1url");
 
-            Mock<IActor> actor2Mock = new Mock<IActor>();
-            actor2Mock.SetupGet(a => a.Name).Returns("actor2");
-            actor2Mock.SetupGet(a => a.Url).Returns("actor2url");
+        Mock<IActor> actor2Mock = new Mock<IActor>();
+        actor2Mock.SetupGet(a => a.Name).Returns("actor2");
+        actor2Mock.SetupGet(a => a.Url).Returns("actor2url");
 
-            IList<IActor> actors = new List<IActor> {actor1Mock.Object, actor2Mock.Object};
+        IList<IActor> actors = new List<IActor> {actor1Mock.Object, actor2Mock.Object};
 
-            Mock<IPerformanceCast> castMock = new Mock<IPerformanceCast>();
-            castMock.SetupGet(x => x.State).Returns(CastState.Ok);
-            castMock.SetupGet(x => x.Cast).Returns(new Dictionary<string, IList<IActor>>{ {"role1" , actors}});
-            performanceMock.SetupGet(x => x.Cast).Returns(castMock.Object);
+        Mock<IPerformanceCast> castMock = new Mock<IPerformanceCast>();
+        castMock.SetupGet(x => x.State).Returns(CastState.Ok);
+        castMock.SetupGet(x => x.Cast).Returns(new Dictionary<string, IList<IActor>>{ {"role1" , actors}});
+        performanceMock.SetupGet(x => x.Cast).Returns(castMock.Object);
 
-            return performanceMock.Object;
-        }
+        return performanceMock.Object;
+    }
 
 
-        private async Task ConfigureDb()
-        {
-            using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
+    private async Task ConfigureDb()
+    {
+        using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
 
-            var performance = GetPerformanceMock("TestPerformance", 500, "url", DateTime.UtcNow, TestLocationName, TestTypeName);
+        var performance = GetPerformanceMock("TestPerformance", 500, "url", DateTime.UtcNow, TestLocationName, TestTypeName);
 
-            await pbRepository.AddPlaybill(performance, (int)ReasonOfChanges.StartSales);
-        }
+        await pbRepository.AddPlaybill(performance, (int)ReasonOfChanges.StartSales);
     }
 }

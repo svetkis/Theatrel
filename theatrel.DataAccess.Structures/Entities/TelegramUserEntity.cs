@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace theatrel.DataAccess.Structures.Entities
-{
-    public class TelegramUserEntity
-    {
-        [Key]
-        public long Id { get; set; }
+namespace theatrel.DataAccess.Structures.Entities;
 
-        public string Culture { get; set; }
-    }
+public class TelegramUserEntity
+{
+    [Key]
+    public long Id { get; set; }
+
+    public string Culture { get; set; }
 }

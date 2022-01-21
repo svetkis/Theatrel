@@ -9,69 +9,68 @@ using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands.SearchByDate
+namespace theatrel.TLBot.Commands.SearchByDate;
+
+internal class PerformanceTypesCommand : DialogCommandBase
 {
-    internal class PerformanceTypesCommand : DialogCommandBase
+    private readonly string[] _types = { "опера", "балет", "концерт" };
+    private readonly string[] _every = { "Все", "всё", "любой", "любое", "не важно" };
+
+    protected override string ReturnCommandMessage { get; set; } = "Выбрать другое";
+
+    public override string Name => "Выбрать тип представления";
+    public PerformanceTypesCommand(IDbService dbService) : base(dbService)
     {
-        private readonly string[] _types = { "опера", "балет", "концерт" };
-        private readonly string[] _every = { "Все", "всё", "любой", "любое", "не важно" };
+        var buttons = _types.Select(m => new KeyboardButton(m)).Concat(new[] { new KeyboardButton(_every.First()) }).ToArray();
 
-        protected override string ReturnCommandMessage { get; set; } = "Выбрать другое";
-
-        public override string Name => "Выбрать тип представления";
-        public PerformanceTypesCommand(IDbService dbService) : base(dbService)
+        CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
         {
-            var buttons = _types.Select(m => new KeyboardButton(m)).Concat(new[] { new KeyboardButton(_every.First()) }).ToArray();
+            OneTimeKeyboard = true,
+            ResizeKeyboard = true
+        };
+    }
 
-            CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
-            {
-                OneTimeKeyboard = true,
-                ResizeKeyboard = true
-            };
-        }
+    public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+    {
+        chatInfo.Types = ParseMessage(message);
 
-        public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
-        {
-            chatInfo.Types = ParseMessage(message);
+        return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(null));
+    }
 
-            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(null));
-        }
+    public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => SplitMessage(message).Any();
 
-        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => SplitMessage(message).Any();
+    public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+    {
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine("Какие представления Вас интересуют?");
 
-        public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
-        {
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine("Какие представления Вас интересуют?");
+        return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup));
+    }
 
-            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup));
-        }
+    private string[] ParseMessage(string message)
+    {
+        var parts = SplitMessage(message);
+        if (parts.Any(p => _every.Any(e => e.ToLower().Contains(p.ToLower()))))
+            return null;
 
-        private string[] ParseMessage(string message)
-        {
-            var parts = SplitMessage(message);
-            if (parts.Any(p => _every.Any(e => e.ToLower().Contains(p.ToLower()))))
-                return null;
+        return parts.Select(ParseMessagePart).Where(idx => idx > -1).Select(idx => _types[idx]).ToArray();
+    }
 
-            return parts.Select(ParseMessagePart).Where(idx => idx > -1).Select(idx => _types[idx]).ToArray();
-        }
+    private string[] SplitMessage(string message) => message.Split(WordSplitters).Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
 
-        private string[] SplitMessage(string message) => message.Split(WordSplitters).Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
+    private int ParseMessagePart(string messagePart)
+    {
+        if (string.IsNullOrWhiteSpace(messagePart))
+            return -1;
 
-        private int ParseMessagePart(string messagePart)
-        {
-            if (string.IsNullOrWhiteSpace(messagePart))
-                return -1;
+        return CheckEnumerable(_types, messagePart);
+    }
 
-            return CheckEnumerable(_types, messagePart);
-        }
+    private int CheckEnumerable(string[] checkedData, string msg)
+    {
+        var data = checkedData.Select((item, idx) => new { idx, item })
+            .FirstOrDefault(data => 0 == string.Compare(data.item, msg, StringComparison.OrdinalIgnoreCase));
 
-        private int CheckEnumerable(string[] checkedData, string msg)
-        {
-            var data = checkedData.Select((item, idx) => new { idx, item })
-                .FirstOrDefault(data => 0 == string.Compare(data.item, msg, StringComparison.OrdinalIgnoreCase));
-
-            return data?.idx ?? -1;
-        }
+        return data?.idx ?? -1;
     }
 }

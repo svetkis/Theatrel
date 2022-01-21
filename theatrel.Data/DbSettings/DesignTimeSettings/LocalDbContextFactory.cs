@@ -1,9 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore.Design;
 
-namespace theatrel.DataAccess.DbSettings.DesignTimeSettings
+namespace theatrel.DataAccess.DbSettings.DesignTimeSettings;
+
+public class LocalDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
-    public class LocalDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
-    {
-        public AppDbContext CreateDbContext(string[] args) => new AppDbContext(LocalDbContextOptionsFactory.Get());
-    }
+    public AppDbContext CreateDbContext(string[] args) => new AppDbContext(LocalDbContextOptionsFactory.Get());
 }

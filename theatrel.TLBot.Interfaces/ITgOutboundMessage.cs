@@ -1,11 +1,10 @@
 ﻿using Telegram.Bot.Types.ReplyMarkups;
 
-namespace theatrel.TLBot.Interfaces
+namespace theatrel.TLBot.Interfaces;
+
+public interface ITgOutboundMessage
 {
-    public interface ITgOutboundMessage
-    {
-        string Message { get; set; }
-        ReplyKeyboardMarkup ReplyKeyboard { get; set; }
-        bool IsEscaped { get; set; }
-    }
+    string Message { get; set; }
+    ReplyKeyboardMarkup ReplyKeyboard { get; set; }
+    bool IsEscaped { get; set; }
 }

@@ -1,25 +1,24 @@
 ﻿using System;
 using System.Linq;
 
-namespace theatrel.TLBot
+namespace theatrel.TLBot;
+
+public class BotSettings
 {
-    public class BotSettings
+    public static string BotToken => Environment.GetEnvironmentVariable("TheatrelBotToken");
+    public static string BotProxy => Environment.GetEnvironmentVariable("TheatrelBotProxy");
+    public static int BotProxyPort
     {
-        public static string BotToken => Environment.GetEnvironmentVariable("TheatrelBotToken");
-        public static string BotProxy => Environment.GetEnvironmentVariable("TheatrelBotProxy");
-        public static int BotProxyPort
+        get
         {
-            get
-            {
-                string portString = Environment.GetEnvironmentVariable("TheatrelProxyPort");
-                if (string.IsNullOrWhiteSpace(portString))
-                    return 0;
+            string portString = Environment.GetEnvironmentVariable("TheatrelProxyPort");
+            if (string.IsNullOrWhiteSpace(portString))
+                return 0;
 
-                return !int.TryParse(portString, out int port) ? 0 : port;
-            }
+            return !int.TryParse(portString, out int port) ? 0 : port;
         }
-
-        public static long[] AdminIds => Environment.GetEnvironmentVariable("OwnerTelegramgId")?.Split(",")
-            .Select(s => long.Parse(s.Trim())).ToArray();
     }
+
+    public static long[] AdminIds => Environment.GetEnvironmentVariable("OwnerTelegramgId")?.Split(",")
+        .Select(s => long.Parse(s.Trim())).ToArray();
 }

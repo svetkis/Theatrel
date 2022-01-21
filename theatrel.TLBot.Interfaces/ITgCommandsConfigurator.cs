@@ -1,9 +1,8 @@
 ﻿using theatrel.Interfaces.Autofac;
 
-namespace theatrel.TLBot.Interfaces
+namespace theatrel.TLBot.Interfaces;
+
+public interface ITgCommandsConfigurator : IDIRegistrable
 {
-    public interface ITgCommandsConfigurator : IDIRegistrable
-    {
-        IDialogCommand[][] GetDialogCommands();
-    }
+    IDialogCommand[][] GetDialogCommands();
 }

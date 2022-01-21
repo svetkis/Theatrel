@@ -7,48 +7,47 @@ using theatrel.Lib;
 using theatrel.Subscriptions;
 using theatrel.TLBot;
 
-namespace theatrel.ConsoleTest
+namespace theatrel.ConsoleTest;
+
+public static class Bootstrapper
 {
-    public static class Bootstrapper
+    public static ILifetimeScope RootScope { get; private set; }
+
+    public static void Start()
     {
-        public static ILifetimeScope RootScope { get; private set; }
+        if (RootScope != null)
+            return;
 
-        public static void Start()
-        {
-            if (RootScope != null)
-                return;
+        ContainerBuilder builder = new ContainerBuilder();
 
-            ContainerBuilder builder = new ContainerBuilder();
+        builder.RegisterModule<TheatrelLibModule>();
+        builder.RegisterModule<TlBotModule>();
+        builder.RegisterModule<TheatrelDataAccessModule>();
+        builder.RegisterModule<DataUpdaterModule>();
+        builder.RegisterModule<SubscriptionModule>();
 
-            builder.RegisterModule<TheatrelLibModule>();
-            builder.RegisterModule<TlBotModule>();
-            builder.RegisterModule<TheatrelDataAccessModule>();
-            builder.RegisterModule<DataUpdaterModule>();
-            builder.RegisterModule<SubscriptionModule>();
+        RootScope = builder.Build();
+    }
 
-            RootScope = builder.Build();
-        }
+    public static void Stop()
+    {
+        RootScope?.Dispose();
+        RootScope = null;
+    }
 
-        public static void Stop()
-        {
-            RootScope?.Dispose();
-            RootScope = null;
-        }
+    public static T Resolve<T>()
+    {
+        if (RootScope == null)
+            throw new Exception("Bootstrapper hasn't been started!");
 
-        public static T Resolve<T>()
-        {
-            if (RootScope == null)
-                throw new Exception("Bootstrapper hasn't been started!");
+        return RootScope.Resolve<T>(Array.Empty<Parameter>());
+    }
 
-            return RootScope.Resolve<T>(Array.Empty<Parameter>());
-        }
+    public static T Resolve<T>(Parameter[] parameters)
+    {
+        if (RootScope == null)
+            throw new Exception("Bootstrapper hasn't been started!");
 
-        public static T Resolve<T>(Parameter[] parameters)
-        {
-            if (RootScope == null)
-                throw new Exception("Bootstrapper hasn't been started!");
-
-            return RootScope.Resolve<T>(parameters);
-        }
+        return RootScope.Resolve<T>(parameters);
     }
 }

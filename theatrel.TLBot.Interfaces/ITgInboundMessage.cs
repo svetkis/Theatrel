@@ -1,8 +1,7 @@
-﻿namespace theatrel.TLBot.Interfaces
+﻿namespace theatrel.TLBot.Interfaces;
+
+public interface ITgInboundMessage
 {
-    public interface ITgInboundMessage
-    {
-        long ChatId { get; set; }
-        string Message { get; set; }
-    }
+    long ChatId { get; set; }
+    string Message { get; set; }
 }

@@ -1,11 +1,10 @@
 ﻿using System;
 using theatrel.Interfaces.Autofac;
 
-namespace theatrel.Interfaces.TimeZoneService
+namespace theatrel.Interfaces.TimeZoneService;
+
+public interface ITimeZoneService : IDISingleton
 {
-    public interface ITimeZoneService : IDISingleton
-    {
-        TimeZoneInfo TimeZone { get; set; }
-        DateTime GetLocalTime(DateTime dateTime);
-    }
+    TimeZoneInfo TimeZone { get; set; }
+    DateTime GetLocalTime(DateTime dateTime);
 }

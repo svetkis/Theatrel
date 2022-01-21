@@ -7,76 +7,75 @@ using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
 
-namespace theatrel.Subscriptions
+namespace theatrel.Subscriptions;
+
+public class SubscriptionService : ISubscriptionService
 {
-    public class SubscriptionService : ISubscriptionService
+    private readonly IDbService _dbService;
+    private readonly IFilterService _filterService;
+
+    public SubscriptionService(IDbService dbService, IFilterService filterService)
     {
-        private readonly IDbService _dbService;
-        private readonly IFilterService _filterService;
+        _dbService = dbService;
+        _filterService = filterService;
+    }
 
-        public SubscriptionService(IDbService dbService, IFilterService filterService)
+    public IPerformanceFilter[] GetUpdateFilters()
+    {
+        using var subscriptionRepository = _dbService.GetSubscriptionRepository();
+        using var playbillRepository = _dbService.GetPlaybillRepository();
+
+        var subscriptions = subscriptionRepository.GetAllWithFilter().ToArray();
+        if (!subscriptions.Any())
+            return Array.Empty<IPerformanceFilter>();
+
+        List<IPerformanceFilter> mergedFilters = new List<IPerformanceFilter>();
+        foreach (var subscription in subscriptions)
         {
-            _dbService = dbService;
-            _filterService = filterService;
-        }
+            PerformanceFilterEntity newFilter = subscription.PerformanceFilter;
 
-        public IPerformanceFilter[] GetUpdateFilters()
-        {
-            using var subscriptionRepository = _dbService.GetSubscriptionRepository();
-            using var playbillRepository = _dbService.GetPlaybillRepository();
+            if (newFilter == null)
+                continue;
 
-            var subscriptions = subscriptionRepository.GetAllWithFilter().ToArray();
-            if (!subscriptions.Any())
-                return Array.Empty<IPerformanceFilter>();
+            if (!string.IsNullOrEmpty(newFilter.PerformanceName))
+                continue;
 
-            List<IPerformanceFilter> mergedFilters = new List<IPerformanceFilter>();
-            foreach (var subscription in subscriptions)
+            DateTime startDate;
+            DateTime endDate;
+
+            if (newFilter.PlaybillId == -1)
             {
-                PerformanceFilterEntity newFilter = subscription.PerformanceFilter;
+                startDate = newFilter.StartDate;
+                endDate = newFilter.EndDate;
+            }
+            else
+            {
+                var playbillEntry = playbillRepository.Get(newFilter.PlaybillId);
 
-                if (newFilter == null)
+                if (null == playbillEntry)
                     continue;
 
-                if (!string.IsNullOrEmpty(newFilter.PerformanceName))
-                    continue;
-
-                DateTime startDate;
-                DateTime endDate;
-
-                if (newFilter.PlaybillId == -1)
-                {
-                    startDate = newFilter.StartDate;
-                    endDate = newFilter.EndDate;
-                }
-                else
-                {
-                    var playbillEntry = playbillRepository.Get(newFilter.PlaybillId);
-
-                    if (null == playbillEntry)
-                        continue;
-
-                    int year = playbillEntry.When.Year;
-                    int month = playbillEntry.When.Month;
-                    startDate = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
-                    endDate = startDate.AddMonths(1);
-                }
-
-                MergeFilters(mergedFilters, _filterService.GetFilter(startDate, endDate));
+                int year = playbillEntry.When.Year;
+                int month = playbillEntry.When.Month;
+                startDate = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+                endDate = startDate.AddMonths(1);
             }
 
-            Trace.TraceInformation("Get update filter finished");
-            return mergedFilters.ToArray();
+            MergeFilters(mergedFilters, _filterService.GetFilter(startDate, endDate));
         }
 
-        // first was coded the simplest merge
-        private void MergeFilters(List<IPerformanceFilter> filters, IPerformanceFilter newFilter)
-        {
-            if (!filters.Any(filter =>
+        Trace.TraceInformation("Get update filter finished");
+        return mergedFilters.ToArray();
+    }
+
+    // first was coded the simplest merge
+    private void MergeFilters(List<IPerformanceFilter> filters, IPerformanceFilter newFilter)
+    {
+        if (!filters.Any(filter =>
                 filter.StartDate.Year == newFilter.StartDate.Year &&
                 filter.StartDate.Month == newFilter.StartDate.Month))
-            {
-                filters.Add(newFilter);
-            }
+        {
+            filters.Add(newFilter);
         }
     }
 }

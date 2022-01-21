@@ -1,8 +1,7 @@
-﻿namespace theatrel.Interfaces.Cast
+﻿namespace theatrel.Interfaces.Cast;
+
+public interface IActor
 {
-    public interface IActor
-    {
-        string Name { get; set; }
-        string Url { get; set; }
-    }
+    string Name { get; set; }
+    string Url { get; set; }
 }

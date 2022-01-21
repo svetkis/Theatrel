@@ -15,89 +15,88 @@ using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Playbill;
 using Xunit;
 
-namespace theatrel.DataUpdater.Tests
+namespace theatrel.DataUpdater.Tests;
+
+public class DataUpdaterUpdateTest : DataUpdaterTestBase
 {
-    public class DataUpdaterUpdateTest : DataUpdaterTestBase
+    public DataUpdaterUpdateTest(DatabaseFixture fixture) : base(fixture)
     {
-        public DataUpdaterUpdateTest(DatabaseFixture fixture) : base(fixture)
-        {
-        }
+    }
 
-        private static async Task<int> ConfigureDb(AppDbContext dbContext, string url, DateTime performanceDateTime)
-        {
-            DateTime dt1 = performanceDateTime.AddDays(-3);
-            DateTime dt2 = performanceDateTime.AddDays(-2);
+    private static async Task<int> ConfigureDb(AppDbContext dbContext, string url, DateTime performanceDateTime)
+    {
+        DateTime dt1 = performanceDateTime.AddDays(-3);
+        DateTime dt2 = performanceDateTime.AddDays(-2);
 
-            var playbillEntryWithDecreasedPrice = new PlaybillEntity
+        var playbillEntryWithDecreasedPrice = new PlaybillEntity
+        {
+            Performance = new PerformanceEntity
             {
-                Performance = new PerformanceEntity
-                {
-                    Name = "TestOpera",
-                    Location = new LocationsEntity { Name = "TestLocation" },
-                    Type = new PerformanceTypeEntity { TypeName = "Opera" }
+                Name = "TestOpera",
+                Location = new LocationsEntity { Name = "TestLocation" },
+                Type = new PerformanceTypeEntity { TypeName = "Opera" }
 
+            },
+            When = performanceDateTime,
+            TicketsUrl = url,
+            Changes = new List<PlaybillChangeEntity>
+            {
+                new PlaybillChangeEntity
+                {
+                    LastUpdate = dt1,
+                    MinPrice = 800,
+                    ReasonOfChanges =(int)ReasonOfChanges.StartSales,
                 },
-                When = performanceDateTime,
-                TicketsUrl = url,
-                Changes = new List<PlaybillChangeEntity>
+                new PlaybillChangeEntity
                 {
-                    new PlaybillChangeEntity
-                    {
-                        LastUpdate = dt1,
-                        MinPrice = 800,
-                        ReasonOfChanges =(int)ReasonOfChanges.StartSales,
-                    },
-                    new PlaybillChangeEntity
-                    {
-                        LastUpdate = dt2,
-                        MinPrice = 500,
-                        ReasonOfChanges =(int)ReasonOfChanges.PriceDecreased,
-                    }
+                    LastUpdate = dt2,
+                    MinPrice = 500,
+                    ReasonOfChanges =(int)ReasonOfChanges.PriceDecreased,
                 }
-            };
+            }
+        };
 
-            dbContext.Playbill.Add(playbillEntryWithDecreasedPrice);
-            await dbContext.SaveChangesAsync();
+        dbContext.Playbill.Add(playbillEntryWithDecreasedPrice);
+        await dbContext.SaveChangesAsync();
 
-            return playbillEntryWithDecreasedPrice.Id;
-        }
+        return playbillEntryWithDecreasedPrice.Id;
+    }
 
 
-        [Fact]
-        public async Task TestUpdate()
-        {
-            string testPerformanceUrl = "testUrl";
-            DateTime performanceDateTime = DateTime.UtcNow;
+    [Fact]
+    public async Task TestUpdate()
+    {
+        string testPerformanceUrl = "testUrl";
+        DateTime performanceDateTime = DateTime.UtcNow;
 
-            Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
-            playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<int>(), It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(new[]
-                {
-                    GetPerformanceMock("testOpera", 300, "testUrl", performanceDateTime, "loc1", "opera")
-                }));
-
-            await using var db = Fixture.RootScope.Resolve<IDbService>().GetDbContext();
-
-            await using ILifetimeScope scope = Fixture.RootScope.BeginLifetimeScope(builder =>
+        Mock<IPlayBillDataResolver> playBillResolverMock = new Mock<IPlayBillDataResolver>();
+        playBillResolverMock.Setup(h => h.RequestProcess(It.IsAny<int>(), It.IsAny<IPerformanceFilter>(), It.IsAny<CancellationToken>()))
+            .Returns(() => Task.FromResult(new[]
             {
-                builder.RegisterInstance(playBillResolverMock.Object).As<IPlayBillDataResolver>().AsImplementedInterfaces();
-            });
+                GetPerformanceMock("testOpera", 300, "testUrl", performanceDateTime, "loc1", "opera")
+            }));
 
-            int playbillEntryId = await ConfigureDb(db, testPerformanceUrl, performanceDateTime);
+        await using var db = Fixture.RootScope.Resolve<IDbService>().GetDbContext();
 
-            var dataUpdater = scope.Resolve<IDbPlaybillUpdater>();
+        await using ILifetimeScope scope = Fixture.RootScope.BeginLifetimeScope(builder =>
+        {
+            builder.RegisterInstance(playBillResolverMock.Object).As<IPlayBillDataResolver>().AsImplementedInterfaces();
+        });
 
-            //test
-            await dataUpdater.UpdateAsync(1, performanceDateTime, performanceDateTime, CancellationToken.None);
+        int playbillEntryId = await ConfigureDb(db, testPerformanceUrl, performanceDateTime);
 
-            //check
-            var changes = db.PlaybillChanges
-                .Where(c => c.PlaybillEntityId == playbillEntryId)
-                .OrderBy(d => d.LastUpdate);
+        var dataUpdater = scope.Resolve<IDbPlaybillUpdater>();
 
-            Assert.Equal(2, changes.Count());
-            Assert.Equal((int)ReasonOfChanges.PriceDecreased, changes.Last().ReasonOfChanges);
-            Assert.Equal((int)ReasonOfChanges.StartSales, changes.First().ReasonOfChanges);
-        }
+        //test
+        await dataUpdater.UpdateAsync(1, performanceDateTime, performanceDateTime, CancellationToken.None);
+
+        //check
+        var changes = db.PlaybillChanges
+            .Where(c => c.PlaybillEntityId == playbillEntryId)
+            .OrderBy(d => d.LastUpdate);
+
+        Assert.Equal(2, changes.Count());
+        Assert.Equal((int)ReasonOfChanges.PriceDecreased, changes.Last().ReasonOfChanges);
+        Assert.Equal((int)ReasonOfChanges.StartSales, changes.First().ReasonOfChanges);
     }
 }

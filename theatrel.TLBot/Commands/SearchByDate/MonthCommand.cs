@@ -9,80 +9,79 @@ using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands.SearchByDate
+namespace theatrel.TLBot.Commands.SearchByDate;
+
+internal class MonthCommand : DialogCommandBase
 {
-    internal class MonthCommand : DialogCommandBase
+    private const string Msg = "Какой месяц Вас интересует?";
+    private readonly string[] _monthNames;
+    private readonly string[] _monthNamesAbbreviated;
+
+    protected override string ReturnCommandMessage { get; set; } = "Выбрать другой месяц";
+
+    public override string Name => "Выбрать месяц";
+
+    public MonthCommand(IDbService dbService) : base(dbService)
     {
-        private const string Msg = "Какой месяц Вас интересует?";
-        private readonly string[] _monthNames;
-        private readonly string[] _monthNamesAbbreviated;
+        var cultureRu = CultureInfo.CreateSpecificCulture("ru");
 
-        protected override string ReturnCommandMessage { get; set; } = "Выбрать другой месяц";
+        _monthNames = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetMonthName(num)).ToArray();
+        _monthNamesAbbreviated = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetAbbreviatedMonthName(num)).ToArray();
 
-        public override string Name => "Выбрать месяц";
-
-        public MonthCommand(IDbService dbService) : base(dbService)
+        var buttons = _monthNames.Select(m => new KeyboardButton(m)).ToArray();
+        CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
         {
-            var cultureRu = CultureInfo.CreateSpecificCulture("ru");
+            OneTimeKeyboard = true,
+            ResizeKeyboard = true
+        };
+    }
 
-            _monthNames = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetMonthName(num)).ToArray();
-            _monthNamesAbbreviated = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetAbbreviatedMonthName(num)).ToArray();
+    public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => 0 != GetMonth(message.Trim().ToLower());
 
-            var buttons = _monthNames.Select(m => new KeyboardButton(m)).ToArray();
-            CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
-            {
-                OneTimeKeyboard = true,
-                ResizeKeyboard = true
-            };
+    private int GetMonth(string msg)
+    {
+        if (int.TryParse(msg, out var value))
+        {
+            if (value > 0 && value < 12)
+                return value;
+
+            return 0;
         }
 
-        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => 0 != GetMonth(message.Trim().ToLower());
+        int num = CheckEnumerable(_monthNames, msg);
+        if (num != 0)
+            return num;
 
-        private int GetMonth(string msg)
-        {
-            if (int.TryParse(msg, out var value))
-            {
-                if (value > 0 && value < 12)
-                    return value;
+        int numAbr = CheckEnumerable(_monthNamesAbbreviated, msg);
 
-                return 0;
-            }
+        return numAbr;
+    }
 
-            int num = CheckEnumerable(_monthNames, msg);
-            if (num != 0)
-                return num;
+    public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+    {
+        int month = GetMonth(message.Trim().ToLower());
 
-            int numAbr = CheckEnumerable(_monthNamesAbbreviated, msg);
+        int year = DateTime.UtcNow.Month > month ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
 
-            return numAbr;
-        }
+        chatInfo.When = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
-        {
-            int month = GetMonth(message.Trim().ToLower());
+        var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
 
-            int year = DateTime.UtcNow.Month > month ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
+        var userMsg = $"{YouSelected} {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}";
 
-            chatInfo.When = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+        return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(userMsg, ReturnKeyboardMarkup));
+    }
 
-            var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
+    public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+    {
+        return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(Msg, CommandKeyboardMarkup));
+    }
 
-            var userMsg = $"{YouSelected} {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}";
+    private int CheckEnumerable(string[] checkedData, string msg)
+    {
+        var monthData = checkedData.Select((month, idx) => new { idx, month })
+            .FirstOrDefault(data => msg.Equals(data.month, StringComparison.OrdinalIgnoreCase));
 
-            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(userMsg, ReturnKeyboardMarkup));
-        }
-
-        public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
-        {
-            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(Msg, CommandKeyboardMarkup));
-        }
-
-        private int CheckEnumerable(string[] checkedData, string msg)
-        {
-            var monthData = checkedData.Select((month, idx) => new { idx, month })
-                .FirstOrDefault(data => msg.Equals(data.month, StringComparison.OrdinalIgnoreCase));
-
-            return monthData?.idx + 1 ?? 0;
-        }
+        return monthData?.idx + 1 ?? 0;
     }
 }

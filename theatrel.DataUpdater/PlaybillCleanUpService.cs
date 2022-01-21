@@ -3,29 +3,28 @@ using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.DataUpdater;
 
-namespace theatrel.DataUpdater
+namespace theatrel.DataUpdater;
+
+internal class PlaybillCleanUpService : IPlaybillCleanUpService
 {
-    internal class PlaybillCleanUpService : IPlaybillCleanUpService
+    private readonly IDbService _dbService;
+    public PlaybillCleanUpService(IDbService dbService)
     {
-        private readonly IDbService _dbService;
-        public PlaybillCleanUpService(IDbService dbService)
+        _dbService = dbService;
+    }
+
+    public async Task<bool> CleanUp()
+    {
+        using IPlaybillRepository repo = _dbService.GetPlaybillRepository();
+
+        var oldPlaybillEntities = repo.GetOutdatedList();
+        bool result = true;
+        foreach (var entity in oldPlaybillEntities)
         {
-            _dbService = dbService;
+            if (await repo.Delete(entity))
+                result = false;
         }
 
-        public async Task<bool> CleanUp()
-        {
-            using IPlaybillRepository repo = _dbService.GetPlaybillRepository();
-
-            var oldPlaybillEntities = repo.GetOutdatedList();
-            bool result = true;
-            foreach (var entity in oldPlaybillEntities)
-            {
-                if (await repo.Delete(entity))
-                    result = false;
-            }
-
-            return result;
-        }
+        return result;
     }
 }

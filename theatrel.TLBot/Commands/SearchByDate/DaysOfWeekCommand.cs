@@ -12,91 +12,90 @@ using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands.SearchByDate
+namespace theatrel.TLBot.Commands.SearchByDate;
+
+internal class DaysOfWeekCommand : DialogCommandBase
 {
-    internal class DaysOfWeekCommand : DialogCommandBase
+    protected override string ReturnCommandMessage { get; set; } = "Выбрать другие дни";
+
+    public override string Name => "Выберите день недели";
+
+    public DaysOfWeekCommand(IDbService dbService) : base(dbService)
     {
-        protected override string ReturnCommandMessage { get; set; } = "Выбрать другие дни";
-
-        public override string Name => "Выберите день недели";
-
-        public DaysOfWeekCommand(IDbService dbService) : base(dbService)
+        var cultureRu = CultureInfo.CreateSpecificCulture("ru");
+        List<KeyboardButton> buttons = new List<KeyboardButton>
         {
-            var cultureRu = CultureInfo.CreateSpecificCulture("ru");
-            List<KeyboardButton> buttons = new List<KeyboardButton>
-            {
-                new KeyboardButton(DaysOfWeekHelper.WeekDaysNames.First()),
-                new KeyboardButton(DaysOfWeekHelper.WeekendsNames.First()),
-                new KeyboardButton(DaysOfWeekHelper.AllDaysNames.First())
-            };
+            new KeyboardButton(DaysOfWeekHelper.WeekDaysNames.First()),
+            new KeyboardButton(DaysOfWeekHelper.WeekendsNames.First()),
+            new KeyboardButton(DaysOfWeekHelper.AllDaysNames.First())
+        };
 
-            foreach (var idx in Enumerable.Range(1, 7))
-            {
-                buttons.Add(new KeyboardButton(cultureRu.DateTimeFormat.GetDayName((DayOfWeek)(idx % 7)).ToLower()));
-            }
-
-            CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
-            {
-                OneTimeKeyboard = true,
-                ResizeKeyboard = true
-            };
+        foreach (var idx in Enumerable.Range(1, 7))
+        {
+            buttons.Add(new KeyboardButton(cultureRu.DateTimeFormat.GetDayName((DayOfWeek)(idx % 7)).ToLower()));
         }
 
-        public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
         {
-            var days = ParseMessage(message);
-            chatInfo.Days = days;
+            OneTimeKeyboard = true,
+            ResizeKeyboard = true
+        };
+    }
 
-            var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
-            string responseDays = DaysOfWeekHelper.GetDaysDescription(chatInfo.Days, culture);
+    public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+    {
+        var days = ParseMessage(message);
+        chatInfo.Days = days;
 
-            return Task.FromResult<ITgCommandResponse>(
-               new TgCommandResponse($"{YouSelected} {responseDays}. {ReturnMsg}", ReturnCommandMessage));
+        var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
+        string responseDays = DaysOfWeekHelper.GetDaysDescription(chatInfo.Days, culture);
+
+        return Task.FromResult<ITgCommandResponse>(
+            new TgCommandResponse($"{YouSelected} {responseDays}. {ReturnMsg}", ReturnCommandMessage));
+    }
+
+    public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message)
+    {
+        DayOfWeek[] days = ParseMessage(message);
+        return days.Any();
+    }
+
+    public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+    {
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine("В какой день недели Вы хотели бы посетить театр? Вы можете выбрать несколько дней.");
+        return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup));
+    }
+
+    private DayOfWeek[] ParseMessage(string message)
+    {
+        List<DayOfWeek> days = new List<DayOfWeek>();
+        foreach (var daysArray in SplitMessage(message).Select(ParseMessagePart).Where(arr => arr != null && arr.Any()))
+        {
+            days.AddRange(daysArray);
         }
 
-        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message)
-        {
-            DayOfWeek[] days = ParseMessage(message);
-            return days.Any();
-        }
+        return days.Distinct().OrderBy(item => (int)item).ToArray();
+    }
 
-        public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
-        {
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine("В какой день недели Вы хотели бы посетить театр? Вы можете выбрать несколько дней.");
-            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(stringBuilder.ToString(), CommandKeyboardMarkup));
-        }
+    private string[] SplitMessage(string message) => message.Split(WordSplitters).Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
 
-        private DayOfWeek[] ParseMessage(string message)
-        {
-            List<DayOfWeek> days = new List<DayOfWeek>();
-            foreach (var daysArray in SplitMessage(message).Select(ParseMessagePart).Where(arr => arr != null && arr.Any()))
-            {
-                days.AddRange(daysArray);
-            }
+    private DayOfWeek[] ParseMessagePart(string messagePart)
+    {
+        if (string.IsNullOrEmpty(messagePart))
+            return Array.Empty<DayOfWeek>();
 
-            return days.Distinct().OrderBy(item => (int)item).ToArray();
-        }
+        if (DaysOfWeekHelper.WeekendsNames.Any(name => string.Equals(name, messagePart, StringComparison.OrdinalIgnoreCase)))
+            return DaysOfWeekHelper.Weekends;
 
-        private string[] SplitMessage(string message) => message.Split(WordSplitters).Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
+        if (DaysOfWeekHelper.WeekDaysNames.Any(name => string.Equals(name, messagePart, StringComparison.OrdinalIgnoreCase)))
+            return DaysOfWeekHelper.WeekDays;
 
-        private DayOfWeek[] ParseMessagePart(string messagePart)
-        {
-            if (string.IsNullOrEmpty(messagePart))
-                return Array.Empty<DayOfWeek>();
+        if (DaysOfWeekHelper.AllDaysNames.Any(name => string.Equals(name, messagePart, StringComparison.OrdinalIgnoreCase)))
+            return DaysOfWeekHelper.AllDays;
 
-            if (DaysOfWeekHelper.WeekendsNames.Any(name => string.Equals(name, messagePart, StringComparison.OrdinalIgnoreCase)))
-                return DaysOfWeekHelper.Weekends;
+        string key = messagePart.ToLower();
 
-            if (DaysOfWeekHelper.WeekDaysNames.Any(name => string.Equals(name, messagePart, StringComparison.OrdinalIgnoreCase)))
-                return DaysOfWeekHelper.WeekDays;
-
-            if (DaysOfWeekHelper.AllDaysNames.Any(name => string.Equals(name, messagePart, StringComparison.OrdinalIgnoreCase)))
-                return DaysOfWeekHelper.AllDays;
-
-            string key = messagePart.ToLower();
-
-            return !DaysOfWeekHelper.DaysDictionary.ContainsKey(key) ? Array.Empty<DayOfWeek>() : DaysOfWeekHelper.DaysDictionary[key];
-        }
+        return !DaysOfWeekHelper.DaysDictionary.ContainsKey(key) ? Array.Empty<DayOfWeek>() : DaysOfWeekHelper.DaysDictionary[key];
     }
 }

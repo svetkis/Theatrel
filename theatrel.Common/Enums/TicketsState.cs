@@ -1,10 +1,9 @@
-﻿namespace theatrel.Common.Enums
+﻿namespace theatrel.Common.Enums;
+
+public enum TicketsState
 {
-    public enum TicketsState
-    {
-        NoTickets,
-        TechnicalError,
-        PerformanceWasMoved,
-        Ok
-    }
+    NoTickets,
+    TechnicalError,
+    PerformanceWasMoved,
+    Ok
 }

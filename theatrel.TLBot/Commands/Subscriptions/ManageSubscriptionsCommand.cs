@@ -14,180 +14,179 @@ using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands.Subscriptions
+namespace theatrel.TLBot.Commands.Subscriptions;
+
+internal class ManageSubscriptionsCommand : DialogCommandBase
 {
-    internal class ManageSubscriptionsCommand : DialogCommandBase
+    private const string DeleteAll = "Удалить все";
+    private const string DeleteMany = "Удалить";
+    private const string NothingTodo = "Оставить как есть";
+    private readonly ITimeZoneService _timeZoneService;
+
+    protected override string ReturnCommandMessage { get; set; } = string.Empty;
+
+    public override string Name => "Редактировать подписки";
+
+    public ManageSubscriptionsCommand(IDbService dbService, ITimeZoneService timeZoneService) : base(dbService)
     {
-        private const string DeleteAll = "Удалить все";
-        private const string DeleteMany = "Удалить";
-        private const string NothingTodo = "Оставить как есть";
-        private readonly ITimeZoneService _timeZoneService;
+        _timeZoneService = timeZoneService;
+    }
 
-        protected override string ReturnCommandMessage { get; set; } = string.Empty;
+    public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message)
+    {
+        string trimMsg = message.Trim();
+        if (string.Equals(trimMsg, DeleteAll, StringComparison.InvariantCultureIgnoreCase))
+            return true;
 
-        public override string Name => "Редактировать подписки";
+        if (string.Equals(trimMsg, NothingTodo, StringComparison.InvariantCultureIgnoreCase))
+            return true;
 
-        public ManageSubscriptionsCommand(IDbService dbService, ITimeZoneService timeZoneService) : base(dbService)
+        if (new[] { DeleteMany }.Any(s => trimMsg.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)))
+            return true;
+
+        return false;
+    }
+
+    private static int GetInt(string msg)
+    {
+        if (int.TryParse(msg, out var value))
         {
-            _timeZoneService = timeZoneService;
+            return value - 1;
         }
 
-        public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message)
+        return -1;
+    }
+
+    private static int[] GetInts(string msg)
+    {
+        if (string.IsNullOrEmpty(msg))
+            return null;
+
+        string[] splitData = msg.Split(",");
+
+        return splitData.Select(s => GetInt(s.Trim())).ToArray();
+    }
+
+    public override async Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+    {
+        string trimMsg = message.Trim().ToLower();
+
+        bool isDeleteAll = string.Equals(trimMsg, DeleteAll, StringComparison.InvariantCultureIgnoreCase);
+        bool isDeleteMany = trimMsg.StartsWith(DeleteMany, StringComparison.InvariantCultureIgnoreCase);
+
+        if (!(isDeleteAll || isDeleteMany))
+            return new TgCommandResponse(null);
+
+        using var subscriptionRepository = DbService.GetSubscriptionRepository();
+
+        SubscriptionEntity[] toDelete = null;
+
+        if (isDeleteAll)
+            toDelete = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
+
+        bool isDeleteOnlyOne = false;
+
+        if (isDeleteMany && !isDeleteAll)
         {
-            string trimMsg = message.Trim();
-            if (string.Equals(trimMsg, DeleteAll, StringComparison.InvariantCultureIgnoreCase))
-                return true;
-
-            if (string.Equals(trimMsg, NothingTodo, StringComparison.InvariantCultureIgnoreCase))
-                return true;
-
-            if (new[] { DeleteMany }.Any(s => trimMsg.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)))
-                return true;
-
-            return false;
-        }
-
-        private static int GetInt(string msg)
-        {
-            if (int.TryParse(msg, out var value))
+            int[] indexes = GetInts(trimMsg.Substring(DeleteMany.Length + 1));
+            isDeleteOnlyOne = indexes.Length == 1;
+            var subscriptions = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
+            if (indexes == null || indexes.Any(i => i > subscriptions.Length - 1 || i < 0))
             {
-                return value - 1;
+                return new TgCommandResponse("Произошла ошибка. Не правильный индекс подписки.");
             }
 
-            return -1;
+            toDelete = subscriptions.Select((s, i) => new { idx = i, subscription = s })
+                .Where(d => indexes.Contains(d.idx)).Select(d => d.subscription).ToArray();
         }
 
-        private static int[] GetInts(string msg)
+        if (null == toDelete) // no command
         {
-            if (string.IsNullOrEmpty(msg))
-                return null;
-
-            string[] splitData = msg.Split(",");
-
-            return splitData.Select(s => GetInt(s.Trim())).ToArray();
+            return new TgCommandResponse(null);
         }
 
-        public override async Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+        bool result = await subscriptionRepository.DeleteRange(toDelete);
+
+        if (!result)
+            return new TgCommandResponse("Произошла ошибка при удалении.");
+
+        return new TgCommandResponse(isDeleteOnlyOne ? "Подписка была успешно удалена" : "Ваши подписки были успешно удалены.")
         {
-            string trimMsg = message.Trim().ToLower();
+            NeedToRepeat = !isDeleteAll
+        };
+    }
 
-            bool isDeleteAll = string.Equals(trimMsg, DeleteAll, StringComparison.InvariantCultureIgnoreCase);
-            bool isDeleteMany = trimMsg.StartsWith(DeleteMany, StringComparison.InvariantCultureIgnoreCase);
+    public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+    {
+        using var subscriptionRepository = DbService.GetSubscriptionRepository();
+        SubscriptionEntity[] subscriptions = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
 
-            if (!(isDeleteAll || isDeleteMany))
-                return new TgCommandResponse(null);
+        using var playbillRepository = DbService.GetPlaybillRepository();
 
-            using var subscriptionRepository = DbService.GetSubscriptionRepository();
+        if (!subscriptions.Any())
+            return Task.FromResult<ITgCommandResponse>(new TgCommandResponse("У вас нет подписок."));
 
-            SubscriptionEntity[] toDelete = null;
+        List<KeyboardButton> buttons = new List<KeyboardButton>();
 
-            if (isDeleteAll)
-                toDelete = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
+        var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
 
-            bool isDeleteOnlyOne = false;
+        var stringBuilder = new StringBuilder();
 
-            if (isDeleteMany && !isDeleteAll)
+        stringBuilder.AppendLine("Ваши подписки:");
+
+        for (int i = 0; i < subscriptions.Length; ++i)
+        {
+            var filter = subscriptions[i].PerformanceFilter;
+            var changesDescription = subscriptions[i].TrackingChanges.GetTrackingChangesDescription().ToLower();
+
+            if (!string.IsNullOrEmpty(filter.PerformanceName))
             {
-                int[] indexes = GetInts(trimMsg.Substring(DeleteMany.Length + 1));
-                isDeleteOnlyOne = indexes.Length == 1;
-                var subscriptions = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
-                if (indexes == null || indexes.Any(i => i > subscriptions.Length - 1 || i < 0))
-                {
-                    return new TgCommandResponse("Произошла ошибка. Не правильный индекс подписки.");
-                }
+                string locations = filter.Locations == null
+                    ? "все площадки"
+                    : string.Join("или ", filter.Locations);
 
-                toDelete = subscriptions.Select((s, i) => new { idx = i, subscription = s })
-                    .Where(d => indexes.Contains(d.idx)).Select(d => d.subscription).ToArray();
+                stringBuilder.AppendLine($" {i + 1}. Название содержит \"{filter.PerformanceName}\", место проведения: {locations} отслеживаемые события: {changesDescription}");
             }
-
-            if (null == toDelete) // no command
+            else if (filter.PlaybillId == -1)
             {
-                return new TgCommandResponse(null);
+                string locations = filter.Locations == null
+                    ? "все площадки"
+                    : string.Join("или ", filter.Locations);
+
+                string monthName = culture.DateTimeFormat.GetMonthName(filter.StartDate.Month);
+
+                string days = DaysOfWeekHelper.GetDaysDescription(filter.DaysOfWeek, culture);
+
+                string types = filter.PerformanceTypes == null
+                    ? "все представления"
+                    : string.Join("или ", filter.PerformanceTypes);
+
+                stringBuilder.AppendLine($" {i + 1}. {monthName} {filter.StartDate.Year}, место проведения: {locations}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
             }
-
-            bool result = await subscriptionRepository.DeleteRange(toDelete);
-
-            if (!result)
-                return new TgCommandResponse("Произошла ошибка при удалении.");
-
-            return new TgCommandResponse(isDeleteOnlyOne ? "Подписка была успешно удалена" : "Ваши подписки были успешно удалены.")
+            else
             {
-                NeedToRepeat = !isDeleteAll
-            };
-        }
+                var playbillEntry = playbillRepository.GetWithName(filter.PlaybillId);
 
-        public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
-        {
-            using var subscriptionRepository = DbService.GetSubscriptionRepository();
-            SubscriptionEntity[] subscriptions = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
-
-            using var playbillRepository = DbService.GetPlaybillRepository();
-
-            if (!subscriptions.Any())
-                return Task.FromResult<ITgCommandResponse>(new TgCommandResponse("У вас нет подписок."));
-
-            List<KeyboardButton> buttons = new List<KeyboardButton>();
-
-            var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
-
-            var stringBuilder = new StringBuilder();
-
-            stringBuilder.AppendLine("Ваши подписки:");
-
-            for (int i = 0; i < subscriptions.Length; ++i)
-            {
-                var filter = subscriptions[i].PerformanceFilter;
-                var changesDescription = subscriptions[i].TrackingChanges.GetTrackingChangesDescription().ToLower();
-
-                if (!string.IsNullOrEmpty(filter.PerformanceName))
-                {
-                    string locations = filter.Locations == null
-                        ? "все площадки"
-                        : string.Join("или ", filter.Locations);
-
-                    stringBuilder.AppendLine($" {i + 1}. Название содержит \"{filter.PerformanceName}\", место проведения: {locations} отслеживаемые события: {changesDescription}");
-                }
-                else if (filter.PlaybillId == -1)
-                {
-                    string locations = filter.Locations == null
-                        ? "все площадки"
-                        : string.Join("или ", filter.Locations);
-
-                    string monthName = culture.DateTimeFormat.GetMonthName(filter.StartDate.Month);
-
-                    string days = DaysOfWeekHelper.GetDaysDescription(filter.DaysOfWeek, culture);
-
-                    string types = filter.PerformanceTypes == null
-                        ? "все представления"
-                        : string.Join("или ", filter.PerformanceTypes);
-
-                    stringBuilder.AppendLine($" {i + 1}. {monthName} {filter.StartDate.Year}, место проведения: {locations}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
-                }
+                if (playbillEntry == null)
+                    stringBuilder.AppendLine($" {i + 1}. Подписка на уже прошедший спектакль, отслеживаемые события: {changesDescription}");
                 else
                 {
-                    var playbillEntry = playbillRepository.GetWithName(filter.PlaybillId);
-
-                    if (playbillEntry == null)
-                        stringBuilder.AppendLine($" {i + 1}. Подписка на уже прошедший спектакль, отслеживаемые события: {changesDescription}");
-                    else
-                    {
-                        var date = _timeZoneService.GetLocalTime(playbillEntry.When).ToString("ddMMM HH:mm", culture);
-                        stringBuilder.AppendLine($" {i + 1}. {playbillEntry.Performance.Name} {date}, отслеживаемые события: {changesDescription}");
-                    }
+                    var date = _timeZoneService.GetLocalTime(playbillEntry.When).ToString("ddMMM HH:mm", culture);
+                    stringBuilder.AppendLine($" {i + 1}. {playbillEntry.Performance.Name} {date}, отслеживаемые события: {changesDescription}");
                 }
-
-                buttons.Add(new KeyboardButton($"Удалить {i + 1}"));
             }
 
-            stringBuilder.AppendLine(" Что бы удалить несколько подписок напишите текстом Удалить и номера через запятую, например Удалить 1,2,3");
-
-            return Task.FromResult<ITgCommandResponse>(
-                new TgCommandResponse($"{stringBuilder}",
-                new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons, new[] { new KeyboardButton(DeleteAll), new KeyboardButton(NothingTodo)}))
-            {
-                OneTimeKeyboard = true,
-                ResizeKeyboard = true
-            }));
+            buttons.Add(new KeyboardButton($"Удалить {i + 1}"));
         }
+
+        stringBuilder.AppendLine(" Что бы удалить несколько подписок напишите текстом Удалить и номера через запятую, например Удалить 1,2,3");
+
+        return Task.FromResult<ITgCommandResponse>(
+            new TgCommandResponse($"{stringBuilder}",
+                new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons, new[] { new KeyboardButton(DeleteAll), new KeyboardButton(NothingTodo)}))
+                {
+                    OneTimeKeyboard = true,
+                    ResizeKeyboard = true
+                }));
     }
 }

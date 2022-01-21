@@ -9,73 +9,72 @@ using theatrel.Common.Enums;
 using theatrel.Interfaces.Tickets;
 using theatrel.Lib.Tickets;
 
-namespace theatrel.Lib.MariinskyParsers
+namespace theatrel.Lib.MariinskyParsers;
+
+internal class MariinskyTicketsBlockParser : ITicketsParser
 {
-    internal class MariinskyTicketsBlockParser : ITicketsParser
+    private readonly ITicketParser _ticketParser = new MariinskyTicketParser();
+
+    public async Task<IPerformanceTickets> ParseFromUrl(string url, CancellationToken cancellationToken)
     {
-        private readonly ITicketParser _ticketParser = new MariinskyTicketParser();
+        if (string.IsNullOrEmpty(url))
+            return new PerformanceTickets { State = TicketsState.NoTickets };
 
-        public async Task<IPerformanceTickets> ParseFromUrl(string url, CancellationToken cancellationToken)
+        switch (url)
         {
-            if (string.IsNullOrEmpty(url))
+            case CommonTags.NotDefinedTag:
                 return new PerformanceTickets { State = TicketsState.NoTickets };
-
-            switch (url)
-            {
-                case CommonTags.NotDefinedTag:
-                    return new PerformanceTickets { State = TicketsState.NoTickets };
-                case CommonTags.NoTicketsTag:
-                    return new PerformanceTickets { State = TicketsState.NoTickets };
-                case CommonTags.WasMovedTag:
-                    return new PerformanceTickets { State = TicketsState.PerformanceWasMoved };
-            }
-
-            var content = await PageRequester.Request(url, cancellationToken);
-            return await PrivateParse(content, cancellationToken);
+            case CommonTags.NoTicketsTag:
+                return new PerformanceTickets { State = TicketsState.NoTickets };
+            case CommonTags.WasMovedTag:
+                return new PerformanceTickets { State = TicketsState.PerformanceWasMoved };
         }
 
-        public async Task<IPerformanceTickets> Parse(string data, CancellationToken cancellationToken)
-            => await PrivateParse(data, cancellationToken);
+        var content = await PageRequester.Request(url, cancellationToken);
+        return await PrivateParse(content, cancellationToken);
+    }
 
-        private async Task<IPerformanceTickets> PrivateParse(string data, CancellationToken cancellationToken)
+    public async Task<IPerformanceTickets> Parse(string data, CancellationToken cancellationToken)
+        => await PrivateParse(data, cancellationToken);
+
+    private async Task<IPerformanceTickets> PrivateParse(string data, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(data))
+            return new PerformanceTickets { State = TicketsState.TechnicalError };
+
+        var context = BrowsingContext.New(Configuration.Default);
+        var parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
+
+        IPerformanceTickets performanceTickets = new PerformanceTickets() {State = TicketsState.Ok};
+
+        var tickets = parsedDoc.All.Where(m => 0 == string.Compare(m.TagName, "ticket", StringComparison.OrdinalIgnoreCase));
+        foreach (var ticket in tickets)
         {
-            if (string.IsNullOrEmpty(data))
-                return new PerformanceTickets { State = TicketsState.TechnicalError };
+            cancellationToken.ThrowIfCancellationRequested();
 
-            var context = BrowsingContext.New(Configuration.Default);
-            var parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
+            ITicket ticketData = _ticketParser.Parse(ticket, cancellationToken);
+            if (string.IsNullOrEmpty(ticketData.Region))
+                ticketData.Region = "Зал";
 
-            IPerformanceTickets performanceTickets = new PerformanceTickets() {State = TicketsState.Ok};
-
-            var tickets = parsedDoc.All.Where(m => 0 == string.Compare(m.TagName, "ticket", StringComparison.OrdinalIgnoreCase));
-            foreach (var ticket in tickets)
+            if (performanceTickets.Tickets.ContainsKey(ticketData.Region))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                ITicket ticketData = _ticketParser.Parse(ticket, cancellationToken);
-                if (string.IsNullOrEmpty(ticketData.Region))
-                    ticketData.Region = "Зал";
-
-                if (performanceTickets.Tickets.ContainsKey(ticketData.Region))
-                {
-                    IDictionary<int, int> block = performanceTickets.Tickets[ticketData.Region];
-                    if (block.ContainsKey(ticketData.MinPrice))
-                        ++block[ticketData.MinPrice];
-                    else
-                        block.Add(ticketData.MinPrice, 1);
-                }
+                IDictionary<int, int> block = performanceTickets.Tickets[ticketData.Region];
+                if (block.ContainsKey(ticketData.MinPrice))
+                    ++block[ticketData.MinPrice];
                 else
-                {
-                    performanceTickets.Tickets.Add(ticketData.Region, new Dictionary<int, int> { { ticketData.MinPrice, 1 } });
-                }
+                    block.Add(ticketData.MinPrice, 1);
             }
-
-            if (!tickets.Any())
-                performanceTickets.State = TicketsState.TechnicalError;
-
-            performanceTickets.LastUpdate = DateTime.UtcNow;
-
-            return performanceTickets;
+            else
+            {
+                performanceTickets.Tickets.Add(ticketData.Region, new Dictionary<int, int> { { ticketData.MinPrice, 1 } });
+            }
         }
+
+        if (!tickets.Any())
+            performanceTickets.State = TicketsState.TechnicalError;
+
+        performanceTickets.LastUpdate = DateTime.UtcNow;
+
+        return performanceTickets;
     }
 }

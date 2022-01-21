@@ -2,11 +2,10 @@
 using System.Threading.Tasks;
 using theatrel.Interfaces.Autofac;
 
-namespace theatrel.Interfaces.Tickets
+namespace theatrel.Interfaces.Tickets;
+
+public interface ITicketsParser : IDIRegistrable
 {
-    public interface ITicketsParser : IDIRegistrable
-    {
-        Task<IPerformanceTickets> Parse(string data, CancellationToken cancellationToken);
-        Task<IPerformanceTickets> ParseFromUrl(string url, CancellationToken cancellationToken);
-    }
+    Task<IPerformanceTickets> Parse(string data, CancellationToken cancellationToken);
+    Task<IPerformanceTickets> ParseFromUrl(string url, CancellationToken cancellationToken);
 }

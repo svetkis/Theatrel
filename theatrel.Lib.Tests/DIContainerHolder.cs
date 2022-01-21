@@ -2,37 +2,36 @@
 using Autofac.Core;
 using System;
 
-namespace theatrel.Lib.Tests
+namespace theatrel.Lib.Tests;
+
+public static class DIContainerHolder
 {
-    public static class DIContainerHolder
+    private static readonly ILifetimeScope RootScope;
+
+    static DIContainerHolder()
     {
-        private static readonly ILifetimeScope RootScope;
+        ContainerBuilder containerBuilder = new ContainerBuilder();
 
-        static DIContainerHolder()
-        {
-            ContainerBuilder containerBuilder = new ContainerBuilder();
+        containerBuilder.RegisterModule<DataResolverTestModule>();
+        containerBuilder.RegisterModule<TheatrelLibModule>();
 
-            containerBuilder.RegisterModule<DataResolverTestModule>();
-            containerBuilder.RegisterModule<TheatrelLibModule>();
-
-            RootScope = containerBuilder.Build();
-        }
-
-        public static T Resolve<T>()
-        {
-            if (RootScope == null)
-                throw new Exception("Bootstrapper hasn't been started!");
-
-            return RootScope.Resolve<T>(Array.Empty<Parameter>());
-        }
+        RootScope = containerBuilder.Build();
     }
 
-    public class DataResolverTestModule : Module
+    public static T Resolve<T>()
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.RegisterModule<TheatrelLibModule>();
-            base.Load(builder);
-        }
+        if (RootScope == null)
+            throw new Exception("Bootstrapper hasn't been started!");
+
+        return RootScope.Resolve<T>(Array.Empty<Parameter>());
+    }
+}
+
+public class DataResolverTestModule : Module
+{
+    protected override void Load(ContainerBuilder builder)
+    {
+        builder.RegisterModule<TheatrelLibModule>();
+        base.Load(builder);
     }
 }

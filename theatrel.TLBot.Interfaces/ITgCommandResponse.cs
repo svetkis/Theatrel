@@ -1,7 +1,6 @@
-﻿namespace theatrel.TLBot.Interfaces
+﻿namespace theatrel.TLBot.Interfaces;
+
+public interface ITgCommandResponse : ITgOutboundMessage
 {
-    public interface ITgCommandResponse : ITgOutboundMessage
-    {
-        bool NeedToRepeat { get; set; }
-    }
+    bool NeedToRepeat { get; set; }
 }

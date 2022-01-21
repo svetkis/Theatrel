@@ -1,10 +1,9 @@
-﻿namespace theatrel.Common.Enums
+﻿namespace theatrel.Common.Enums;
+
+public enum CastState
 {
-    public enum CastState
-    {
-        CastIsNotSet,
-        TechnicalError,
-        PerformanceWasMoved,
-        Ok
-    }
+    CastIsNotSet,
+    TechnicalError,
+    PerformanceWasMoved,
+    Ok
 }

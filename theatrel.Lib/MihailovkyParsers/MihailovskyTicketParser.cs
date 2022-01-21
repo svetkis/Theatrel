@@ -5,43 +5,41 @@ using theatrel.Interfaces.Tickets;
 using theatrel.Lib.Tickets;
 using theatrel.Lib.Utils;
 
-namespace theatrel.Lib.MihailovkyParsers
+namespace theatrel.Lib.MihailovkyParsers;
+
+public class MihailovskyTicketParser : ITicketParser
 {
-    public class MihailovskyTicketParser : ITicketParser
+    private string ControlContent(string data) => data == null || data.Contains('<') ? string.Empty : data.Trim();
+
+    public ITicket Parse(object ticket, CancellationToken cancellationToken)
     {
-        private string ControlContent(string data) => data == null || data.Contains('<') ? string.Empty : data.Trim();
+        IElement parsedTicket = (IElement)ticket;
 
-        public ITicket Parse(object ticket, CancellationToken cancellationToken)
+        IElement[] allTicketChildren = parsedTicket.QuerySelectorAll("*").ToArray();
+
+        var tickets = new Ticket
         {
-            IElement parsedTicket = (IElement)ticket;
+            Id = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "ID")?.TextContent),
+            Region = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "TREGION")?.TextContent),
+            Side = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "TSIDE")?.TextContent),
+            Row = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "TROW")?.TextContent),
+            Place = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "TPLACE")?.TextContent),
+            MinPrice = GetMinPrice(allTicketChildren)
+        };
 
-            IElement[] allTicketChildren = parsedTicket.QuerySelectorAll("*").ToArray();
-
-            var tickets = new Ticket
-            {
-                Id = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "ID")?.TextContent),
-                Region = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "TREGION")?.TextContent),
-                Side = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "TSIDE")?.TextContent),
-                Row = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "TROW")?.TextContent),
-                Place = ControlContent(allTicketChildren.FirstOrDefault(m => m.TagName == "TPLACE")?.TextContent),
-                MinPrice = GetMinPrice(allTicketChildren)
-            };
-
-            return tickets;
-        }
-
-        //We can see three or two prices, but we are interested only about the lowest one, because it is correct one for RF citizens
-        private int GetMinPrice(IElement[] data)
-        {
-            var prices = new[]
-                {
-                    Helper.ToInt(data.FirstOrDefault(m => 0 == string.Compare(m.TagName, "TPRICE1", true))?.TextContent),
-                    Helper.ToInt(data.FirstOrDefault(m => 0 == string.Compare(m.TagName, "TPRICE2", true))?.TextContent),
-                    Helper.ToInt(data.FirstOrDefault(m => 0 == string.Compare(m.TagName, "TPRICE3", true))?.TextContent)
-                }.Where(price => price > 0);
-
-            return !prices.Any() ? 0 : prices.Min();
-        }
+        return tickets;
     }
 
+    //We can see three or two prices, but we are interested only about the lowest one, because it is correct one for RF citizens
+    private int GetMinPrice(IElement[] data)
+    {
+        var prices = new[]
+        {
+            Helper.ToInt(data.FirstOrDefault(m => 0 == string.Compare(m.TagName, "TPRICE1", true))?.TextContent),
+            Helper.ToInt(data.FirstOrDefault(m => 0 == string.Compare(m.TagName, "TPRICE2", true))?.TextContent),
+            Helper.ToInt(data.FirstOrDefault(m => 0 == string.Compare(m.TagName, "TPRICE3", true))?.TextContent)
+        }.Where(price => price > 0);
+
+        return !prices.Any() ? 0 : prices.Min();
+    }
 }

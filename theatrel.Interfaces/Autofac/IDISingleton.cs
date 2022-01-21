@@ -1,6 +1,5 @@
-﻿namespace theatrel.Interfaces.Autofac
+﻿namespace theatrel.Interfaces.Autofac;
+
+public interface IDISingleton
 {
-    public interface IDISingleton
-    {
-    }
 }

@@ -6,27 +6,26 @@ using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Autofac;
 using theatrel.Interfaces.Filters;
 
-namespace theatrel.DataAccess.Structures.Interfaces
+namespace theatrel.DataAccess.Structures.Interfaces;
+
+public interface ISubscriptionsRepository : IDIRegistrable, IDisposable
 {
-    public interface ISubscriptionsRepository : IDIRegistrable, IDisposable
-    {
-        Task<SubscriptionEntity> Get(int id);
-        IEnumerable<SubscriptionEntity> GetAllWithFilter();
+    Task<SubscriptionEntity> Get(int id);
+    IEnumerable<SubscriptionEntity> GetAllWithFilter();
 
-        SubscriptionEntity[] GetUserSubscriptions(long userId);
+    SubscriptionEntity[] GetUserSubscriptions(long userId);
 
-        IEnumerable<SubscriptionEntity> GetOutdatedList();
+    IEnumerable<SubscriptionEntity> GetOutdatedList();
 
-        Task<bool> ProlongSubscriptions();
+    Task<bool> ProlongSubscriptions();
 
-        Task<SubscriptionEntity> Create(long userId, int reasonOfChange, IPerformanceFilter filter,
-            CancellationToken cancellationToken);
+    Task<SubscriptionEntity> Create(long userId, int reasonOfChange, IPerformanceFilter filter,
+        CancellationToken cancellationToken);
 
-        Task<bool> Delete(SubscriptionEntity entity);
-        public Task<bool> DeleteFilter(PerformanceFilterEntity entity);
-        Task<bool> DeleteRange(IEnumerable<SubscriptionEntity> entity);
-        Task<bool> Update(SubscriptionEntity newValue);
+    Task<bool> Delete(SubscriptionEntity entity);
+    public Task<bool> DeleteFilter(PerformanceFilterEntity entity);
+    Task<bool> DeleteRange(IEnumerable<SubscriptionEntity> entity);
+    Task<bool> Update(SubscriptionEntity newValue);
 
-        PlaybillChangeEntity[] GetFreshChanges(DateTime lastUpdate);
-    }
+    PlaybillChangeEntity[] GetFreshChanges(DateTime lastUpdate);
 }
