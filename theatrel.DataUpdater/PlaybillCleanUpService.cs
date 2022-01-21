@@ -25,6 +25,13 @@ internal class PlaybillCleanUpService : IPlaybillCleanUpService
                 result = false;
         }
 
+        var oldPerformanceEntities = repo.GetOutdatedPerformanceEntities();
+        foreach (var entity in oldPerformanceEntities)
+        {
+            if (await repo.Delete(entity))
+                result = false;
+        }
+
         return result;
     }
 }

@@ -354,6 +354,27 @@ internal class PlaybillRepository : IPlaybillRepository
         return null;
     }
 
+    public IEnumerable<PerformanceEntity> GetOutdatedPerformanceEntities()
+    {
+        try
+        {
+            List<PerformanceEntity> result = new List<PerformanceEntity>();
+            foreach (var performanceEntity in _dbContext.Performances.AsNoTracking().ToArray())
+            {
+                if (!_dbContext.Playbill.Where(x => x.PerformanceId == performanceEntity.Id).AsNoTracking().Any())
+                    result.Add(performanceEntity);
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+        }
+
+        return null;
+    }
+
     public IEnumerable<PlaybillEntity> GetList(DateTime from, DateTime to)
     {
         try
@@ -664,6 +685,22 @@ internal class PlaybillRepository : IPlaybillRepository
         catch (Exception ex)
         {
             Trace.TraceInformation($"Delete PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> Delete(PerformanceEntity entity)
+    {
+        try
+        {
+            _dbContext.Performances.Remove(entity);
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceInformation($"Delete PerformanceEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
             return false;
         }
     }

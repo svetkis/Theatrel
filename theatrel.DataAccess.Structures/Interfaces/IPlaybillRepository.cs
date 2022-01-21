@@ -18,6 +18,8 @@ public interface IPlaybillRepository : IDisposable, IDIRegistrable
 
     IEnumerable<PlaybillEntity> GetOutdatedList();
 
+    IEnumerable<PerformanceEntity> GetOutdatedPerformanceEntities();
+
     Task<PlaybillEntity> AddPlaybill(IPerformanceData data, int reasonOfFirstChanges);
     Task<bool> AddChange(int playbillEntityId, PlaybillChangeEntity change);
     Task<bool> UpdateChangeLastUpdate(int changeId);
@@ -29,6 +31,8 @@ public interface IPlaybillRepository : IDisposable, IDIRegistrable
     bool IsCastEqual(PlaybillEntity playbillEntry, IPerformanceData data);
 
     Task<bool> Delete(PlaybillEntity entity);
+
+    Task<bool> Delete(PerformanceEntity entity);
 
     IEnumerable<LocationsEntity> GetLocationsList();
 }
