@@ -78,8 +78,6 @@ public abstract class UpdateJobBase : IJob
                     await updater.UpdateAsync(TheatreId, filter.StartDate, filter.EndDate, cToken);
                 }
 
-                //we need to be care with memory because heroku has memory limit for free app
-                GC.Collect();
                 MemoryHelper.LogMemoryUsage();
             }
 

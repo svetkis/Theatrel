@@ -57,8 +57,6 @@ public class UpdateJob : IJob
                     await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, cToken);
                 }
 
-                //we need to care about memory because heroku has memory limit for free app
-                GC.Collect();
                 MemoryHelper.LogMemoryUsage();
             }
 
@@ -91,8 +89,6 @@ public class UpdateJob : IJob
 
                 }
 
-                //we need to care about memory because heroku has memory limit for free app
-                GC.Collect();
                 MemoryHelper.LogMemoryUsage();
             }
 
