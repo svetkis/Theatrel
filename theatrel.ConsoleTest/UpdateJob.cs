@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Profiler.Api;
 using theatrel.Common;
 using theatrel.Interfaces.DataUpdater;
 using theatrel.Interfaces.Filters;
@@ -147,9 +148,13 @@ public class UpdateJob : IJob
         {
             Trace.TraceInformation("PlaybillCleanup CleanUpOutDatedSubscriptions");
 
+            MemoryProfiler.GetSnapshot("Before PlaybillCleanup");
+
             await using var scope = Bootstrapper.RootScope.BeginLifetimeScope();
             IPlaybillCleanUpService cleanUpService = scope.Resolve<IPlaybillCleanUpService>();
             await cleanUpService.CleanUp();
+
+            MemoryProfiler.GetSnapshot("After PlaybillCleanup");
 
             return true;
         }
@@ -166,10 +171,13 @@ public class UpdateJob : IJob
         try
         {
             Trace.TraceInformation("Subscriptions CleanUpOutDatedSubscriptions");
+            MemoryProfiler.GetSnapshot("Before CleanUpOutDatedSubscriptions");
 
             await using var scope = Bootstrapper.RootScope.BeginLifetimeScope();
             ISubscriptionsUpdaterService cleanUpService = scope.Resolve<ISubscriptionsUpdaterService>();
             await cleanUpService.CleanUpOutDatedSubscriptions();
+
+            MemoryProfiler.GetSnapshot("After CleanUpOutDatedSubscriptions");
 
             return true;
         }
