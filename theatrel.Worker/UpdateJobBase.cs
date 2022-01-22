@@ -56,6 +56,7 @@ public abstract class UpdateJobBase : IJob
         if (!await SubscriptionsCleanup(context.CancellationToken))
             return;
 
+        GC.Collect();
         MemoryHelper.LogMemoryUsage();
 
         Trace.TraceInformation("UpdateJob was finished");
@@ -80,6 +81,7 @@ public abstract class UpdateJobBase : IJob
                     GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
                 }
 
+                GC.Collect();
                 MemoryHelper.LogMemoryUsage();
             }
 
