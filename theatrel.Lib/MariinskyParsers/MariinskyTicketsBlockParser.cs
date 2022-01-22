@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AngleSharp;
 using theatrel.Common;
 using theatrel.Common.Enums;
+using theatrel.Interfaces.Helpers;
 using theatrel.Interfaces.Tickets;
 using theatrel.Lib.Tickets;
 
@@ -14,6 +15,13 @@ namespace theatrel.Lib.MariinskyParsers;
 internal class MariinskyTicketsBlockParser : ITicketsParser
 {
     private readonly ITicketParser _ticketParser = new MariinskyTicketParser();
+
+    private readonly IPageRequester _pageRequester;
+
+    public MariinskyTicketsBlockParser(IPageRequester pageRequester)
+    {
+        _pageRequester = pageRequester;
+    }
 
     public async Task<IPerformanceTickets> ParseFromUrl(string url, CancellationToken cancellationToken)
     {
@@ -30,7 +38,7 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
                 return new PerformanceTickets { State = TicketsState.PerformanceWasMoved };
         }
 
-        var content = await PageRequester.Request(url, cancellationToken);
+        var content = await _pageRequester.Request(url, cancellationToken);
         return await PrivateParse(content, cancellationToken);
     }
 
@@ -45,7 +53,7 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
         var context = BrowsingContext.New(Configuration.Default);
         var parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
 
-        IPerformanceTickets performanceTickets = new PerformanceTickets() {State = TicketsState.Ok};
+        IPerformanceTickets performanceTickets = new PerformanceTickets {State = TicketsState.Ok};
 
         var tickets = parsedDoc.All.Where(m => 0 == string.Compare(m.TagName, "ticket", StringComparison.OrdinalIgnoreCase));
         foreach (var ticket in tickets)

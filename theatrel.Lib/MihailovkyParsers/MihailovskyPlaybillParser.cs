@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
 using theatrel.Interfaces.Cast;
+using theatrel.Interfaces.Helpers;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
 
@@ -12,7 +13,12 @@ namespace theatrel.Lib.MihailovkyParsers;
 
 public class MihailovskyPlaybillParser : IPlaybillParser
 {
-    private readonly IPerformanceCastParser _castParser = new MihailovskyCastParser();
+    private readonly IPerformanceCastParser _castParser;
+
+    public MihailovskyPlaybillParser(IPageRequester pageRequester)
+    {
+        _castParser = new MihailovskyCastParser(pageRequester);
+    }
 
     public async Task<IPerformanceData[]> Parse(string playbill, IPerformanceParser performanceParser,
         int year, int month, CancellationToken cancellationToken)

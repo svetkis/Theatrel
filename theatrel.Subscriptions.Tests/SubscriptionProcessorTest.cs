@@ -42,7 +42,7 @@ public class SubscriptionProcessorTest : IClassFixture<DatabaseFixture>
         dbContext.TlUsers.Add(tgUser1);
         dbContext.TlUsers.Add(tgUser2);
 
-        var playbillEntryWithDecreasedPrice = new PlaybillEntity()
+        var playbillEntryWithDecreasedPrice = new PlaybillEntity
         {
             Performance = new PerformanceEntity
             {

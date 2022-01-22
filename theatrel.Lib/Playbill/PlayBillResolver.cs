@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using RestSharp;
 using theatrel.Common.Enums;
 using theatrel.Interfaces.Cast;
+using theatrel.Interfaces.EncodingService;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
@@ -19,6 +20,7 @@ namespace theatrel.Lib.Playbill;
 internal class PlayBillResolver : IPlayBillDataResolver
 {
     private readonly IFilterService _filterChecker;
+    private readonly IEncodingService _encodingService;
 
     private readonly Func<Theatre, IPlaybillParser> _playbillParserFactory;
     private readonly Func<Theatre, IPerformanceParser> _performanceParserFactory;
@@ -29,7 +31,8 @@ internal class PlayBillResolver : IPlayBillDataResolver
         Func<Theatre, ITicketsParser> ticketsParserFactory,
         Func<Theatre, IPerformanceCastParser> castParserFactory,
         Func<Theatre, IPerformanceParser> performanceParserFactory,
-        IFilterService filterChecker)
+        IFilterService filterChecker,
+        IEncodingService encodingService)
     {
         _playbillParserFactory = playbillParserFactory;
         _ticketsParserFactory = ticketsParserFactory;
@@ -37,6 +40,7 @@ internal class PlayBillResolver : IPlayBillDataResolver
         _castParserFactory = castParserFactory;
 
         _filterChecker = filterChecker;
+        _encodingService = encodingService;
     }
 
     public async Task<IPerformanceData[]> RequestProcess(int theatre, IPerformanceFilter filter, CancellationToken cancellationToken)
@@ -95,7 +99,7 @@ internal class PlayBillResolver : IPlayBillDataResolver
         return filtered.ToArray();
     }
 
-    private static async Task<string> Request(Theatre id, DateTime date, CancellationToken cancellationToken)
+    private async Task<string> Request(Theatre id, DateTime date, CancellationToken cancellationToken)
     {
         string url = id switch
         {
@@ -107,21 +111,13 @@ internal class PlayBillResolver : IPlayBillDataResolver
 
         RestClient client = new RestClient(url);
 
-        RestRequest request = new RestRequest(Method.GET);
+        RestRequest request = new RestRequest {Method = Method.Get};
 
-        IRestResponse response = await client.ExecuteAsync(request, cancellationToken);
+        RestResponse response = await client.ExecuteAsync(request, cancellationToken);
 
-        if (response.ResponseUri == null || !string.Equals(response.ResponseUri.AbsoluteUri, url))
+        if (!string.Equals(response.ResponseUri.AbsoluteUri, url))
             return null;
 
-        if (!response.ContentType.Contains("1251"))
-            return response.Content;
-
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        Encoding encoding = Encoding.GetEncoding("windows-1251");
-        string result = Encoding.UTF8.GetString(Encoding.Convert(encoding, Encoding.UTF8, response.RawBytes))
-            .Replace("windows-1251", "utf-8");
-
-        return result;
+        return _encodingService.Process(response.Content, response.RawBytes);
     }
 }

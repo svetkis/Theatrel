@@ -9,12 +9,20 @@ using AngleSharp.Dom;
 using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.Interfaces.Cast;
+using theatrel.Interfaces.Helpers;
 using theatrel.Lib.Cast;
 
 namespace theatrel.Lib.MihailovkyParsers;
 
 internal class MihailovskyCastParser : IPerformanceCastParser
 {
+    private readonly IPageRequester _pageRequester;
+
+    public MihailovskyCastParser(IPageRequester pageRequester)
+    {
+        _pageRequester = pageRequester;
+    }
+
     public async Task<IPerformanceCast> ParseFromUrl(string url, bool wasMoved, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(url) || wasMoved)
@@ -28,7 +36,7 @@ internal class MihailovskyCastParser : IPerformanceCastParser
                 return new PerformanceCast { State = CastState.PerformanceWasMoved };
         }
 
-        string content = await PageRequester.Request(url, cancellationToken);
+        string content = await _pageRequester.Request(url, cancellationToken);
         if (null == content)
             return new PerformanceCast { State = CastState.TechnicalError };
 

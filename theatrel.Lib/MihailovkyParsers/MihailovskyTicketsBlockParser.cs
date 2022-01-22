@@ -7,15 +7,20 @@ using AngleSharp;
 using AngleSharp.Dom;
 using theatrel.Common;
 using theatrel.Common.Enums;
+using theatrel.Interfaces.Helpers;
 using theatrel.Interfaces.Tickets;
-using theatrel.Lib.MariinskyParsers;
 using theatrel.Lib.Tickets;
 
 namespace theatrel.Lib.MihailovkyParsers;
 
 internal class MihailovskyTicketsBlockParser : ITicketsParser
 {
-    private readonly ITicketParser _ticketParser = new MariinskyTicketParser();
+    private readonly IPageRequester _pageRequester;
+
+    public MihailovskyTicketsBlockParser(IPageRequester pageRequester)
+    {
+        _pageRequester = pageRequester;
+    }
 
     public async Task<IPerformanceTickets> ParseFromUrl(string url, CancellationToken cancellationToken)
     {
@@ -32,7 +37,7 @@ internal class MihailovskyTicketsBlockParser : ITicketsParser
                 return new PerformanceTickets { State = TicketsState.PerformanceWasMoved };
         }
 
-        var content = await PageRequester.Request(url, cancellationToken);
+        var content = await _pageRequester.Request(url, cancellationToken);
         return await PrivateParse(content, cancellationToken);
     }
 

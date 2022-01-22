@@ -3,26 +3,28 @@ using RestSharp;
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using theatrel.Interfaces.EncodingService;
+using theatrel.Interfaces.Helpers;
 
 namespace theatrel.Lib;
 
-internal class PageRequester
+internal class PageRequester : IPageRequester
 {
-    private PageRequester()
-    { }
+    private readonly IEncodingService _encodingService;
 
-    private static PageRequester _instance;
-    public static PageRequester Instance => _instance ??= new PageRequester();
+    public PageRequester(IEncodingService encodingService)
+    {
+        _encodingService = encodingService;
+    }
 
-    public static async Task<string> Request(string url, CancellationToken cancellationToken)
+    public async Task<string> Request(string url, CancellationToken cancellationToken)
     {
         try
         {
             RestClient client = new RestClient(url);
-            RestRequest request = new RestRequest(Method.GET);
+            RestRequest request = new RestRequest {Method = Method.Get};
 
             return await Policy
                 .Handle<HttpRequestException>()
@@ -31,9 +33,9 @@ internal class PageRequester
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    IRestResponse response = await client.ExecuteAsync(request, cancellationToken);
+                    RestResponse response = await client.ExecuteAsync(request, cancellationToken);
 
-                    if (response.Content.Contains("Страница не найдена"))
+                    if (response.Content == null || response.Content.Contains("Страница не найдена"))
                         throw new HttpRequestException();
 
                     if (response.StatusCode == HttpStatusCode.ServiceUnavailable || response.StatusCode == HttpStatusCode.NotFound
@@ -43,15 +45,7 @@ internal class PageRequester
                     if (response.StatusCode != HttpStatusCode.OK)
                         return null;
 
-                    if (!response.ContentType.Contains("1251"))
-                        return response.Content;
-
-                    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                    Encoding encoding1251 = Encoding.GetEncoding("windows-1251");
-                    string result = Encoding.UTF8.GetString(Encoding.Convert(encoding1251, Encoding.UTF8, response.RawBytes))
-                        .Replace("windows-1251", "utf-8");
-
-                    return result;
+                    return _encodingService.Process(response.Content, response.RawBytes);
                 });
         }
         catch (Exception)

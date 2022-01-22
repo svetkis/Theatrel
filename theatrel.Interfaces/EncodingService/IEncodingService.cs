@@ -1,6 +1,8 @@
-﻿namespace theatrel.Interfaces.EncodingService;
+﻿using theatrel.Interfaces.Autofac;
 
-public interface IEncodingService
+namespace theatrel.Interfaces.EncodingService;
+
+public interface IEncodingService : IDIRegistrable
 {
-    public string Process(string data);
+    public string Process(string data, byte[] bytesData);
 }

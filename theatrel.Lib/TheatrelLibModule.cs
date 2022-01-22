@@ -3,6 +3,7 @@ using Autofac;
 using System.Reflection;
 using theatrel.Interfaces.Autofac;
 using theatrel.Interfaces.Cast;
+using theatrel.Interfaces.Helpers;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Tickets;
 using theatrel.Lib.Enums;
@@ -31,8 +32,8 @@ public class TheatrelLibModule : Autofac.Module
                 var type = p.TypedAs<Theatre>();
                 return type switch
                 {
-                    Theatre.Mariinsky => new MariinskyCastParser(),
-                    Theatre.Mikhailovsky => new MihailovskyCastParser(),
+                    Theatre.Mariinsky => new MariinskyCastParser(c.Resolve<IPageRequester>()),
+                    Theatre.Mikhailovsky => new MihailovskyCastParser(c.Resolve<IPageRequester>()),
                     _ => throw new ArgumentException("Unknown theatre")
                 };
             })
@@ -55,8 +56,8 @@ public class TheatrelLibModule : Autofac.Module
                 var type = p.TypedAs<Theatre>();
                 return type switch
                 {
-                    Theatre.Mariinsky => new MariinskyTicketsBlockParser(),
-                    Theatre.Mikhailovsky => new MihailovskyTicketsBlockParser(),
+                    Theatre.Mariinsky => new MariinskyTicketsBlockParser(c.Resolve<IPageRequester>()),
+                    Theatre.Mikhailovsky => new MihailovskyTicketsBlockParser(c.Resolve<IPageRequester>()),
                     _ => throw new ArgumentException("Unknown theatre")
                 };
             })
@@ -80,7 +81,7 @@ public class TheatrelLibModule : Autofac.Module
                 return type switch
                 {
                     Theatre.Mariinsky => new MariinskyPlaybillParser(),
-                    Theatre.Mikhailovsky => new MihailovskyPlaybillParser(),
+                    Theatre.Mikhailovsky => new MihailovskyPlaybillParser(c.Resolve<IPageRequester>()),
                     _ => throw new ArgumentException("Unknown theatre")
                 };
             })
