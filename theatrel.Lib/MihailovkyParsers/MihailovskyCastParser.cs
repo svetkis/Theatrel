@@ -58,8 +58,8 @@ internal class MihailovskyCastParser : IPerformanceCastParser
 
         try
         {
-            var context = BrowsingContext.New(Configuration.Default);
-            var parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
+            using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
+            using IDocument parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
 
             IElement[] castBlock = parsedDoc.All.Where(c => c.ClassName == " f-ap").ToArray();
 
@@ -79,7 +79,7 @@ internal class MihailovskyCastParser : IPerformanceCastParser
                     ? line.Split('—', ':').First().Replace("&nbsp;", " ").Trim()
                     : CommonTags.Actor;
 
-                IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
+                using IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
                 IElement[] allElementChildren = parsedLine.QuerySelectorAll("*").ToArray();
 
                 if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))

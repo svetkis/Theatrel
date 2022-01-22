@@ -19,7 +19,7 @@ internal class MariinskyPerformanceParser : IPerformanceParser
             IElement parsedElement = (IElement)element;
             IElement[] allElementChildren = parsedElement.QuerySelectorAll("*").ToArray();
 
-            var specNameChildren = allElementChildren.FirstOrDefault(m => m.ClassName == "spec_name")?.Children;
+            IHtmlCollection<IElement> specNameChildren = allElementChildren.FirstOrDefault(m => m.ClassName == "spec_name")?.Children;
             string dtString = allElementChildren.FirstOrDefault(m => 0 == string.Compare(m.TagName, "time", true))?.GetAttribute("datetime");
 
             IElement ticketsTButton = allElementChildren.FirstOrDefault(m => m.ClassName == "t_button");
@@ -109,7 +109,7 @@ internal class MariinskyPerformanceParser : IPerformanceParser
         }, true);
 
     private static readonly Lazy<IDictionary<string, string>> PerformanceLocations
-        = new Lazy<IDictionary<string, string>>(() => new Dictionary<string, string>
+        = new(() => new Dictionary<string, string>
         {
             {"Мариинский театр", "Мариинский театр"},
             {"Концертный зал", "Концертный зал (Мариинский театр)" },

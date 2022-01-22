@@ -49,12 +49,12 @@ internal class MihailovskyTicketsBlockParser : ITicketsParser
         if (string.IsNullOrEmpty(data))
             return new PerformanceTickets { State = TicketsState.TechnicalError };
 
-        var context = BrowsingContext.New(Configuration.Default);
-        var parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
+        using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
+        using IDocument parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
 
         IPerformanceTickets performanceTickets = new PerformanceTickets { State = TicketsState.Ok };
 
-        var specialInfo = parsedDoc.All
+        IElement specialInfo = parsedDoc.All
             .FirstOrDefault(m => 0 == string.Compare(m.ClassName, "rates-info desktop c-special-info",
                 StringComparison.OrdinalIgnoreCase));
 
@@ -69,7 +69,7 @@ internal class MihailovskyTicketsBlockParser : ITicketsParser
             string price = rate.TextContent.Replace("руб", "").Trim().Replace(" ", "").Replace(".", "");
             int.TryParse(price, out int intPrice);
 
-            ITicket ticketData = new Ticket{MinPrice = intPrice };
+            ITicket ticketData = new Ticket { MinPrice = intPrice };
             if (string.IsNullOrEmpty(ticketData.Region))
                 ticketData.Region = "Зал";
 

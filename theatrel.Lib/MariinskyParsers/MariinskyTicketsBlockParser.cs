@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
+using AngleSharp.Dom;
 using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.Interfaces.Helpers;
@@ -50,8 +51,8 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
         if (string.IsNullOrEmpty(data))
             return new PerformanceTickets { State = TicketsState.TechnicalError };
 
-        var context = BrowsingContext.New(Configuration.Default);
-        var parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
+        using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
+        using IDocument parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
 
         IPerformanceTickets performanceTickets = new PerformanceTickets {State = TicketsState.Ok};
 

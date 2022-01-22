@@ -15,7 +15,7 @@ public class MariinskyPlaybillParser : IPlaybillParser
         int year, int month, CancellationToken cancellationToken)
     {
         using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
-        IDocument document = await context.OpenAsync(req => req.Content(playbill), cancellationToken);
+        using IDocument document = await context.OpenAsync(req => req.Content(playbill), cancellationToken);
 
         IList<IPerformanceData> performances = new List<IPerformanceData>();
         var dayRowList = document.All.Where(m => CheckClassListContains(m, DayRow));
