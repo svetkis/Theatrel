@@ -109,13 +109,13 @@ internal class PlayBillResolver : IPlayBillDataResolver
             _ => throw new ArgumentOutOfRangeException(nameof(id), id, null)
         };
 
-        RestClient client = new RestClient(url);
+        using RestClient client = new RestClient(url);
 
         RestRequest request = new RestRequest {Method = Method.Get};
 
         RestResponse response = await client.ExecuteAsync(request, cancellationToken);
 
-        if (!string.Equals(response.ResponseUri.AbsoluteUri, url))
+        if (!string.Equals(response.ResponseUri?.AbsoluteUri, url))
             return null;
 
         return _encodingService.Process(response.Content, response.RawBytes);

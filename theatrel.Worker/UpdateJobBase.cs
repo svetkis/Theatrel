@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Common;
@@ -76,6 +77,7 @@ public abstract class UpdateJobBase : IJob
 
                     Trace.TraceInformation($"Update playbill for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
                     await updater.UpdateAsync(TheatreId, filter.StartDate, filter.EndDate, cToken);
+                    GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
                 }
 
                 MemoryHelper.LogMemoryUsage();

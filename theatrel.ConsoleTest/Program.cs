@@ -1,6 +1,7 @@
 ﻿using JetBrains.Profiler.Api;
 using System;
 using System.Diagnostics;
+using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Common;
@@ -43,9 +44,13 @@ class Program
             if (!await job.UpdateMariinskiPlaybill(cts.Token))
                 return;
 
+            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+            MemoryProfiler.GetSnapshot("");
+
             if (!await job.UpdateMichailovskyPlaybill(cts.Token))
                 return;
 
+            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
             Trace.TraceInformation("Before ProcessSubscriptions");
             MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
 

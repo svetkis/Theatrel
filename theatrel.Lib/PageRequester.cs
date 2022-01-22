@@ -23,7 +23,7 @@ internal class PageRequester : IPageRequester
     {
         try
         {
-            RestClient client = new RestClient(url);
+            using RestClient client = new RestClient(url);
             RestRequest request = new RestRequest {Method = Method.Get};
 
             return await Policy

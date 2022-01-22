@@ -14,7 +14,7 @@ public class MariinskyPlaybillParser : IPlaybillParser
     public async Task<IPerformanceData[]> Parse(string playbill, IPerformanceParser performanceParser,
         int year, int month, CancellationToken cancellationToken)
     {
-        IBrowsingContext context = BrowsingContext.New(Configuration.Default);
+        using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
         IDocument document = await context.OpenAsync(req => req.Content(playbill), cancellationToken);
 
         IList<IPerformanceData> performances = new List<IPerformanceData>();
