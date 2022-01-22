@@ -58,6 +58,8 @@ class Program
             if (!await job.SubscriptionsCleanup(cts.Token))
                 return;
 
+            Trace.TraceInformation("Before PlaybillCleanup");
+            MemoryProfiler.GetSnapshot("Before PlaybillCleanup");
             if (!await job.PlaybillCleanup(cts.Token))
                 return;
 
@@ -68,7 +70,6 @@ class Program
         {
             await Task.Delay(100000, cts.Token);
             MemoryProfiler.GetSnapshot("");
-
         }
     }
 }
