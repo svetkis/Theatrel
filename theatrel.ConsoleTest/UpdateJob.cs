@@ -54,11 +54,11 @@ public class UpdateJob : IJob
                 {
                     IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
-                    Trace.TraceInformation($"Update playbill 1 for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
+                    Trace.TraceInformation($"Update playbill Mariinski for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
                     await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, cToken);
                 }
 
-                MemoryHelper.LogMemoryUsage();
+                MemoryHelper.Collect(true);
             }
 
             return true;
@@ -85,12 +85,12 @@ public class UpdateJob : IJob
                 {
                     IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
-                    Trace.TraceInformation($"Update playbill 2 for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
+                    Trace.TraceInformation($"Update Michailovsky playbill for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
                     await updater.UpdateAsync(2, filter.StartDate, filter.EndDate, cToken);
 
                 }
 
-                MemoryHelper.LogMemoryUsage();
+                MemoryHelper.Collect(true);
             }
 
             return true;

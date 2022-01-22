@@ -45,8 +45,6 @@ public class Worker : BackgroundService
         var tlBotService = Bootstrapper.Resolve<ITgBotService>();
         _tLBotProcessor.Start(tlBotService, cancellationToken);
 
-        MemoryHelper.LogMemoryUsage();
-
         await ScheduleDataUpdates(cancellationToken);
         await ScheduleMichailovskyDataUpdates(cancellationToken);
         await ScheduleOneTimeDataUpdate(cancellationToken);

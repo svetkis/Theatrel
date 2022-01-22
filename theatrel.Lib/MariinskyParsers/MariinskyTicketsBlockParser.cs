@@ -56,7 +56,7 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
 
         IPerformanceTickets performanceTickets = new PerformanceTickets {State = TicketsState.Ok};
 
-        var tickets = parsedDoc.All.Where(m => 0 == string.Compare(m.TagName, "ticket", StringComparison.OrdinalIgnoreCase));
+        IEnumerable<IElement> tickets = parsedDoc.All.Where(m => 0 == string.Compare(m.TagName, "ticket", StringComparison.OrdinalIgnoreCase));
         foreach (var ticket in tickets)
         {
             cancellationToken.ThrowIfCancellationRequested();

@@ -89,7 +89,7 @@ internal class TgBotProcessor : ITgBotProcessor
     private async void OnMessage(object sender, ITgInboundMessage tLInboundMessage)
     {
         Trace.TraceInformation($"{tLInboundMessage.ChatId} {tLInboundMessage.Message}");
-        MemoryHelper.LogMemoryUsage();
+        MemoryHelper.Collect(false);
 
         string message = tLInboundMessage.Message;
         long chatId = tLInboundMessage.ChatId;

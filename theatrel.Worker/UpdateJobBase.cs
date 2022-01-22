@@ -37,27 +37,25 @@ public abstract class UpdateJobBase : IJob
         if (!await ProlongSubscriptions(context.CancellationToken))
             return;
 
-        MemoryHelper.LogMemoryUsage();
         if (!await UpdatePlaybill(context.CancellationToken))
             return;
 
-        MemoryHelper.LogMemoryUsage();
+        MemoryHelper.Collect(true);
 
         if (!await ProcessSubscriptions(context.CancellationToken))
             return;
 
-        MemoryHelper.LogMemoryUsage();
+        MemoryHelper.Collect(false);
 
         if (!await PlaybillCleanup(context.CancellationToken))
             return;
 
-        MemoryHelper.LogMemoryUsage();
+        MemoryHelper.Collect(false);
 
         if (!await SubscriptionsCleanup(context.CancellationToken))
             return;
 
-        GC.Collect();
-        MemoryHelper.LogMemoryUsage();
+        MemoryHelper.Collect(false);
 
         Trace.TraceInformation("UpdateJob was finished");
     }
@@ -78,11 +76,9 @@ public abstract class UpdateJobBase : IJob
 
                     Trace.TraceInformation($"Update playbill for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
                     await updater.UpdateAsync(TheatreId, filter.StartDate, filter.EndDate, cToken);
-                    GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
                 }
 
-                GC.Collect();
-                MemoryHelper.LogMemoryUsage();
+                MemoryHelper.Collect(true);
             }
 
             return true;

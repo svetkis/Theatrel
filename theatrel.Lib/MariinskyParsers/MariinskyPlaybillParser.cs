@@ -42,7 +42,7 @@ public class MariinskyPlaybillParser : IPlaybillParser
 
     private static IElement GetFirstClassFromAllChildren(IElement element, string[] classNames)
     {
-        var allElementChildren = element.QuerySelectorAll("*");
+        IHtmlCollection<IElement> allElementChildren = element.QuerySelectorAll("*");
         return allElementChildren.FirstOrDefault(m => CheckClassList(m, classNames));
     }
 

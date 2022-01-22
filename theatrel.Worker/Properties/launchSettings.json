@@ -4,11 +4,6 @@
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
-      },
-      "runtimeOptions": {
-        "configProperties": {
-          "System.GC.HeapHardLimit": 524288000
-        }
       }
     },
     "Docker": {

@@ -100,7 +100,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
                 if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
                     continue;
 
-                var actors = GetCastInfo(allElementChildren);
+                IList<IActor> actors = GetCastInfo(allElementChildren);
                 if (null == actors || !actors.Any())
                     continue;
 

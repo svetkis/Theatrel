@@ -41,16 +41,26 @@ class Program
 
             var job = new UpdateJob();
 
+            
+
             if (!await job.UpdateMariinskiPlaybill(cts.Token))
                 return;
 
+            Console.WriteLine("Total available memory before collection: {0:N0}", GC.GetTotalMemory(false));
             GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+            GC.Collect();
+            Console.WriteLine("Total available memory collection: {0:N0}", GC.GetTotalMemory(true));
+
             MemoryProfiler.GetSnapshot("");
 
             if (!await job.UpdateMichailovskyPlaybill(cts.Token))
                 return;
 
+            Console.WriteLine("Total available memory before collection: {0:N0}", GC.GetTotalMemory(false));
             GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+            GC.Collect();
+            Console.WriteLine("Total available memory collection: {0:N0}", GC.GetTotalMemory(true));
+
             Trace.TraceInformation("Before ProcessSubscriptions");
             MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
 
