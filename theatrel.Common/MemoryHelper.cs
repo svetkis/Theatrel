@@ -18,6 +18,7 @@ public class MemoryHelper
     {
         Console.WriteLine();
         Console.WriteLine("Total allocated before collection: {0:N0}", GC.GetTotalMemory(false));
+        LogMemoryUsage();
 
         if (compactLoh)
             GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
@@ -25,5 +26,6 @@ public class MemoryHelper
         GC.Collect();
 
         Console.WriteLine("Total allocated after collection: {0:N0}", GC.GetTotalMemory(true));
+        LogMemoryUsage();
     }
 }
