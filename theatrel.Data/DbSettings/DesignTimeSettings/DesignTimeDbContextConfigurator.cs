@@ -3,7 +3,7 @@ using Npgsql;
 
 namespace theatrel.DataAccess.DbSettings.DesignTimeSettings;
 
-public class DesignTimeDbContextConfigurator
+public static class DesignTimeDbContextConfigurator
 {
     public static void Configure(DbContextOptionsBuilder<AppDbContext> builder)
         => builder.UseNpgsql(GetConnectionString());

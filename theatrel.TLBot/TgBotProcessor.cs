@@ -74,7 +74,7 @@ internal class TgBotProcessor : ITgBotProcessor
         if (prevCommand == null)
             return;
 
-        chatInfo.DialogState = DialogStateEnum.DialogReturned;
+        chatInfo.DialogState = DialogState.DialogReturned;
         chatInfo.CurrentStepId -= 1;
         chatInfo.PreviousStepId -= 1;
 

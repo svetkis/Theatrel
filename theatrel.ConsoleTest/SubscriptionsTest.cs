@@ -8,7 +8,7 @@ using theatrel.TLBot.Interfaces;
 
 namespace theatrel.ConsoleTest;
 
-internal class SubscriptionsTest
+internal static class SubscriptionsTest
 {
     public static async Task Test()
     {

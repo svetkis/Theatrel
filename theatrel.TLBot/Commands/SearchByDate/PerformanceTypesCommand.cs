@@ -51,7 +51,7 @@ internal class PerformanceTypesCommand : DialogCommandBase
     {
         var parts = SplitMessage(message);
         if (parts.Any(p => _every.Any(e => e.ToLower().Contains(p.ToLower()))))
-            return null;
+            return Array.Empty<string>();
 
         return parts.Select(ParseMessagePart).Where(idx => idx > -1).Select(idx => _types[idx]).ToArray();
     }

@@ -19,7 +19,7 @@ public class PlaybillRepositoryTest : IClassFixture<DatabaseFixture>
     public PlaybillRepositoryTest(DatabaseFixture fixture)
     {
         Fixture = fixture;
-        Task.WaitAll(ConfigureDb());
+        ConfigureDb().Wait();
     }
 
     [Fact]

@@ -2,7 +2,7 @@
 
 namespace theatrel.Interfaces.TgBot;
 
-public enum DialogStateEnum
+public enum DialogState
 {
     DialogStarted,
     DialogReturned
@@ -22,7 +22,7 @@ public interface IChatDataInfo
     string[] Locations { get; set; }
     string PerformanceName { get; set; }
     DateTime LastMessage { get; set; }
-    DialogStateEnum DialogState { get; set; }
+    DialogState DialogState { get; set; }
 
     public string Info { get; set; }
 

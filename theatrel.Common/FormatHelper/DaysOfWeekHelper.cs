@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace theatrel.Common.FormatHelper;
 
-public class DaysOfWeekHelper
+public static class DaysOfWeekHelper
 {
     public static readonly DayOfWeek[] Weekends = { DayOfWeek.Saturday, DayOfWeek.Sunday };
     public static readonly DayOfWeek[] AllDays = { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };

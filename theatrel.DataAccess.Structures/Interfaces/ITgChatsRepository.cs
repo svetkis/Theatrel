@@ -10,7 +10,7 @@ public interface ITgChatsRepository : IDIRegistrable, IDisposable
 {
     Task<ChatInfoEntity> Get(long chatId);
 
-    Task<ChatInfoEntity> Create(long chatId, string locale, CancellationToken cancellationToken);
+    Task<ChatInfoEntity> Create(long chatId, string culture, CancellationToken cancellationToken);
 
     Task<bool> Delete(ChatInfoEntity chatData);
     Task<bool> Update(ChatInfoEntity newValue);

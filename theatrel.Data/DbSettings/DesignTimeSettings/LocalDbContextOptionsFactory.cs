@@ -2,7 +2,7 @@
 
 namespace theatrel.DataAccess.DbSettings.DesignTimeSettings;
 
-public class LocalDbContextOptionsFactory
+public static class LocalDbContextOptionsFactory
 {
     public static DbContextOptions<AppDbContext> Get()
     {

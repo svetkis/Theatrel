@@ -7,7 +7,7 @@ namespace theatrel.Common.Enums;
 public enum ReasonOfChanges
 {
     [Description("Ничего не поменялось")]
-    NothingChanged = 0,
+    None = 0,
 
     [Description("Появление в афише")]
     Creation = 1,

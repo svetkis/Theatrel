@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
+using AngleSharp.Html;
 using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.Interfaces.Cast;

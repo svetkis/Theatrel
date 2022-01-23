@@ -73,14 +73,7 @@ internal class TgBotService : ITgBotService
                 //BotOnInlineQueryReceived(botClient, update.InlineQuery);
                 break;
             //UpdateType.ChosenInlineResult => BotOnChosenInlineResultReceived(botClient, update.ChosenInlineResult),
-        };
-
-        return Task.FromResult(true);
-    }
-
-    private static Task BotOnInlineQueryReceived(ITelegramBotClient botClient, InlineQuery inlineQuery)
-    {
-        Console.WriteLine($"Received inline query from: {inlineQuery.From.Id}");
+        }
 
         return Task.FromResult(true);
     }
@@ -131,7 +124,6 @@ internal class TgBotService : ITgBotService
         {
             if (exception.Message.Contains("Forbidden: bot was blocked by the user"))
             {
-                //ToDo clean up DB
                 Trace.TraceInformation($"SendMessage: {chatId} failed. Bot was blocked by the user.");
                 return true;
             }

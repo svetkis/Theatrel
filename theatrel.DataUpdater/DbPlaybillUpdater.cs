@@ -98,7 +98,7 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
         var compareResult = ComparePerformanceData(lastChange, data);
         switch (compareResult)
         {
-            case ReasonOfChanges.NothingChanged:
+            case ReasonOfChanges.None:
                 return;
             case ReasonOfChanges.DataError:
                 Trace.TraceInformation($"Data error {data.Name} {data.DateTime:M} price: {data.MinPrice}");
@@ -122,7 +122,7 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
 
             case TicketsState.PerformanceWasMoved:
                 return lastChange != null && lastChange.ReasonOfChanges == (int)ReasonOfChanges.WasMoved
-                    ? ReasonOfChanges.NothingChanged
+                    ? ReasonOfChanges.None
                     : ReasonOfChanges.WasMoved;
 
             case TicketsState.NoTickets:
@@ -130,7 +130,7 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
                     return ReasonOfChanges.Creation;
 
                 return lastChange.MinPrice == 0
-                    ? ReasonOfChanges.NothingChanged
+                    ? ReasonOfChanges.None
                     : ReasonOfChanges.StopSales;
 
             case TicketsState.Ok:
@@ -138,7 +138,7 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
                     return freshData.MinPrice == 0 ? ReasonOfChanges.Creation : ReasonOfChanges.StartSales;
 
                 if (lastChange.MinPrice == 0)
-                    return freshData.MinPrice == 0 ? ReasonOfChanges.NothingChanged : ReasonOfChanges.StartSales;
+                    return freshData.MinPrice == 0 ? ReasonOfChanges.None : ReasonOfChanges.StartSales;
 
                 if (freshData.MinPrice == 0)
                     return ReasonOfChanges.StopSale;
@@ -152,7 +152,7 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
                 break;
         }
 
-        return ReasonOfChanges.NothingChanged;
+        return ReasonOfChanges.None;
     }
 
     private ReasonOfChanges CompareCast(IPlaybillRepository playbillRepository, PlaybillEntity playbillEntity, IPerformanceData freshData)
@@ -161,26 +161,26 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
         {
             case CastState.TechnicalError:
             case CastState.PerformanceWasMoved:
-                return ReasonOfChanges.NothingChanged;
+                return ReasonOfChanges.None;
 
             case CastState.CastIsNotSet:
-                return playbillEntity.Cast.Any() ? ReasonOfChanges.CastWasChanged : ReasonOfChanges.NothingChanged;
+                return playbillEntity.Cast.Any() ? ReasonOfChanges.CastWasChanged : ReasonOfChanges.None;
 
             case CastState.Ok:
                 bool wasEmpty = !playbillEntity.Cast.Any();
                 bool nowEmpty = freshData.Cast.Cast == null || !freshData.Cast.Cast.Any();
 
                 if (wasEmpty && nowEmpty)
-                    return ReasonOfChanges.NothingChanged;
+                    return ReasonOfChanges.None;
 
                 if (wasEmpty)
                     return ReasonOfChanges.CastWasSet;
 
                 return playbillRepository.IsCastEqual(playbillEntity, freshData)
-                    ? ReasonOfChanges.NothingChanged
+                    ? ReasonOfChanges.None
                     : ReasonOfChanges.CastWasChanged;
         }
 
-        return ReasonOfChanges.NothingChanged;
+        return ReasonOfChanges.None;
     }
 }

@@ -16,9 +16,9 @@ internal class TestDbContextOptionsFactory : IDbContextOptionsFactory
     }
 }
 
-internal class TestDbContextConfigurator
+internal static class TestDbContextConfigurator
 {
-    private static readonly Random Random = new Random();
+    private static readonly Random Random = new();
     public static void Configure(DbContextOptionsBuilder<AppDbContext> builder)
         => builder.UseInMemoryDatabase(Random.Next().ToString());
 }

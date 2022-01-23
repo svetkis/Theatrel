@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace theatrel.TLBot;
 
-public class BotSettings
+public static class BotSettings
 {
     public static string BotToken => Environment.GetEnvironmentVariable("TheatrelBotToken");
     public static string BotProxy => Environment.GetEnvironmentVariable("TheatrelBotProxy");

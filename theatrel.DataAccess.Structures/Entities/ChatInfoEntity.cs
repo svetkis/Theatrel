@@ -54,7 +54,7 @@ public class ChatInfoEntity : IChatDataInfo
     public string DbLocations { get; set; }
 
     public DateTime LastMessage { get; set; } = DateTime.UtcNow;
-    public DialogStateEnum DialogState { get; set; }
+    public DialogState DialogState { get; set; }
 
     public void Clear()
     {
@@ -66,7 +66,7 @@ public class ChatInfoEntity : IChatDataInfo
 
         Days = null;
         Types = null;
-        DialogState = DialogStateEnum.DialogStarted;
+        DialogState = DialogState.DialogStarted;
 
         LastMessage = DateTime.UtcNow;
     }

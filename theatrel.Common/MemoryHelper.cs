@@ -9,23 +9,24 @@ public class MemoryHelper
 {
     public static void LogMemoryUsage()
     {
-        Process currentProcess = Process.GetCurrentProcess();
+        using Process currentProcess = Process.GetCurrentProcess();
         currentProcess.Refresh();
-        Trace.TraceInformation($"Memory usage is {(currentProcess.WorkingSet64 / 1048576).ToString(CultureInfo.InvariantCulture)}");
+        Console.WriteLine($"Memory usage is {currentProcess.WorkingSet64 / 1048576}");
     }
 
     public static void Collect(bool compactLoh)
     {
-        Console.WriteLine();
-        Console.WriteLine("Total allocated before collection: {0:N0}", GC.GetTotalMemory(false));
-        LogMemoryUsage();
+        var before = GC.GetTotalMemory(false) / 1048576;
 
         if (compactLoh)
             GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
 
         GC.Collect();
 
-        Console.WriteLine("Total allocated after collection: {0:N0}", GC.GetTotalMemory(true));
+        var after = GC.GetTotalMemory(true) / 1048576;
+
+        Console.WriteLine();
+        Console.WriteLine($"Total allocated before collection:{before} after collection: {after:N0}");
         LogMemoryUsage();
     }
 }

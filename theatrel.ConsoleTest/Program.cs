@@ -1,7 +1,6 @@
 ﻿using JetBrains.Profiler.Api;
 using System;
 using System.Diagnostics;
-using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Common;
@@ -28,16 +27,17 @@ class Program
         await Bootstrapper.Resolve<IDbService>().MigrateDb(cts.Token);
 
         MemoryProfiler.CollectAllocations(true);
+        MemoryProfiler.GetSnapshot("1");
 
         var tLBotProcessor = Bootstrapper.Resolve<ITgBotProcessor>();
         var tlBotService = Bootstrapper.Resolve<ITgBotService>();
 
         tLBotProcessor.Start(tlBotService, cts.Token);
 
-        for (int i = 0; i < 1; ++i)
+        for (int i = 0; i < 10; ++i)
         {
             Trace.TraceInformation("Before UpdateMariinskiPlaybill");
-            MemoryProfiler.GetSnapshot("Before UpdateMariinskiPlaybill");
+            //MemoryProfiler.GetSnapshot("Before UpdateMariinskiPlaybill");
 
             var job = new UpdateJob();
 
@@ -46,25 +46,25 @@ class Program
             if (!await job.UpdateMariinskiPlaybill(cts.Token))
                 return;
 
-            MemoryProfiler.GetSnapshot("");
+            //MemoryProfiler.GetSnapshot("");
 
             if (!await job.UpdateMichailovskyPlaybill(cts.Token))
                 return;
 
             Trace.TraceInformation("Before ProcessSubscriptions");
-            MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
+            //MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
 
             if (!await job.ProcessSubscriptions(cts.Token))
                 return;
 
             Trace.TraceInformation("Before SubscriptionsCleanup");
-            MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
+            //MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
 
             if (!await job.SubscriptionsCleanup(cts.Token))
                 return;
 
             Trace.TraceInformation("Before PlaybillCleanup");
-            MemoryProfiler.GetSnapshot("Before PlaybillCleanup");
+            //MemoryProfiler.GetSnapshot("Before PlaybillCleanup");
             if (!await job.PlaybillCleanup(cts.Token))
                 return;
 

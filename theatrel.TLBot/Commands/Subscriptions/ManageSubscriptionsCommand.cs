@@ -60,7 +60,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
     private static int[] GetInts(string msg)
     {
         if (string.IsNullOrEmpty(msg))
-            return null;
+            return Array.Empty<int>();
 
         string[] splitData = msg.Split(",");
 
@@ -91,7 +91,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
             int[] indexes = GetInts(trimMsg.Substring(DeleteMany.Length + 1));
             isDeleteOnlyOne = indexes.Length == 1;
             var subscriptions = subscriptionRepository.GetUserSubscriptions(chatInfo.UserId);
-            if (indexes == null || indexes.Any(i => i > subscriptions.Length - 1 || i < 0))
+            if (indexes.Any(i => i > subscriptions.Length - 1 || i < 0))
             {
                 return new TgCommandResponse("Произошла ошибка. Не правильный индекс подписки.");
             }

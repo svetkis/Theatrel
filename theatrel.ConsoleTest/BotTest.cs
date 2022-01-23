@@ -12,7 +12,7 @@ using theatrel.TLBot.Interfaces;
 
 namespace theatrel.ConsoleTest;
 
-internal class BotTest
+internal static class BotTest
 {
     private static bool _isSent;
     private static ITgBotProcessor _tgProcessor;

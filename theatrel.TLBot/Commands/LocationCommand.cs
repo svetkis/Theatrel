@@ -51,9 +51,9 @@ internal class LocationCommand : DialogCommandBase
     {
         return chatInfo.DialogState switch
         {
-            DialogStateEnum.DialogReturned => Task.FromResult<ITgCommandResponse>(
+            DialogState.DialogReturned => Task.FromResult<ITgCommandResponse>(
                 new TgCommandResponse(Msg, CommandKeyboardMarkup)),
-            DialogStateEnum.DialogStarted => Task.FromResult<ITgCommandResponse>(
+            DialogState.DialogStarted => Task.FromResult<ITgCommandResponse>(
                 new TgCommandResponse($"{GoodDay}{IWillHelpYou}{Msg}", CommandKeyboardMarkup)),
             _ => throw new NotImplementedException()
         };
@@ -70,7 +70,7 @@ internal class LocationCommand : DialogCommandBase
         }
 
         if (parts.Any(p => _every.Any(e => e.ToLower().Contains(p.ToLower()))))
-            return null;
+            return Array.Empty<string>();
 
         return parts.Select(ParseMessagePart).Where(idx => idx > -1).Select(idx => _types[idx]).ToArray();
     }

@@ -1,6 +1,6 @@
 ﻿namespace theatrel.Common;
 
-public class CommonTags
+public static class CommonTags
 {
     public const string NotDefinedTag = "Not defined";
     public const string WasMovedTag = "WasMoved";

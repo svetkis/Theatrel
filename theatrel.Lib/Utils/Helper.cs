@@ -1,6 +1,6 @@
 ﻿namespace theatrel.Lib.Utils;
 
-internal class Helper
+internal static class Helper
 {
     public static int ToInt(string value)
     {

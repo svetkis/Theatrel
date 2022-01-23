@@ -63,7 +63,7 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
         catch (Exception e)
         {
             Trace.TraceError($"GetUserSubscriptions db exceptions {e.Message} {e.InnerException?.Message}");
-            return null;
+            return Array.Empty<SubscriptionEntity>();
         }
     }
 

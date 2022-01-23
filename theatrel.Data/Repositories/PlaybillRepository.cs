@@ -210,7 +210,7 @@ internal class PlaybillRepository : IPlaybillRepository
         return true;
     }
 
-    private class CheckData
+    private sealed class CheckData
     {
         public bool Exists { get; set; }
         public ActorInRoleEntity ActorInRole { get; set; }
@@ -245,9 +245,14 @@ internal class PlaybillRepository : IPlaybillRepository
         bool result = checkList.All(item => item.Exists);
         if (!result)
         {
-            foreach (var item in checkList.Where(item => !item.Exists))
+            var changedData = checkList.Where(item => !item.Exists).ToArray();
+            if (changedData.Any())
             {
-                Trace.TraceInformation($"Cast is not equal {playbillEntry.Id}. No data in fresh {item.ActorInRole.Role.CharacterName} - {item.ActorInRole.Actor.Name} {item.ActorInRole.Actor.Url}");
+                Trace.TraceInformation($"Cast is not equal {playbillEntry.Id}.");
+                foreach (var item in changedData)
+                {
+                    Trace.TraceInformation($"No data in fresh {item.ActorInRole.Role.CharacterName} - {item.ActorInRole.Actor.Name}");
+                }
             }
         }
 
@@ -351,7 +356,7 @@ internal class PlaybillRepository : IPlaybillRepository
             Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
         }
 
-        return null;
+        return Array.Empty<PlaybillEntity>();
     }
 
     public IEnumerable<PerformanceEntity> GetOutdatedPerformanceEntities()
@@ -372,7 +377,7 @@ internal class PlaybillRepository : IPlaybillRepository
             Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
         }
 
-        return null;
+        return Array.Empty<PerformanceEntity>();
     }
 
     public IEnumerable<PlaybillEntity> GetList(DateTime from, DateTime to)
@@ -393,7 +398,7 @@ internal class PlaybillRepository : IPlaybillRepository
             Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
         }
 
-        return null;
+        return Array.Empty<PlaybillEntity>();
     }
 
     public IEnumerable<PlaybillEntity> GetListByName(string name)
@@ -415,7 +420,7 @@ internal class PlaybillRepository : IPlaybillRepository
             Trace.TraceInformation($"GetList PlaybillEntity by name DbException {ex.Message} InnerException {ex.InnerException?.Message}");
         }
 
-        return null;
+        return Array.Empty<PlaybillEntity>();
     }
 
     public PlaybillEntity Get(IPerformanceData data)
