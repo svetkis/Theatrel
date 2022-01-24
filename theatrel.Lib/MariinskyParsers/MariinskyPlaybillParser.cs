@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,11 +12,12 @@ namespace theatrel.Lib.MariinskyParsers;
 
 public class MariinskyPlaybillParser : IPlaybillParser
 {
-    public async Task<IPerformanceData[]> Parse(string playbill, IPerformanceParser performanceParser,
+    public async Task<IPerformanceData[]> Parse(byte[] playbill, IPerformanceParser performanceParser,
         int year, int month, CancellationToken cancellationToken)
     {
         using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
-        using IDocument document = await context.OpenAsync(req => req.Content(playbill), cancellationToken);
+        await using MemoryStream playbillStream = new MemoryStream(playbill);
+        using IDocument document = await context.OpenAsync(req => req.Content(playbillStream), cancellationToken);
 
         IList<IPerformanceData> performances = new List<IPerformanceData>();
         var dayRowList = document.All.Where(m => CheckClassListContains(m, DayRow));

@@ -60,12 +60,11 @@ internal class PlayBillResolver : IPlayBillDataResolver
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            string content = await Request((Theatre)theatre, dateTime, cancellationToken);
-            if (string.IsNullOrEmpty(content))
+            var content = await Request((Theatre)theatre, dateTime, cancellationToken);
+            if (content == null || !content.Any())
                 continue;
 
-            performances.AddRange(await playbillParser.Parse(content, performanceParser,
-                dateTime.Year, dateTime.Month, cancellationToken));
+            performances.AddRange(await playbillParser.Parse(content, performanceParser, dateTime.Year, dateTime.Month, cancellationToken));
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -99,7 +98,7 @@ internal class PlayBillResolver : IPlayBillDataResolver
         return filtered.ToArray();
     }
 
-    private async Task<string> Request(Theatre id, DateTime date, CancellationToken cancellationToken)
+    private async Task<byte[]> Request(Theatre id, DateTime date, CancellationToken cancellationToken)
     {
         string url = id switch
         {
@@ -118,6 +117,6 @@ internal class PlayBillResolver : IPlayBillDataResolver
         if (!string.Equals(response.ResponseUri?.AbsoluteUri, url))
             return null;
 
-        return _encodingService.Process(response.Content, response.RawBytes);
+        return _encodingService.ProcessBytes(response.RawBytes);
     }
 }

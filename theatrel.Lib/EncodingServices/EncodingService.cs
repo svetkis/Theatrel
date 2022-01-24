@@ -1,5 +1,6 @@
-﻿using System.Text;
-using AngleSharp.Text;
+﻿using System;
+using System.Linq;
+using System.Text;
 using theatrel.Interfaces.EncodingService;
 
 namespace theatrel.Lib.EncodingServices;
@@ -8,18 +9,45 @@ internal class EncodingService : IEncodingService
 {
     private const string Win1251 = "windows-1251";
     private const string Utf8 = "utf-8";
-    private const string Content1251 = $"content=\"text/html; charset={Win1251}\"";
-    private const string ContentUtf8 = $"content=\"text/html; charset={Utf8}\"";
+    private const string ContentCharset = "content=\"text/html; charset=";
 
-    public string Process(string data, byte[] bytesData)
+    private readonly byte[] _contentCharsetBytes = Encoding.UTF8.GetBytes(ContentCharset);
+    private readonly byte[] _win1251Bytes = Encoding.UTF8.GetBytes(Win1251 + "\"");
+    private readonly byte[] _utf8Bytes = Encoding.UTF8.GetBytes(Utf8 + "\"");
+
+    private bool CheckPatternInPosition(byte[] src, byte[] pattern, int position) => !pattern.Where((t, i) => src[position + i] != t).Any();
+
+    private void ReplacePatternInPosition(byte[] src, byte[] pattern, byte[] newPattern, int position)
     {
-        if (data == null || !data.Contains(Content1251))
-            return data;
+        int newPatternLength = newPattern.Length;
+        for (var i = 0; i < pattern.Length; ++i)
+        {
+            if (i < newPatternLength)
+            {
+                src[position + i] = newPattern[i];
+            }
+            else
+            {
+                src[position + i] = (byte)' ';
+            }
+        }
+    }
+
+    public byte[] ProcessBytes(byte[] bytesData)
+    {
+        int contentCharsetIndex = bytesData.AsSpan().IndexOf(_contentCharsetBytes);
+        if (-1 == contentCharsetIndex)
+            return bytesData;
+
+        int charsetPosition = contentCharsetIndex + _contentCharsetBytes.Length;
+        if (!CheckPatternInPosition(bytesData, _win1251Bytes, charsetPosition))
+            return bytesData;
+
+        ReplacePatternInPosition(bytesData, _win1251Bytes, _utf8Bytes, charsetPosition);
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         Encoding encoding1251 = Encoding.GetEncoding(Win1251);
-        byte[] converted = Encoding.Convert(encoding1251, Encoding.UTF8, bytesData);
 
-        return Encoding.UTF8.GetString(converted).ReplaceFirst(Content1251, ContentUtf8);
+        return Encoding.Convert(encoding1251, Encoding.UTF8, bytesData);
     }
 }

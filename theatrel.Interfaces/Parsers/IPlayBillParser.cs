@@ -6,5 +6,5 @@ namespace theatrel.Interfaces.Parsers;
 
 public interface IPlaybillParser
 {
-    Task<IPerformanceData[]> Parse(string playbill, IPerformanceParser performanceParser, int year, int month, CancellationToken cancellationToken);
+    Task<IPerformanceData[]> Parse(byte[] playbill, IPerformanceParser performanceParser, int year, int month, CancellationToken cancellationToken);
 }

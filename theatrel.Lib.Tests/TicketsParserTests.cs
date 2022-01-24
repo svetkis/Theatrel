@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Interfaces.Tickets;
@@ -18,7 +19,7 @@ public class TicketsParserTests
         var ticketsParserFactory = DIContainerHolder.Resolve<Func<Theatre, ITicketsParser>>();
         var parser = ticketsParserFactory(Theatre.Mariinsky);
 
-        var tickets = await parser.Parse(text, CancellationToken.None);
+        var tickets = await parser.Parse(Encoding.UTF8.GetBytes(text), CancellationToken.None);
         Assert.Equal(expected, tickets.GetMinPrice());
     }
 }

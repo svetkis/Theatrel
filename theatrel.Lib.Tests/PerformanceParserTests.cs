@@ -17,7 +17,7 @@ public class PerformanceParserTests
     [InlineData(@"..\..\..\TestData\MariinskyPlayBill032020", "Фортепианные квинтеты. Брух. Шостакович", "Концерт")]
     public async Task CheckPerformanceTypes(string file, string name, string expected)
     {
-        string text = await System.IO.File.ReadAllTextAsync(file);
+        var text = await System.IO.File.ReadAllBytesAsync(file);
 
         var playbillParserFactory = DIContainerHolder.Resolve<Func<Theatre, IPlaybillParser>>();
         var parser = playbillParserFactory(Theatre.Mariinsky);
@@ -35,7 +35,7 @@ public class PerformanceParserTests
     [InlineData(19, 30, @"..\..\..\TestData\MariinskiPB092020.txt")]
     public async Task CheckDateTime(int hour, int minute, string file)
     {
-        string text = await System.IO.File.ReadAllTextAsync(file);
+        var text = await System.IO.File.ReadAllBytesAsync(file);
 
         var playbillParserFactory = DIContainerHolder.Resolve<Func<Theatre, IPlaybillParser>>();
         var parser = playbillParserFactory(Theatre.Mariinsky);

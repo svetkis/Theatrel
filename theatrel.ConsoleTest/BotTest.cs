@@ -24,8 +24,7 @@ internal static class BotTest
         {
             foreach (var unused in Enumerable.Range(0, 1))
             {
-                await ProcessChats("прИвет", "апрель", "Нет!", "май", "Суббота", "нет", "понедельник", "кОнцерт",
-                    "Подписаться на снижение цены");
+                await ProcessChats("прИвет", "апрель", "Нет!", "май", "Суббота", "нет", "понедельник", "кОнцерт", "Подписаться на снижение цены");
             }
 
             _tgProcessor.Stop();

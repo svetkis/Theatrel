@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,30 +38,31 @@ internal class MihailovskyCastParser : IPerformanceCastParser
                 return new PerformanceCast { State = CastState.PerformanceWasMoved };
         }
 
-        string content = await _pageRequester.Request(url, cancellationToken);
+        var content = await _pageRequester.RequestBytes(url, cancellationToken);
         if (null == content)
             return new PerformanceCast { State = CastState.TechnicalError };
 
         return await PrivateParse(content, cancellationToken);
     }
 
-    public async Task<IPerformanceCast> Parse(string data, CancellationToken cancellationToken)
+    public async Task<IPerformanceCast> Parse(byte[] data, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(data))
+        if (data == null || !data.Any())
             return new PerformanceCast { State = CastState.CastIsNotSet };
 
         return await PrivateParse(data, cancellationToken);
     }
 
-    private async Task<IPerformanceCast> PrivateParse(string data, CancellationToken cancellationToken)
+    private async Task<IPerformanceCast> PrivateParse(byte[] data, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(data))
+        if (data == null || !data.Any())
             return new PerformanceCast { State = CastState.TechnicalError };
 
         try
         {
             using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
-            using IDocument parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
+            await using var stream = new MemoryStream(data);
+            using IDocument parsedDoc = await context.OpenAsync(req => req.Content(stream), cancellationToken);
 
             IElement[] castBlock = parsedDoc.All.Where(c => c.ClassName == " f-ap").ToArray();
 

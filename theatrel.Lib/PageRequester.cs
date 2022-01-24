@@ -19,12 +19,12 @@ internal class PageRequester : IPageRequester
         _encodingService = encodingService;
     }
 
-    public async Task<string> Request(string url, CancellationToken cancellationToken)
+    public async Task<byte[]> RequestBytes(string url, CancellationToken cancellationToken)
     {
         try
         {
             using RestClient client = new RestClient(url);
-            RestRequest request = new RestRequest {Method = Method.Get};
+            RestRequest request = new RestRequest { Method = Method.Get };
 
             return await Policy
                 .Handle<HttpRequestException>()
@@ -45,7 +45,7 @@ internal class PageRequester : IPageRequester
                     if (response.StatusCode != HttpStatusCode.OK)
                         return null;
 
-                    return _encodingService.Process(response.Content, response.RawBytes);
+                    return _encodingService.ProcessBytes(response.RawBytes);
                 });
         }
         catch (Exception)

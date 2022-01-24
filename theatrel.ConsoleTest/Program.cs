@@ -10,9 +10,9 @@ using theatrel.TLBot.Interfaces;
 
 namespace theatrel.ConsoleTest;
 
-class Program
+internal static class Program
 {
-    static async Task Main()
+    public static async Task Main()
     {
         Trace.Listeners.Add(new Trace2StdoutLogger());
 
@@ -34,14 +34,12 @@ class Program
 
         tLBotProcessor.Start(tlBotService, cts.Token);
 
-        for (int i = 0; i < 10; ++i)
+        for (int i = 0; i < 1; ++i)
         {
             Trace.TraceInformation("Before UpdateMariinskiPlaybill");
             //MemoryProfiler.GetSnapshot("Before UpdateMariinskiPlaybill");
 
             var job = new UpdateJob();
-
-            
 
             if (!await job.UpdateMariinskiPlaybill(cts.Token))
                 return;

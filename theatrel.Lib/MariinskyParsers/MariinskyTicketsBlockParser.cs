@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,20 +40,21 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
                 return new PerformanceTickets { State = TicketsState.PerformanceWasMoved };
         }
 
-        var content = await _pageRequester.Request(url, cancellationToken);
+        var content = await _pageRequester.RequestBytes(url, cancellationToken);
         return await PrivateParse(content, cancellationToken);
     }
 
-    public async Task<IPerformanceTickets> Parse(string data, CancellationToken cancellationToken)
+    public async Task<IPerformanceTickets> Parse(byte[] data, CancellationToken cancellationToken)
         => await PrivateParse(data, cancellationToken);
 
-    private async Task<IPerformanceTickets> PrivateParse(string data, CancellationToken cancellationToken)
+    private async Task<IPerformanceTickets> PrivateParse(byte[] data, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(data))
+        if (data == null || !data.Any())
             return new PerformanceTickets { State = TicketsState.TechnicalError };
 
         using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
-        using IDocument parsedDoc = await context.OpenAsync(req => req.Content(data), cancellationToken);
+        await using MemoryStream dataStream = new MemoryStream(data);
+        using IDocument parsedDoc = await context.OpenAsync(req => req.Content(dataStream), cancellationToken);
 
         IPerformanceTickets performanceTickets = new PerformanceTickets {State = TicketsState.Ok};
 

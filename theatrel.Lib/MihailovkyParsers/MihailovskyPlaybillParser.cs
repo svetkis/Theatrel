@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
@@ -8,6 +11,7 @@ using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Helpers;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
+using theatrel.Lib.Cast;
 
 namespace theatrel.Lib.MihailovkyParsers;
 
@@ -20,11 +24,12 @@ public class MihailovskyPlaybillParser : IPlaybillParser
         _castParser = new MihailovskyCastParser(pageRequester);
     }
 
-    public async Task<IPerformanceData[]> Parse(string playbill, IPerformanceParser performanceParser,
+    public async Task<IPerformanceData[]> Parse(byte[] playbill, IPerformanceParser performanceParser,
         int year, int month, CancellationToken cancellationToken)
     {
         using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
-        using IDocument document = await context.OpenAsync(req => req.Content(playbill), cancellationToken);
+        await using MemoryStream streamPlaybill = new MemoryStream(playbill);
+        using IDocument document = await context.OpenAsync(req => req.Content(streamPlaybill), cancellationToken);
 
         IList<IPerformanceData> performances = new List<IPerformanceData>();
 
@@ -72,7 +77,7 @@ public class MihailovskyPlaybillParser : IPlaybillParser
                 ?.FirstOrDefault(c => c.ClassName == "persons")
                 ?.InnerHtml;
 
-            parsed.Cast = await _castParser.Parse(persons, cancellationToken);
+            parsed.Cast = string.IsNullOrEmpty(persons) ? new PerformanceCast() : await _castParser.Parse(Encoding.UTF8.GetBytes(persons), cancellationToken);
             performances.Add(parsed);
         }
 
