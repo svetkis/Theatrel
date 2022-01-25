@@ -40,7 +40,7 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
                 return new PerformanceTickets { State = TicketsState.PerformanceWasMoved };
         }
 
-        var content = await _pageRequester.RequestBytes(url, cancellationToken);
+        var content = await _pageRequester.RequestBytes(url, false, cancellationToken);
         return await PrivateParse(content, cancellationToken);
     }
 

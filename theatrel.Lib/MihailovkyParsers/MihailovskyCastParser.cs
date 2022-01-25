@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
-using AngleSharp.Html;
 using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.Interfaces.Cast;
@@ -38,7 +37,7 @@ internal class MihailovskyCastParser : IPerformanceCastParser
                 return new PerformanceCast { State = CastState.PerformanceWasMoved };
         }
 
-        var content = await _pageRequester.RequestBytes(url, cancellationToken);
+        var content = await _pageRequester.RequestBytes(url, true, cancellationToken);
         if (null == content)
             return new PerformanceCast { State = CastState.TechnicalError };
 

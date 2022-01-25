@@ -37,7 +37,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
                 return new PerformanceCast { State = CastState.PerformanceWasMoved };
         }
 
-        var content = await _pageRequester.RequestBytes(url, cancellationToken);
+        var content = await _pageRequester.RequestBytes(url, false, cancellationToken);
         if (null == content)
             return new PerformanceCast {State = CastState.TechnicalError};
 

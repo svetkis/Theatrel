@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Runtime;
 
 namespace theatrel.Common;
 
 public class MemoryHelper
 {
+    private static readonly Process CurrentProcess = Process.GetCurrentProcess();
+
     public static void LogMemoryUsage()
     {
-        using Process currentProcess = Process.GetCurrentProcess();
-        currentProcess.Refresh();
-        Console.WriteLine($"Memory usage is {currentProcess.WorkingSet64 / 1048576}");
+        CurrentProcess.Refresh();
+        Console.WriteLine($"Memory usage is {CurrentProcess.WorkingSet64 / 1048576}");
     }
 
     public static void Collect(bool compactLoh)
@@ -21,7 +21,9 @@ public class MemoryHelper
         if (compactLoh)
             GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
 
+#pragma warning disable S1215 // "GC.Collect" should not be called
         GC.Collect();
+#pragma warning restore S1215 // "GC.Collect" should not be called
 
         var after = GC.GetTotalMemory(true) / 1048576;
 

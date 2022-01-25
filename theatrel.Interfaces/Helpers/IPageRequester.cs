@@ -6,6 +6,6 @@ namespace theatrel.Interfaces.Helpers
 {
     public interface IPageRequester : IDIRegistrable
     {
-        Task<byte[]> RequestBytes(string url, CancellationToken cancellationToken);
+        Task<byte[]> RequestBytes(string url, bool needEncoding, CancellationToken cancellationToken);
     }
 }

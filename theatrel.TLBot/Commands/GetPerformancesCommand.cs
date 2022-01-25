@@ -294,11 +294,11 @@ internal class GetPerformancesCommand : DialogCommandBase
                     .Select(d => cultureRu.DateTimeFormat.GetDayName(d)))
             : string.Empty;
 
-        string types = filter.PerformanceTypes == null
+        string types = filter.PerformanceTypes == null || !filter.PerformanceTypes.Any()
             ? "все представления"
             : string.Join(", ", filter.PerformanceTypes);
 
-        string locations = filter.Locations == null
+        string locations = filter.Locations == null || !filter.Locations.Any()
             ? "любая площадка"
             : string.Join(", ", filter.Locations);
 

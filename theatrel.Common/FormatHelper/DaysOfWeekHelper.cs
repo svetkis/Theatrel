@@ -44,7 +44,7 @@ public static class DaysOfWeekHelper
 
     public static string GetDaysDescription(DayOfWeek[] days, CultureInfo culture)
     {
-        if (days == null)
+        if (days == null || !days.Any())
             return AllDaysNames.First().ToLower();
 
         if (days.Length > 1)

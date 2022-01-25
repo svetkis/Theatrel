@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
@@ -38,7 +40,7 @@ internal class MihailovskyTicketsBlockParser : ITicketsParser
                 return new PerformanceTickets { State = TicketsState.PerformanceWasMoved };
         }
 
-        var content = await _pageRequester.RequestBytes(url, cancellationToken);
+        var content = await _pageRequester.RequestBytes(url, false, cancellationToken);
         return await PrivateParse(content, cancellationToken);
     }
 
@@ -50,17 +52,28 @@ internal class MihailovskyTicketsBlockParser : ITicketsParser
         if (data == null || !data.Any())
             return new PerformanceTickets { State = TicketsState.TechnicalError };
 
+        var ratesLabel = Encoding.UTF8.GetBytes("<p class=\"rates-label\">");
+        var divCloseTag = Encoding.UTF8.GetBytes("</div>");
+        int ratesLabelStartIndex = data.AsSpan().IndexOf(ratesLabel);
+        int ratesEndIndex = ratesLabelStartIndex == -1 ? -1 :data.AsSpan(ratesLabelStartIndex).IndexOf(divCloseTag);
+
         using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
-        await using MemoryStream dataStream = new MemoryStream(data);
+        await using MemoryStream dataStream = ratesLabelStartIndex > 0 && ratesEndIndex > 0
+            ? new MemoryStream(data, ratesLabelStartIndex, ratesEndIndex + ratesLabelStartIndex + divCloseTag.Length)
+            : new MemoryStream(data);
+
         using IDocument parsedDoc = await context.OpenAsync(req => req.Content(dataStream), cancellationToken);
 
         IPerformanceTickets performanceTickets = new PerformanceTickets { State = TicketsState.Ok };
 
-        IElement specialInfo = parsedDoc.All
-            .FirstOrDefault(m => 0 == string.Compare(m.ClassName, "rates-info desktop c-special-info",
-                StringComparison.OrdinalIgnoreCase));
+        IElement specialInfo = ratesLabelStartIndex > 0
+            ? null
+            : parsedDoc.All.FirstOrDefault(m => 0 == string.Compare(m.ClassName, "rates-info desktop c-special-info", StringComparison.OrdinalIgnoreCase));
 
-        IHtmlCollection<IElement> rates = specialInfo?.Children[1].Children;
+        IEnumerable<IElement> rates = ratesLabelStartIndex > 0
+            ? parsedDoc.All.Where(m => 0 == string.Compare(m.ClassName, "rates-val", StringComparison.OrdinalIgnoreCase))
+            : specialInfo?.Children[1].Children;
+
         if (rates == null)
             return new PerformanceTickets {State = TicketsState.Ok};
 
@@ -68,12 +81,10 @@ internal class MihailovskyTicketsBlockParser : ITicketsParser
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            string price = rate.TextContent.Replace("руб", "").Trim().Replace(" ", "").Replace(".", "");
+            string price = new string(rate.TextContent.Where(char.IsDigit).ToArray());
             int.TryParse(price, out int intPrice);
 
-            ITicket ticketData = new Ticket { MinPrice = intPrice };
-            if (string.IsNullOrEmpty(ticketData.Region))
-                ticketData.Region = "Зал";
+            ITicket ticketData = new Ticket { MinPrice = intPrice, Region = "Зал" };
 
             if (performanceTickets.Tickets.ContainsKey(ticketData.Region))
             {

@@ -2,7 +2,7 @@
 
 namespace theatrel.Interfaces.EncodingService;
 
-public interface IEncodingService : IDIRegistrable
+public interface IEncodingService : IDISingleton
 {
     public byte[] ProcessBytes(byte[] bytesData);
 }

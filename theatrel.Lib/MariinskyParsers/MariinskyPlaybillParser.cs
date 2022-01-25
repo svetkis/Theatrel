@@ -30,7 +30,7 @@ public class MariinskyPlaybillParser : IPlaybillParser
             if (spects == null)
                 continue;
 
-            Parallel.ForEach(spects.Children, new ParallelOptions { CancellationToken = cancellationToken },
+            Parallel.ForEach(spects.Children, new ParallelOptions { CancellationToken = cancellationToken, MaxDegreeOfParallelism = 4},
                 performance =>
                 {
                     IPerformanceData parsed = performanceParser.Parse(performance, 0, 0);

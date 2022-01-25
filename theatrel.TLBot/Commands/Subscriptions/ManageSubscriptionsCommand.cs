@@ -141,7 +141,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
 
             if (!string.IsNullOrEmpty(filter.PerformanceName))
             {
-                string locations = filter.Locations == null
+                string locations = filter.Locations == null || !filter.Locations.Any()
                     ? "все площадки"
                     : string.Join("или ", filter.Locations);
 
@@ -149,7 +149,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
             }
             else if (filter.PlaybillId == -1)
             {
-                string locations = filter.Locations == null
+                string locations = filter.Locations == null || !filter.Locations.Any()
                     ? "все площадки"
                     : string.Join("или ", filter.Locations);
 
@@ -157,7 +157,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
 
                 string days = DaysOfWeekHelper.GetDaysDescription(filter.DaysOfWeek, culture);
 
-                string types = filter.PerformanceTypes == null
+                string types = filter.PerformanceTypes == null || !filter.PerformanceTypes.Any()
                     ? "все представления"
                     : string.Join("или ", filter.PerformanceTypes);
 

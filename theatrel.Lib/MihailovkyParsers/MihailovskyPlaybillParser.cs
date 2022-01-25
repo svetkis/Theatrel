@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
@@ -35,12 +34,10 @@ public class MihailovskyPlaybillParser : IPlaybillParser
 
         IElement afisha = document.All.FirstOrDefault(m => m.ClassName == "afisha");
 
-        var performanceList = afisha?.Children
-            .FirstOrDefault(c => c.Id == "afisha_performance_list")
-            ?.Children
-            ?.FirstOrDefault(c => c.Id == "afisha_performance_list_container")
-            ?.Children
-            ?.FirstOrDefault(c => c.Id == "list");
+        var performanceList = afisha?
+            .Children.FirstOrDefault(c => c.Id == "afisha_performance_list")
+            ?.Children.FirstOrDefault(c => c.Id == "afisha_performance_list_container")
+            ?.Children.FirstOrDefault(c => c.Id == "list");
 
         if (performanceList == null)
             return performances.ToArray();
@@ -51,9 +48,8 @@ public class MihailovskyPlaybillParser : IPlaybillParser
             cancellationToken.ThrowIfCancellationRequested();
 
             string day = performanceDiv.Children
-                ?.FirstOrDefault(c => c.ClassName=="date")
-                ?.Children
-                ?.FirstOrDefault(c => c.ClassName == "day f-ap")
+                .FirstOrDefault(c => c.ClassName=="date")
+                ?.Children.FirstOrDefault(c => c.ClassName == "day f-ap")
                 ?.TextContent;
 
             if (day == null)
@@ -69,15 +65,16 @@ public class MihailovskyPlaybillParser : IPlaybillParser
             if (null == parsed)
                 continue;
 
-            string persons = performanceDiv.Children
-                ?.FirstOrDefault(c => c.ClassName == "detail")
-                ?.Children
-                ?.FirstOrDefault(c => c.ClassName == "info")
-                ?.Children
-                ?.FirstOrDefault(c => c.ClassName == "persons")
+            string personsHtml = performanceDiv
+                .Children.FirstOrDefault(c => c.ClassName == "detail")
+                ?.Children.FirstOrDefault(c => c.ClassName == "info")
+                ?.Children.FirstOrDefault(c => c.ClassName == "persons")
                 ?.InnerHtml;
 
-            parsed.Cast = string.IsNullOrEmpty(persons) ? new PerformanceCast() : await _castParser.Parse(Encoding.UTF8.GetBytes(persons), cancellationToken);
+            parsed.Cast = string.IsNullOrEmpty(personsHtml)
+                ? new PerformanceCast()
+                : await _castParser.Parse(Encoding.UTF8.GetBytes(personsHtml), cancellationToken);
+
             performances.Add(parsed);
         }
 

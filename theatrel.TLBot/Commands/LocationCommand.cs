@@ -17,7 +17,7 @@ internal class LocationCommand : DialogCommandBase
     private const string Msg = "Какую площадку вы желаете посетить?";
 
     private readonly string[] _types;
-    private readonly string[] _every = { "Любую", "Все", "всё", "любой", "любое", "не важно" };
+    private readonly string[] _every = { "любую", "все", "всё", "любой", "любое", "не важно" };
 
     protected override string ReturnCommandMessage { get; set; } = "Выбрать другую площадку";
 
@@ -40,7 +40,7 @@ internal class LocationCommand : DialogCommandBase
     {
         chatInfo.Locations = ParseMessage(message);
 
-        var selected = chatInfo.Locations != null ? string.Join(" или ", chatInfo.Locations) : "любую площадку";
+        var selected = chatInfo.Locations != null && chatInfo.Locations.Any() ? string.Join(" или ", chatInfo.Locations) : "любую площадку";
         return Task.FromResult<ITgCommandResponse>(
             new TgCommandResponse($"{YouSelected} {selected}. {ReturnMsg}", ReturnCommandMessage));
     }
