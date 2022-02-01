@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -23,9 +24,9 @@ public class ChatInfoEntity : IChatDataInfo
     public DateTime When { get; set; } = DateTime.UtcNow;
 
     [NotMapped]
-    public DayOfWeek[] Days
+    public IEnumerable<DayOfWeek> Days
     {
-        get => DbDays?.Split(',').Select(d => (DayOfWeek)int.Parse(d)).ToArray();
+        get => DbDays?.Split(',').Select(d => (DayOfWeek)int.Parse(d));
         set => DbDays = value != null ? string.Join(",", value.Select(d => ((int)d).ToString())) : null;
     }
 

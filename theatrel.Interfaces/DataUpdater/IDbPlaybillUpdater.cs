@@ -7,5 +7,5 @@ namespace theatrel.Interfaces.DataUpdater;
 
 public interface IDbPlaybillUpdater : IDIRegistrable
 {
-    Task<bool> UpdateAsync(int theaterId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken);
+    Task<bool> Update(int theaterId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken);
 }

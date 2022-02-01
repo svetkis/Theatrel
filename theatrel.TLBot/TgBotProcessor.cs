@@ -157,8 +157,7 @@ internal class TgBotProcessor : ITgBotProcessor
         }
         else
         {
-            await Task.Run(() => _botService.SendMessageAsync(chatInfo.UserId, acknowledgement, InternalCancellationToken),
-                InternalCancellationToken);
+            await _botService.SendMessageAsync(chatInfo.UserId, acknowledgement, InternalCancellationToken);
             await chatsRepository.Delete(chatInfo);
         }
     }
@@ -198,7 +197,7 @@ internal class TgBotProcessor : ITgBotProcessor
             };
         }
 
-        await Task.Run(() => _botService.SendMessageAsync(chatInfo.UserId, botResponse, InternalCancellationToken));
+        await _botService.SendMessageAsync(chatInfo.UserId, botResponse, InternalCancellationToken);
     }
 
     private void SendWrongCommandMessage(long chatId, string message, int chatLevel)

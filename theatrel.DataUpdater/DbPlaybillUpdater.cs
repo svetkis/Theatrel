@@ -27,23 +27,30 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
         _filterService = filterService;
     }
 
-    public async Task<bool> UpdateAsync(int theaterId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken)
+    public async Task<bool> Update(int theaterId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken)
     {
         Trace.TraceInformation("PlaybillUpdater started.");
 
         using var dbRepository = _dbService.GetPlaybillRepository();
 
-        IPerformanceData[] performances = await _dataResolver.RequestProcess(theaterId, _filterService.GetFilter(startDate, endDate), cancellationToken);
+        var dateFilter = _filterService.GetFilter(startDate, endDate);
+
+        IPerformanceData[] performances = await _dataResolver.RequestProcess(theaterId, dateFilter, cancellationToken);
+
+        MemoryHelper.Collect(true);
+
+        await _dataResolver.AdditionalProcess(theaterId, performances, cancellationToken);
+
         foreach (var freshPerformanceData in performances)
         {
-            await ProcessData(freshPerformanceData, dbRepository);
+            await ProcessDataInternal(freshPerformanceData, dbRepository);
         }
 
         Trace.TraceInformation("PlaybillUpdater finished.");
         return true;
     }
 
-    private async Task ProcessData(IPerformanceData data, IPlaybillRepository playbillRepository)
+    private async Task ProcessDataInternal(IPerformanceData data, IPlaybillRepository playbillRepository)
     {
         if (data.DateTime < DateTime.UtcNow)
             return;
@@ -82,17 +89,15 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
         }
 
         var compareCastResult = CompareCast(playbillRepository, playbillEntry, data);
-        if (data.State == TicketsState.Ok && (compareCastResult == ReasonOfChanges.CastWasSet || compareCastResult == ReasonOfChanges.CastWasChanged))
+        if (data.State == TicketsState.Ok && (compareCastResult == ReasonOfChanges.CastWasSet || compareCastResult == ReasonOfChanges.CastWasChanged) 
+                                          && await playbillRepository.UpdateCast(playbillEntry, data))
         {
-            if (await playbillRepository.UpdateCast(playbillEntry, data))
+            await playbillRepository.AddChange(playbillEntry.Id, new PlaybillChangeEntity
             {
-                await playbillRepository.AddChange(playbillEntry.Id, new PlaybillChangeEntity
-                {
-                    LastUpdate = DateTime.UtcNow,
-                    MinPrice = data.MinPrice,
-                    ReasonOfChanges = (int)compareCastResult
-                });
-            }
+                LastUpdate = DateTime.UtcNow,
+                MinPrice = data.MinPrice,
+                ReasonOfChanges = (int)compareCastResult
+            });
         }
 
         var compareResult = ComparePerformanceData(lastChange, data);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using theatrel.Common.Enums;
 using theatrel.Interfaces.Tickets;
 
@@ -14,10 +13,5 @@ internal class PerformanceTickets : IPerformanceTickets
     public IDictionary<string, IDictionary<int, int>> Tickets { get; set; }
         = new Dictionary<string, IDictionary<int, int>>();
 
-    public int GetMinPrice()
-    {
-        return !Tickets.Any()
-            ? 0
-            : Tickets.Min(block => block.Value.Keys.Any() ? block.Value.Keys.Min() : 0);
-    }
+    public int MinTicketPrice { get; set; }
 }

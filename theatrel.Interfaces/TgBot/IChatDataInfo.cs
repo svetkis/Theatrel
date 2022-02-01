@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace theatrel.Interfaces.TgBot;
 
@@ -17,7 +18,7 @@ public interface IChatDataInfo
     int CurrentStepId { get; set; }
     int PreviousStepId { get; set; }
     DateTime When { get; set; }
-    DayOfWeek[] Days { get; set; }
+    IEnumerable<DayOfWeek> Days { get; set; }
     string[] Types { get; set; }
     string[] Locations { get; set; }
     string PerformanceName { get; set; }

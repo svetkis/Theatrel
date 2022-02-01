@@ -37,17 +37,22 @@ internal class PageRequester : IPageRequester
 
                     RestResponse response = await client.ExecuteAsync(request, cancellationToken);
 
-                    int contentCharsetIndex = response.RawBytes.AsSpan().IndexOf(_notFoundLabelBytes);
-                    if (-1 != contentCharsetIndex)
+                    int notFoundLabelIndex = response.RawBytes.AsSpan().IndexOf(_notFoundLabelBytes);
+                    if (-1 != notFoundLabelIndex)
+                    {
                         throw new HttpRequestException();
+                    }
 
-                    if (response.RawBytes == null || response.StatusCode == HttpStatusCode.ServiceUnavailable
-                                                  || response.StatusCode == HttpStatusCode.NotFound
-                                                  || response.RawBytes?.Length == 0)
+                    if (response.RawBytes == null || response.RawBytes?.Length == 0
+                                                  || response.StatusCode is HttpStatusCode.ServiceUnavailable or HttpStatusCode.NotFound)
+                    {
                         throw new HttpRequestException();
+                    }
 
                     if (response.StatusCode != HttpStatusCode.OK)
+                    {
                         return null;
+                    }
 
                     return needEncoding ? _encodingService.ProcessBytes(response.RawBytes) : response.RawBytes;
                 });

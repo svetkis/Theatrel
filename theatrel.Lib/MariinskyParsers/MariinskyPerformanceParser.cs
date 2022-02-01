@@ -17,27 +17,35 @@ internal class MariinskyPerformanceParser : IPerformanceParser
         try
         {
             IElement parsedElement = (IElement)element;
-            IElement[] allElementChildren = parsedElement.QuerySelectorAll("*").ToArray();
 
-            IHtmlCollection<IElement> specNameChildren = allElementChildren.FirstOrDefault(m => m.ClassName == "spec_name")?.Children;
-            string dtString = allElementChildren.FirstOrDefault(m => 0 == string.Compare(m.TagName, "time", true))?.GetAttribute("datetime");
+            string dateString = parsedElement.QuerySelector("time")?.GetAttribute("datetime")
+                ?.Replace("T", " ")
+                .Replace("+", " +");
 
-            IElement ticketsTButton = allElementChildren.FirstOrDefault(m => m.ClassName == "t_button");
+            if (dateString == null)
+                return null;
 
-            string location = allElementChildren
-                .FirstOrDefault(m => 0 == string.Compare(m.TagName, "span", true) && m.GetAttribute("itemprop") == "location")?.TextContent;
-
-            string dateString = dtString.Replace("T", " ").Replace("+", " +");
             var dt = DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture)
                 .ToUniversalTime();
+
+            if (dt < DateTime.UtcNow)
+                return null;
+
+            IHtmlCollection<IElement> specNameChildren = parsedElement.QuerySelector("div.spec_name")?.Children;
+
+            IElement ticketsTButton = parsedElement.QuerySelector("div.t_button");
+
+            string location = parsedElement.QuerySelectorAll("span")
+                .FirstOrDefault(m => m.GetAttribute("itemprop") == "location")
+                ?.TextContent.Trim();
 
             string name = specNameChildren.Any()
                 ? specNameChildren.Last()?.TextContent.Trim()
                 : CommonTags.NotDefinedTag;
 
-            var statusChildren = allElementChildren.FirstOrDefault(m => m.ClassName == "status")?.Children;
+            var statusChildren = parsedElement.QuerySelector("div.status")?.Children;
             string status = statusChildren != null && statusChildren.Any()
-                ? statusChildren.Last()?.TextContent.Trim()
+                ? statusChildren.Last().TextContent.Trim()
                 : null;
 
             string url = ProcessSpectsUrl(specNameChildren);
@@ -51,7 +59,7 @@ internal class MariinskyPerformanceParser : IPerformanceParser
                 Url = url,
                 TicketsUrl = ticketsUrl,
                 Type = GetType(parsedElement.ClassList.ToArray()),
-                Location = GetLocation(location.Trim()),
+                Location = GetLocation(location),
                 Description = status
             };
         }

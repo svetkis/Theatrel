@@ -88,7 +88,7 @@ public class DataUpdaterUpdateTest : DataUpdaterTestBase
         var dataUpdater = scope.Resolve<IDbPlaybillUpdater>();
 
         //test
-        await dataUpdater.UpdateAsync(1, performanceDateTime, performanceDateTime, CancellationToken.None);
+        await dataUpdater.Update(1, performanceDateTime, performanceDateTime, CancellationToken.None);
 
         //check
         var changes = db.PlaybillChanges

@@ -74,7 +74,7 @@ public abstract class UpdateJobBase : IJob
                     IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
                     Trace.TraceInformation($"Update playbill for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
-                    await updater.UpdateAsync(TheatreId, filter.StartDate, filter.EndDate, cToken);
+                    await updater.Update(TheatreId, filter.StartDate, filter.EndDate, cToken);
                 }
 
                 MemoryHelper.Collect(true);

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using RestSharp;
+using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.EncodingService;
@@ -48,8 +49,7 @@ internal class PlayBillResolver : IPlayBillDataResolver
 
         var playbillParser = _playbillParserFactory((Theatre)theatre);
         var performanceParser = _performanceParserFactory((Theatre)theatre);
-        var performanceCastParser = _castParserFactory((Theatre) theatre);
-        var ticketsParser = _ticketsParserFactory((Theatre)theatre);
+
 
         DateTime[] months = filter.StartDate.GetMonthsBetween(filter.EndDate);
 
@@ -66,35 +66,49 @@ internal class PlayBillResolver : IPlayBillDataResolver
             performances.AddRange(await playbillParser.Parse(content, performanceParser, dateTime.Year, dateTime.Month, cancellationToken));
         }
 
+        MemoryHelper.Collect(true);
+        Trace.TraceInformation("PlayBillResolver performances resolved");
+
         cancellationToken.ThrowIfCancellationRequested();
 
         IEnumerable<IPerformanceData> filtered = performances
             .Where(item => item != null && _filterChecker.IsDataSuitable(item, filter)).ToArray();
 
-        Task[] resolvePricesTasks = filtered
-            .Select(item => Task.Run(async () =>
+        Trace.TraceInformation("PlayBillResolver.RequestProcess finished");
+        return filtered.ToArray();
+    }
+
+    public async Task AdditionalProcess(int theatre, IPerformanceData[] performances, CancellationToken cancellationToken)
+    {
+        var performanceCastParser = _castParserFactory((Theatre)theatre);
+        ITicketsParser ticketsParser = _ticketsParserFactory((Theatre)theatre);
+
+        await Parallel.ForEachAsync(
+            performances,
+            new ParallelOptions { CancellationToken = cancellationToken },
+            async (performance, ctx) =>
             {
-                var tickets = await ticketsParser.ParseFromUrl(item.TicketsUrl, cancellationToken);
-                item.State = tickets.State;
-                item.MinPrice = tickets.GetMinPrice();
-            }, cancellationToken)).ToArray();
+                var tickets = await ticketsParser.ParseFromUrl(performance.TicketsUrl, ctx);
+                performance.State = tickets.State;
+                performance.MinPrice = tickets.MinTicketPrice;
+            });
 
-        await Task.WhenAll(resolvePricesTasks.ToArray());
 
+        MemoryHelper.Collect(true);
+        Trace.TraceInformation("PlayBillResolver prices resolved");
 
         if (theatre == (int)Theatre.Mariinsky)
         {
-            Task[] resolveCastTasks = filtered
-                .Select(item => Task.Run(async () =>
+            await Parallel.ForEachAsync(
+                performances,
+                new ParallelOptions { CancellationToken = cancellationToken },
+                async (performance, ctx) =>
                 {
-                    item.Cast = await performanceCastParser.ParseFromUrl(item.Url, item.State == TicketsState.PerformanceWasMoved, cancellationToken);
-                }, cancellationToken)).ToArray();
-
-            await Task.WhenAll(resolveCastTasks.ToArray());
+                    performance.Cast = await performanceCastParser.ParseFromUrl(performance.Url, performance.State == TicketsState.PerformanceWasMoved, ctx);
+                });
         }
 
-        Trace.TraceInformation("PlayBillResolver.RequestProcess finished");
-        return filtered.ToArray();
+        Trace.TraceInformation("PlayBillResolver casts resolved");
     }
 
     private async Task<byte[]> Request(Theatre id, DateTime date, CancellationToken cancellationToken)

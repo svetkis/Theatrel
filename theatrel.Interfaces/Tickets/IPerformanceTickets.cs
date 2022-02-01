@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using theatrel.Common.Enums;
 
 namespace theatrel.Interfaces.Tickets;
@@ -10,7 +9,5 @@ public interface IPerformanceTickets
 
     DateTime LastUpdate { get; set; }
 
-    IDictionary<string, IDictionary<int, int>> Tickets { get; }
-
-    int GetMinPrice();
+    int MinTicketPrice { get; set; }
 }

@@ -63,18 +63,6 @@ public class TheatrelLibModule : Autofac.Module
             })
             .As<ITicketsParser>();
 
-        builder.Register<ITicketParser>((c, p) =>
-            {
-                var type = p.TypedAs<Theatre>();
-                return type switch
-                {
-                    Theatre.Mariinsky => new MariinskyTicketParser(),
-                    Theatre.Mikhailovsky => new MihailovskyTicketParser(),
-                    _ => throw new ArgumentException("Unknown theatre")
-                };
-            })
-            .As<ITicketParser>();
-
         builder.Register<IPlaybillParser>((c, p) =>
             {
                 var type = p.TypedAs<Theatre>();

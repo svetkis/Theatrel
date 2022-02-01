@@ -5,39 +5,41 @@ using AngleSharp.Dom;
 using theatrel.Common;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
+using theatrel.Lib.Utils;
 
 namespace theatrel.Lib.MihailovkyParsers;
 
 internal class MihailovskyPerformanceParser : IPerformanceParser
 {
+    private const string Detail = "detail";
     public IPerformanceData Parse(object element, int year, int month)
     {
         try
         {
             IElement parsedElement = (IElement)element;
 
-            var details = parsedElement.Children?.FirstOrDefault(c => c.ClassName == "detail");
+            IElement details = parsedElement.GetChildByPropPath(e => e.ClassName, Detail);
             if (details == null || !details.Children.Any())
                 return null;
 
-            string url = ProcessUrl(details.Children.FirstOrDefault(c => c.LocalName == "h2")?.Children[0]);
-            string name = details.Children
-                .FirstOrDefault(c => c.LocalName == "h2")
-                ?.Children.
-                FirstOrDefault(c => c.LocalName == "a")?.TextContent.Trim();
+            string url = ProcessUrl(details.Children.FirstOrDefault(c => c.LocalName == "h2")?.Children.First());
+            string name = details
+                .Children.FirstOrDefault(c => c.LocalName == "h2")
+                ?.Children.FirstOrDefault(c => c.LocalName == "a")
+                ?.TextContent.Trim();
 
             string ticketsUrl = null;
             string location = "Михайловский театр";
             string type = "Неопределено";
 
-            var locationElement = details.Children.FirstOrDefault(c => c.ClassName == "place");
+            var locationElement = details.GetChildByPropPath(e => e.ClassName, "place");
             if (locationElement != null)
                 location = locationElement.TextContent.Trim();
 
             var info = details.Children.First(c => c.ClassName == "info");
-            if (info != null && info.Children.Any())
+            if (info.Children.Any())
             {
-                var ticket = info.Children.FirstOrDefault(c => c.ClassName == "ticket")?.Children.FirstOrDefault();
+                var ticket = info.GetChildByPropPath(e => e.ClassName, "ticket")?.Children.FirstOrDefault();
                 ticketsUrl = GetTicketsUrl(ticket);
 
                 var typeElement = info.Children.FirstOrDefault(c => c.ClassName == "type f-ap");
@@ -49,20 +51,17 @@ internal class MihailovskyPerformanceParser : IPerformanceParser
                 }
             }
 
-            string day = parsedElement.Children
-                ?.FirstOrDefault(c => c.ClassName == "date")
-                ?.Children
-                ?.FirstOrDefault(c => c.ClassName == "day f-ap")
+            var dateInfo = parsedElement.GetChildByPropPath(e => e.ClassName, "date");
+
+            string day = dateInfo
+                ?.GetChildByPropPath(e => e.ClassName, "day f-ap")
                 ?.TextContent;
 
             int.TryParse(day, out int dayResult);
 
-            string time = parsedElement.Children
-                ?.FirstOrDefault(c => c.ClassName == "date")
-                ?.Children
-                ?.FirstOrDefault(c => c.ClassName == "time f-ap")
-                ?.Children
-                ?.FirstOrDefault()
+            string time = dateInfo
+                ?.GetChildByPropPath(e => e.ClassName, "time f-ap")
+                ?.Children.FirstOrDefault()
                 ?.TextContent;
 
             string[] splitTime = time.Split(":");

@@ -4,7 +4,7 @@ using System.Runtime;
 
 namespace theatrel.Common;
 
-public class MemoryHelper
+public static class MemoryHelper
 {
     private static readonly Process CurrentProcess = Process.GetCurrentProcess();
 

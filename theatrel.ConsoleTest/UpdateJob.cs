@@ -55,10 +55,11 @@ public class UpdateJob : IJob
                     IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
                     Trace.TraceInformation($"Update playbill Mariinski for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
-                    await updater.UpdateAsync(1, filter.StartDate, filter.EndDate, cToken);
+                    await updater.Update(1, filter.StartDate, filter.EndDate, cToken);
                 }
 
                 MemoryHelper.Collect(true);
+                MemoryProfiler.GetSnapshot("");
             }
 
             return true;
@@ -86,11 +87,12 @@ public class UpdateJob : IJob
                     IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
                     Trace.TraceInformation($"Update Michailovsky playbill for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
-                    await updater.UpdateAsync(2, filter.StartDate, filter.EndDate, cToken);
+                    await updater.Update(2, filter.StartDate, filter.EndDate, cToken);
 
                 }
 
                 MemoryHelper.Collect(true);
+                MemoryProfiler.GetSnapshot("");
             }
 
             return true;

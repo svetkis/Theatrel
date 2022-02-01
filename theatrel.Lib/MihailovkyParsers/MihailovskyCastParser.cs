@@ -12,6 +12,7 @@ using theatrel.Common.Enums;
 using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Helpers;
 using theatrel.Lib.Cast;
+using theatrel.Lib.Utils;
 
 namespace theatrel.Lib.MihailovkyParsers;
 
@@ -63,7 +64,7 @@ internal class MihailovskyCastParser : IPerformanceCastParser
             await using var stream = new MemoryStream(data);
             using IDocument parsedDoc = await context.OpenAsync(req => req.Content(stream), cancellationToken);
 
-            IElement[] castBlock = parsedDoc.All.Where(c => c.ClassName == " f-ap").ToArray();
+            IElement[] castBlock = parsedDoc.QuerySelectorAll("p.f-ap").ToArray();
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -77,17 +78,12 @@ internal class MihailovskyCastParser : IPerformanceCastParser
 
             foreach (var line in lines)
             {
-                string characterName = line.Contains('—') || line.Contains(':')
-                    ? line.Split('—', ':').First().Replace("&nbsp;", " ").Trim()
-                    : CommonTags.Actor;
-
-                using IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
-                IElement[] allElementChildren = parsedLine.QuerySelectorAll("*").ToArray();
+                string characterName = line.GetCharacterName();
 
                 if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
                     continue;
 
-                var actors = GetCastInfo(allElementChildren);
+                var actors = await GetCastInfo(line, cancellationToken);
                 if (null == actors || !actors.Any())
                     continue;
 
@@ -113,9 +109,11 @@ internal class MihailovskyCastParser : IPerformanceCastParser
         return new PerformanceCast { State = CastState.TechnicalError };
     }
 
-    private static IList<IActor> GetCastInfo(IElement[] allElementChildren)
+    private static async Task<IList<IActor>> GetCastInfo(string line, CancellationToken cancellationToken)
     {
-        IElement[] aTags = allElementChildren.Where(m => m.LocalName == "a").ToArray();
+        using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
+        using IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
+        var aTags = parsedLine.QuerySelectorAll("a");
 
         var actors = new List<IActor>();
 

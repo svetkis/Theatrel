@@ -54,7 +54,7 @@ public class DataUpdaterAddTest : DataUpdaterTestBase
         await using (var internalScope = testScope.BeginLifetimeScope())
         {
             var dataUpdater = internalScope.Resolve<IDbPlaybillUpdater>();
-            await dataUpdater.UpdateAsync(1, filterFrom, filterTo, CancellationToken.None);
+            await dataUpdater.Update(1, filterFrom, filterTo, CancellationToken.None);
         }
 
         //setup new values
@@ -70,14 +70,14 @@ public class DataUpdaterAddTest : DataUpdaterTestBase
         await using (var internalScope = testScope.BeginLifetimeScope())
         {
             var dataUpdater = internalScope.Resolve<IDbPlaybillUpdater>();
-            await dataUpdater.UpdateAsync(1, filterFrom, filterTo, CancellationToken.None);
+            await dataUpdater.Update(1, filterFrom, filterTo, CancellationToken.None);
         }
 
         // nothing changed
         await using (var internalScope = testScope.BeginLifetimeScope())
         {
             var dataUpdater = internalScope.Resolve<IDbPlaybillUpdater>();
-            await dataUpdater.UpdateAsync(1, filterFrom, filterTo, CancellationToken.None);
+            await dataUpdater.Update(1, filterFrom, filterTo, CancellationToken.None);
         }
 
         //check

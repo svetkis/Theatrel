@@ -4,7 +4,7 @@ using System;
 
 namespace theatrel.DataAccess.DbSettings;
 
-internal class DbContextConfigurator
+internal static class DbContextConfigurator
 {
     public static void Configure(DbContextOptionsBuilder<AppDbContext> builder)
     {
@@ -24,7 +24,7 @@ internal class DbContextConfigurator
             Username = userInfo[0],
             Password = userInfo[1],
             Database = databaseUri.LocalPath.TrimStart('/'),
-            SslMode = SslMode.Require,
+            //SslMode = SslMode.Require,
 
             TrustServerCertificate = true,
             KeepAlive = 300

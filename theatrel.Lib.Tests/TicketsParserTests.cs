@@ -20,6 +20,6 @@ public class TicketsParserTests
         var parser = ticketsParserFactory(Theatre.Mariinsky);
 
         var tickets = await parser.Parse(Encoding.UTF8.GetBytes(text), CancellationToken.None);
-        Assert.Equal(expected, tickets.GetMinPrice());
+        Assert.Equal(expected, tickets.MinTicketPrice);
     }
 }

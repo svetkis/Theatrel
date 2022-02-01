@@ -15,52 +15,55 @@ public static class DaysOfWeekHelper
     public static readonly string[] WeekDaysNames = { "Будни" };
     public static readonly string[] AllDaysNames = { "Любой", "не важно", "все" };
 
-    public static readonly IDictionary<string, DayOfWeek[]> DaysDictionary = new Dictionary<string, DayOfWeek[]>();
+    public static readonly IReadOnlyDictionary<string, DayOfWeek[]> DaysDictionary = GetDaysDictionary(CultureInfo.CreateSpecificCulture("ru"));
 
-    static DaysOfWeekHelper()
+    private static readonly IComparer<int> IntComparer = DaysOfWeekComparer.Create();
+
+    private static IReadOnlyDictionary<string, DayOfWeek[]> GetDaysDictionary(CultureInfo culture)
     {
-        var cultureRu = CultureInfo.CreateSpecificCulture("ru");
-
-        var daysArr = Enumerable.Range(1, 7).Select(idx =>
-            new
-            {
-                i = idx,
-                name = cultureRu.DateTimeFormat.GetDayName((DayOfWeek)(idx % 7)).ToLower(),
-                abbrName = cultureRu.DateTimeFormat.GetAbbreviatedDayName((DayOfWeek)(idx % 7)).ToLower()
-            });
-
-        DaysDictionary[WeekendsNames.First()] = Weekends;
-        DaysDictionary[WeekDaysNames.First()] = WeekDays;
-        DaysDictionary[AllDaysNames.First()] = AllDays;
-
-        foreach (var item in daysArr)
+        var daysDictionary = new Dictionary<string, DayOfWeek[]>
         {
-            int idx = item.i % 7;
-            DaysDictionary.Add(item.i.ToString(), new[] { (DayOfWeek)idx });
-            DaysDictionary.Add(item.name, new[] { (DayOfWeek)idx });
-            DaysDictionary.Add(item.abbrName, new[] { (DayOfWeek)idx });
+            [WeekendsNames.First()] = Weekends,
+            [WeekDaysNames.First()] = WeekDays,
+            [AllDaysNames.First()] = AllDays
+        };
+
+        foreach (var index in Enumerable.Range(1, 7))
+        {
+            int dayOfWeekIndex = index % 7;
+            DayOfWeek dayOfWeek = (DayOfWeek)dayOfWeekIndex;
+
+            var name = culture.DateTimeFormat.GetDayName(dayOfWeek).ToLower();
+            var abbrName = culture.DateTimeFormat.GetAbbreviatedDayName(dayOfWeek).ToLower();
+            var dayArray = new[] { dayOfWeek };
+
+            daysDictionary.Add(index.ToString(), dayArray);
+            daysDictionary.Add(name, dayArray);
+            daysDictionary.Add(abbrName, dayArray);
         }
+
+        return daysDictionary;
     }
 
-    public static string GetDaysDescription(DayOfWeek[] days, CultureInfo culture)
+    public static string GetDaysDescription(IEnumerable<DayOfWeek> days, CultureInfo culture)
     {
-        if (days == null || !days.Any())
+        var daysArray = days?.ToArray();
+        if (daysArray == null || !daysArray.Any())
             return AllDaysNames.First().ToLower();
 
-        if (days.Length > 1)
+        if (daysArray.Count() > 1)
         {
-            var sorted = days.OrderBy(d => (int)d, DaysOfWeekComparer.Create()).ToArray();
-            foreach (var dict in DaysDictionary)
+            var sorted = daysArray.OrderBy(d => (int)d, IntComparer).ToArray();
+            foreach (var (key, _) in DaysDictionary.Where(keyValuePair => keyValuePair.Value.SequenceEqual(sorted)))
             {
-                if (dict.Value.SequenceEqual(sorted))
-                    return dict.Key;
+                return key;
             }
         }
 
-        IEnumerable<string> daysArr = days
-            .OrderBy(d => (int)d, DaysOfWeekComparer.Create())
+        IEnumerable<string> returnArray = daysArray
+            .OrderBy(d => (int)d, IntComparer)
             .Select(d => culture.DateTimeFormat.GetDayName(d));
 
-        return string.Join(" или ", daysArr);
+        return string.Join(" или ", returnArray);
     }
 }
