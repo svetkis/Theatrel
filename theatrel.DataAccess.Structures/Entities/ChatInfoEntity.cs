@@ -27,7 +27,7 @@ public class ChatInfoEntity : IChatDataInfo
     public IEnumerable<DayOfWeek> Days
     {
         get => DbDays?.Split(',').Select(d => (DayOfWeek)int.Parse(d));
-        set => DbDays = value != null ? string.Join(",", value.Select(d => ((int)d).ToString())) : null;
+        set => DbDays = value == null ? null : string.Join(",", value.Select(d => ((int)d).ToString()));
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -37,14 +37,14 @@ public class ChatInfoEntity : IChatDataInfo
     public string[] Types
     {
         get => DbTypes?.Split(',').ToArray();
-        set => DbTypes = value != null ? string.Join(",", value) : null;
+        set => DbTypes = value == null || !value.Any() ? null : string.Join(",", value);
     }
 
     [NotMapped]
     public string[] Locations
     {
         get => DbLocations?.Split(',').ToArray();
-        set => DbLocations = value != null ? string.Join(",", value) : null;
+        set => DbLocations = value == null || !value.Any() ? null : string.Join(",", value);
     }
 
     public string PerformanceName { get; set; }
