@@ -28,9 +28,6 @@ internal class MariinskyPerformanceParser : IPerformanceParser
             var dt = DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture)
                 .ToUniversalTime();
 
-            if (dt < DateTime.UtcNow)
-                return null;
-
             IHtmlCollection<IElement> specNameChildren = parsedElement.QuerySelector("div.spec_name")?.Children;
 
             IElement ticketsTButton = parsedElement.QuerySelector("div.t_button");
@@ -48,7 +45,7 @@ internal class MariinskyPerformanceParser : IPerformanceParser
                 ? statusChildren.Last().TextContent.Trim()
                 : null;
 
-            string url = ProcessSpectsUrl(specNameChildren);
+            string url = GetUrl(specNameChildren);
 
             string ticketsUrl = GetTicketsUrl(ticketsTButton);
 
@@ -95,7 +92,7 @@ internal class MariinskyPerformanceParser : IPerformanceParser
         return url.StartsWith("//") ? $"https:{url}" : url;
     }
 
-    private static string ProcessSpectsUrl(IHtmlCollection<IElement> urlData)
+    private static string GetUrl(IHtmlCollection<IElement> urlData)
     {
         if (!urlData.Any())
             return CommonTags.NotDefinedTag;
@@ -126,13 +123,8 @@ internal class MariinskyPerformanceParser : IPerformanceParser
 
     private static string GetType(string[] types)
     {
-        foreach (var type in types)
-        {
-            if (PerformanceTypes.Value.ContainsKey(type))
-                return PerformanceTypes.Value[type];
-        }
-
-        return types.Reverse().Skip(1).First();
+        var type = types.FirstOrDefault(x => PerformanceTypes.Value.ContainsKey(x));
+        return type != null ? PerformanceTypes.Value[type] : types.Reverse().Skip(1).First();
     }
 
     private static string GetLocation(string location)

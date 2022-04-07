@@ -22,7 +22,7 @@ public static class MemoryHelper
             GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
 
 #pragma warning disable S1215 // "GC.Collect" should not be called
-        GC.Collect();
+        //GC.Collect();
 #pragma warning restore S1215 // "GC.Collect" should not be called
 
         var after = GC.GetTotalMemory(true) / 1048576;

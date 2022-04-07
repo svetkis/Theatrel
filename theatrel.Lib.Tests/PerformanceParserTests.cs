@@ -43,7 +43,7 @@ public class PerformanceParserTests
         var performanceParserFactory = DIContainerHolder.Resolve<Func<Theatre, IPerformanceParser>>();
         var performanceParser = performanceParserFactory(Theatre.Mariinsky);
 
-        var performances = await parser.Parse(text, performanceParser, 0, 0, CancellationToken.None);
+         var performances = await parser.Parse(text, performanceParser, 0, 0, CancellationToken.None);
 
         var timeZone = TimeZoneInfo.CreateCustomTimeZone("Moscow Time", new TimeSpan(03, 00, 00),
             "(GMT+03:00) Moscow Time", "Moscow Time");
