@@ -25,6 +25,9 @@ internal class FilterService : IFilterService
             EndDate = dataInfo.When.AddMonths(1)
         };
 
+        if (dataInfo.Theatres != null && dataInfo.Theatres.Any())
+            filter.Theatres = dataInfo.Theatres;
+
         if (dataInfo.Locations != null && dataInfo.Locations.Any())
             filter.Locations = dataInfo.Locations;
 

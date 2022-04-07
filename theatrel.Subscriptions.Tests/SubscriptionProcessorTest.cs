@@ -47,7 +47,7 @@ public class SubscriptionProcessorTest : IClassFixture<DatabaseFixture>
             Performance = new PerformanceEntity
             {
                 Name = "TestOpera",
-                Location = new LocationsEntity("TestLocation"),
+                Location = new LocationsEntity { Name = "TestLocation" },
                 Type = new PerformanceTypeEntity("Opera")
             },
             When = performanceDateTime,

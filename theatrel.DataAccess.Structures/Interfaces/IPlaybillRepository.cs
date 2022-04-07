@@ -35,4 +35,6 @@ public interface IPlaybillRepository : IDisposable, IDIRegistrable
     Task<bool> Delete(PerformanceEntity entity);
 
     IEnumerable<LocationsEntity> GetLocationsList();
+
+    IEnumerable<TheatreEntity> GetTheatres();
 }

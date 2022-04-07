@@ -41,6 +41,13 @@ public class ChatInfoEntity : IChatDataInfo
     }
 
     [NotMapped]
+    public string[] Theatres
+    {
+        get => DbTheatres?.Split(',').ToArray();
+        set => DbTheatres = value == null || !value.Any() ? null : string.Join(",", value);
+    }
+
+    [NotMapped]
     public string[] Locations
     {
         get => DbLocations?.Split(',').ToArray();
@@ -53,6 +60,8 @@ public class ChatInfoEntity : IChatDataInfo
     public string DbTypes { get; set; }
 
     public string DbLocations { get; set; }
+
+    public string DbTheatres { get; set; }
 
     public DateTime LastMessage { get; set; } = DateTime.UtcNow;
     public DialogState DialogState { get; set; }

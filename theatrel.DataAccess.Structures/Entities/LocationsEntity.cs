@@ -9,12 +9,5 @@ public class LocationsEntity
 
     public string Name { get; set; }
 
-    public LocationsEntity()
-    {
-    }
-
-    public LocationsEntity(string name)
-    {
-        Name = name;
-    }
+    public TheatreEntity Theatre { get; set; }
 }

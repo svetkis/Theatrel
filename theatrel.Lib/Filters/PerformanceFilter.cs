@@ -10,6 +10,7 @@ internal class PerformanceFilter : IPerformanceFilter
 
     public DayOfWeek[] DaysOfWeek { get; set; }
     public string[] PerformanceTypes { get; set; }
+    public string[] Theatres { get; set; }
     public string[] Locations { get; set; }
     public int PartOfDay { get; set; }
     public DateTime StartDate { get; set; }

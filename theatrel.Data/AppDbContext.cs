@@ -21,6 +21,8 @@ public class AppDbContext : DbContext
     public DbSet<ActorEntity> Actors { get; set; } = null!;
     public DbSet<RoleEntity> Roles { get; set; } = null!;
 
+    public DbSet<TheatreEntity> Theatre { get; set; } = null!;
+
     public AppDbContext(DbContextOptions options) : base(options)
     {
     }

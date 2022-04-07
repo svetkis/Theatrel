@@ -101,7 +101,7 @@ internal class PlaybillRepository : IPlaybillRepository
         {
             LocationsEntity location = locationId != -1
                 ? _dbContext.PerformanceLocations.FirstOrDefault(l => l.Id == locationId)
-                : new LocationsEntity { Name = data.Location };
+                : new LocationsEntity { Name = data.Location, Theatre = GetOrCreateTheatreEntity(data) };
 
             PerformanceTypeEntity type = typeId != -1
                 ? _dbContext.PerformanceTypes.FirstOrDefault(t => t.Id == typeId)
@@ -111,7 +111,7 @@ internal class PlaybillRepository : IPlaybillRepository
             {
                 Name = data.Name,
                 Location = location,
-                Type = type,
+                Type = type
             };
 
             _dbContext.Performances.Add(performance);
@@ -121,6 +121,28 @@ internal class PlaybillRepository : IPlaybillRepository
         catch (Exception e)
         {
             Console.WriteLine($"AddPerformanceEntity DbException: {e.Message} {e.InnerException?.Message}");
+            throw;
+        }
+    }
+
+    private TheatreEntity GetOrCreateTheatreEntity(IPerformanceData data)
+    {
+        try
+        {
+            TheatreEntity theatre = _dbContext.Theatre.AsNoTracking().FirstOrDefault(t => t.Id == data.TheatreId);
+            if (theatre == null)
+            {
+                theatre = new TheatreEntity { Id = data.TheatreId, Name = data.TheatreName };
+                _dbContext.Theatre.Add(theatre);
+                _dbContext.SaveChangesAsync();
+                _dbContext.Entry(theatre).State = EntityState.Detached;
+            }
+
+            return theatre;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"GetOrCreateTheatreEntity DbException: {e.Message} {e.InnerException?.Message}");
             throw;
         }
     }
@@ -658,8 +680,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation(
-                $"UpdateUrl DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            Trace.TraceInformation($"UpdateUrl DbException {ex.Message} InnerException {ex.InnerException?.Message}");
             return false;
         }
         finally
@@ -711,6 +732,11 @@ internal class PlaybillRepository : IPlaybillRepository
     }
 
     public IEnumerable<LocationsEntity> GetLocationsList() => _dbContext.PerformanceLocations.AsNoTracking();
+
+    public IEnumerable<TheatreEntity> GetTheatres()
+    {
+        return _dbContext.Theatre.AsNoTracking();
+    }
 
     public void Dispose()
     {

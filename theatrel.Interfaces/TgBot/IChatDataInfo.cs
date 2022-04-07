@@ -20,6 +20,7 @@ public interface IChatDataInfo
     DateTime When { get; set; }
     IEnumerable<DayOfWeek> Days { get; set; }
     string[] Types { get; set; }
+    string[] Theatres { get; set; }
     string[] Locations { get; set; }
     string PerformanceName { get; set; }
     DateTime LastMessage { get; set; }

@@ -25,6 +25,7 @@ public interface IPerformanceFilter
 
     DayOfWeek[] DaysOfWeek { get; set; }
     string[] PerformanceTypes { get; set; }
+    string[] Theatres { get; set; }
     string[] Locations { get; set; }
     int PartOfDay { get; set; }
     DateTime StartDate { get; set; }

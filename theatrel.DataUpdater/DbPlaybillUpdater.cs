@@ -43,6 +43,9 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
 
         foreach (var freshPerformanceData in performances)
         {
+            freshPerformanceData.TheatreId = theaterId;
+            freshPerformanceData.TheatreName = theaterId == 1 ? "Мариинский театр" : "Михайловский театр";
+
             await ProcessDataInternal(freshPerformanceData, dbRepository);
         }
 

@@ -7,6 +7,9 @@ namespace theatrel.Lib;
 
 internal class PerformanceData : IPerformanceData
 {
+    public int TheatreId { get; set; }
+    public string TheatreName { get; set; }
+
     public string Location { get; set; }
     public string Name { get; set; }
     public DateTime DateTime { get; set; }

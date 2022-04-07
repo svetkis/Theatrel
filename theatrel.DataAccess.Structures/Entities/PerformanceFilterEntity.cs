@@ -48,6 +48,19 @@ public class PerformanceFilterEntity : IPerformanceFilter
     [EditorBrowsable(EditorBrowsableState.Never)]
     public string DbLocations { get; set; }
 
+
+    [NotMapped]
+    public string[] Theatres
+    {
+        get => string.IsNullOrEmpty(DbLocations) ? null : DbTheatres.Split(',');
+        set => DbTheatres = value != null
+            ? string.Join(",", value.OrderBy(s => s))
+            : null;
+    }
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string DbTheatres { get; set; }
+
     public int PartOfDay { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
@@ -72,6 +85,12 @@ public class PerformanceFilterEntity : IPerformanceFilter
             return false;
 
         if (PlaybillId != otherFilter.PlaybillId)
+            return false;
+
+        if (0 != string.CompareOrdinal(DbTheatres, otherFilter.DbTheatres))
+            return false;
+
+        if (0 != string.CompareOrdinal(DbLocations, otherFilter.DbLocations))
             return false;
 
         return true;
