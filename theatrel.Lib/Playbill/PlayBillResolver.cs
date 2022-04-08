@@ -72,7 +72,7 @@ internal class PlayBillResolver : IPlayBillDataResolver
         cancellationToken.ThrowIfCancellationRequested();
 
         IEnumerable<IPerformanceData> filtered = performances
-            .Where(item => item != null && _filterChecker.IsDataSuitable(item, filter) && item.DateTime > DateTime.UtcNow).ToArray();
+            .Where(item => item != null && _filterChecker.CheckOnlyDate(item.DateTime, filter)).ToArray();
 
         Trace.TraceInformation("PlayBillResolver.RequestProcess finished");
         return filtered.ToArray();

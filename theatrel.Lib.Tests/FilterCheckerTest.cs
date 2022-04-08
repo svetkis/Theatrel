@@ -24,7 +24,7 @@ public class FilterCheckerTest
         filter.SetupGet(x => x.PerformanceName).Returns(string.Empty);
         filter.SetupGet(x => x.DaysOfWeek).Returns(filterDays);
         filter.SetupGet(x => x.PerformanceTypes).Returns(filterTypes);
-        filter.SetupGet(x => x.Locations).Returns(Array.Empty<string>());
+        filter.SetupGet(x => x.LocationIds).Returns(Array.Empty<int>());
         filter.SetupGet(x => x.StartDate).Returns(dt.AddDays(-2));
         filter.SetupGet(x => x.EndDate).Returns(dt.AddDays(2));
 
@@ -32,7 +32,7 @@ public class FilterCheckerTest
         performance.SetupGet(x => x.DateTime).Returns(dt);
         performance.SetupGet(x => x.Type).Returns(performanceType);
 
-        bool result = filterChecker.IsDataSuitable(performance.Object, filter.Object);
+        bool result = filterChecker.IsDataSuitable(performance.Object.Name, -1, performance.Object.Type, performance.Object.DateTime, filter.Object);
 
         Assert.Equal(expected, result);
     }

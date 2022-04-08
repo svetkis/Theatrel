@@ -36,13 +36,29 @@ public class PerformanceFilterEntity : IPerformanceFilter
     [EditorBrowsable(EditorBrowsableState.Never)]
     public string DbPerformanceTypes { get; set; }
 
-    [NotMapped]
-    public string[] Locations
+    private string IntArrayToString(int[] array)
     {
-        get => string.IsNullOrEmpty(DbLocations) ? null : DbLocations.Split(',');
-        set => DbLocations = value != null
-            ? string.Join(",", value.OrderBy(s => s))
+        return array != null
+            ? string.Join(",", array.OrderBy(s => s))
             : null;
+    }
+
+    private int[] StringToIntArray(string source)
+    {
+        return string.IsNullOrEmpty(source)
+            ? null
+            : source.Split(',').Select(x =>
+            {
+                bool parsed = int.TryParse(x, out int result);
+                return parsed ? result : 0;
+            }).ToArray();
+    }
+
+    [NotMapped]
+    public int[] LocationIds
+    {
+        get => StringToIntArray(DbLocations);
+        set => DbLocations = IntArrayToString(value);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -50,12 +66,10 @@ public class PerformanceFilterEntity : IPerformanceFilter
 
 
     [NotMapped]
-    public string[] Theatres
+    public int[] TheatreIds
     {
-        get => string.IsNullOrEmpty(DbLocations) ? null : DbTheatres.Split(',');
-        set => DbTheatres = value != null
-            ? string.Join(",", value.OrderBy(s => s))
-            : null;
+        get => StringToIntArray(DbTheatres);
+        set => DbTheatres = IntArrayToString(value);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]

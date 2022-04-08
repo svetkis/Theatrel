@@ -267,7 +267,7 @@ internal class GetPerformancesCommand : DialogCommandBase
 
         return performances.Where(x =>
         {
-            if (!_filterService.IsDataSuitable(x.PerformanceId, x.Performance.Name, x.Performance.Location.Name,
+            if (!_filterService.IsDataSuitable(x.PerformanceId, x.Performance.Name, x.Performance.Location.Id,
                     x.Performance.Type.TypeName,
                     x.When, filter))
                 return false;
@@ -298,14 +298,26 @@ internal class GetPerformancesCommand : DialogCommandBase
             ? "все представления"
             : string.Join(", ", filter.PerformanceTypes);
 
-        string locations = filter.Locations == null || !filter.Locations.Any()
+        using var playbillRepo = DbService.GetPlaybillRepository();
+
+        bool theatresWereSelected = filter.TheatreIds != null && filter.TheatreIds.Any();
+
+        var theatres = theatresWereSelected
+            ? string.Join(", ", playbillRepo.GetTheatres().Where(x => filter.TheatreIds.Contains(x.Id)).Select(x => x.Name))
+            : string.Join(", ", playbillRepo.GetTheatres().Select(x => x.Name).ToArray());
+
+        string locations = filter.LocationIds == null || !filter.LocationIds.Any()
             ? "любая площадка"
-            : string.Join(", ", filter.Locations);
+            : string.Join(", ", filter.LocationIds.Select(x =>
+            {
+                var location = playbillRepo.GetLocation(x);
+                return string.IsNullOrEmpty(location.Description) ? location.Name : location.Description;
+            }));
 
         stringBuilder.AppendLine(
             string.IsNullOrEmpty(filter.PerformanceName)
-                ? $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types} площадка: {locations}.".EscapeMessageForMarkupV2()
-                : $"Я искал для Вас билеты на \"{filter.PerformanceName}\" площадка: {locations}".EscapeMessageForMarkupV2());
+                ? $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}. Театр: {theatres}. Площадка: {locations}.".EscapeMessageForMarkupV2()
+                : $"Я искал для Вас билеты на \"{filter.PerformanceName}\". Театр: {theatres}. Площадка: {locations}.".EscapeMessageForMarkupV2());
 
         stringBuilder.AppendLine();
 

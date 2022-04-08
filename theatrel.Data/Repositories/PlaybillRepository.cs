@@ -731,12 +731,11 @@ internal class PlaybillRepository : IPlaybillRepository
         }
     }
 
-    public IEnumerable<LocationsEntity> GetLocationsList() => _dbContext.PerformanceLocations.AsNoTracking();
+    public LocationsEntity GetLocation(int id) => _dbContext.PerformanceLocations.AsNoTracking().FirstOrDefault(x => x.Id == id);
+    public IEnumerable<LocationsEntity> GetLocationsList(int theatreId)
+        => _dbContext.PerformanceLocations.Where(x => x.Theatre.Id == theatreId).AsNoTracking();
 
-    public IEnumerable<TheatreEntity> GetTheatres()
-    {
-        return _dbContext.Theatre.AsNoTracking();
-    }
+    public IEnumerable<TheatreEntity> GetTheatres() => _dbContext.Theatre.AsNoTracking();
 
     public void Dispose()
     {

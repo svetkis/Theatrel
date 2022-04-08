@@ -4,30 +4,35 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.DataAccess.DbService;
+using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.TgBot;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
 namespace theatrel.TLBot.Commands;
 
-internal class LocationCommand : DialogCommandBase
+internal class SelectTheatreCommand : DialogCommandBase
 {
     private const string GoodDay = "Добрый день! ";
     private const string IWillHelpYou = "Я помогу вам подобрать билеты в Мариинский или Михайловский театр. ";
-    private const string Msg = "Какую площадку вы желаете посетить?";
+    private const string Msg = "Какой театр вы желаете посетить?";
 
-    private readonly string[] _types;
-    private readonly string[] _every = { "любую", "все", "всё", "любой", "любое", "не важно" };
+    private readonly TheatreEntity[] _theatres;
+    private readonly string[] _theatreNames;
+    private readonly string[] _every = { "Любой", "все", "всё", "любое", "не важно" };
 
-    protected override string ReturnCommandMessage { get; set; } = "Выбрать другую площадку";
+    protected override string ReturnCommandMessage { get; set; } = "Выбрать другой театр";
 
-    public override string Name => "Выбрать площадку";
-    public LocationCommand(IDbService dbService) : base(dbService)
+    public override string Name => "Выбрать театр";
+
+    public SelectTheatreCommand(IDbService dbService) : base(dbService)
     {
         using var repo = dbService.GetPlaybillRepository();
-        _types = repo.GetLocationsList().Select(l => l.Name).ToArray();
+        _theatres = repo.GetTheatres().ToArray();
+        _theatreNames = _theatres.Select(x => x.Name).ToArray();
 
-        var buttons = _types.Select(m => new KeyboardButton(m)).Concat(new[] { new KeyboardButton(_every.First()) }).ToArray();
+        var buttons = _theatreNames.Select(m => new KeyboardButton(m)).Concat(new[] { new KeyboardButton(_every.First()) })
+            .ToArray();
 
         CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
         {
@@ -36,11 +41,15 @@ internal class LocationCommand : DialogCommandBase
         };
     }
 
-    public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
+    public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message,
+        CancellationToken cancellationToken)
     {
-        chatInfo.Locations = ParseMessage(message);
+        chatInfo.TheatreIds = ParseMessage(message);
 
-        var selected = chatInfo.Locations != null && chatInfo.Locations.Any() ? string.Join(" или ", chatInfo.Locations) : "любую площадку";
+        var selected = chatInfo.TheatreIds != null && chatInfo.TheatreIds.Any()
+            ? string.Join(" или ", chatInfo.TheatreIds.Select(id => _theatres[id-1].Name))
+            : "любой театр";
+
         return Task.FromResult<ITgCommandResponse>(
             new TgCommandResponse($"{YouSelected} {selected}. {ReturnMsg}", ReturnCommandMessage));
     }
@@ -59,20 +68,20 @@ internal class LocationCommand : DialogCommandBase
         };
     }
 
-    private string[] ParseMessage(string message)
+    private int[] ParseMessage(string message)
     {
         string[] parts = SplitMessage(message).ToArray();
 
-        if (parts.Any(p => int.TryParse(p, out int idx) && idx < _types.Length))
+        if (parts.Any(p => int.TryParse(p, out int idx) && idx < _theatres.Length))
         {
-            return parts.Where(p => int.TryParse(p, out int idx) && idx < _types.Length && idx > 0)
-                .Select(p => _types[int.Parse(p) - 1]).ToArray();
+            return parts.Where(p => int.TryParse(p, out int idx) && idx < _theatres.Length && idx > 0)
+                .Select(p => _theatres[int.Parse(p) - 1].Id).ToArray();
         }
 
         if (parts.Any(p => _every.Any(e => e.ToLower().Contains(p.ToLower()))))
-            return Array.Empty<string>();
+            return Array.Empty<int>();
 
-        return parts.Select(ParseMessagePart).Where(idx => idx > -1).Select(idx => _types[idx]).ToArray();
+        return parts.Select(ParseMessagePart).Where(idx => idx > -1).Select(idx => _theatres[idx].Id).ToArray();
     }
 
     private static string[] SplitMessage(string message)
@@ -86,7 +95,7 @@ internal class LocationCommand : DialogCommandBase
         if (string.IsNullOrWhiteSpace(messagePart))
             return -1;
 
-        return CheckEnumerable(_types, messagePart);
+        return CheckEnumerable(_theatreNames, messagePart);
     }
 
     private static int CheckEnumerable(string[] checkedData, string msg)

@@ -41,16 +41,16 @@ public class ChatInfoEntity : IChatDataInfo
     }
 
     [NotMapped]
-    public string[] Theatres
+    public int[] TheatreIds
     {
-        get => DbTheatres?.Split(',').ToArray();
+        get => DbTheatres?.Split(',').Select(x => int.Parse(x)).ToArray();
         set => DbTheatres = value == null || !value.Any() ? null : string.Join(",", value);
     }
 
     [NotMapped]
-    public string[] Locations
+    public int[] LocationIds
     {
-        get => DbLocations?.Split(',').ToArray();
+        get => DbLocations?.Split(',').Select(x => int.Parse(x)).ToArray();
         set => DbLocations = value == null || !value.Any() ? null : string.Join(",", value);
     }
 

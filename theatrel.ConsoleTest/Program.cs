@@ -34,7 +34,7 @@ internal static class Program
 
         tLBotProcessor.Start(tlBotService, cts.Token);
 
-        for (int i = 0; i < 1; ++i)
+        for (int i = 0; i < 5; ++i)
         {
             Trace.TraceInformation("Before UpdateMariinskiPlaybill");
             //MemoryProfiler.GetSnapshot("Before UpdateMariinskiPlaybill");

@@ -9,5 +9,7 @@ public class LocationsEntity
 
     public string Name { get; set; }
 
+    public string Description { get; set; }
+
     public TheatreEntity Theatre { get; set; }
 }

@@ -15,7 +15,7 @@ internal class FilterService : IFilterService
             return new PerformanceFilter
             {
                 PerformanceName = dataInfo.PerformanceName,
-                Locations = dataInfo.Locations
+                LocationIds = dataInfo.LocationIds
             };
         }
 
@@ -25,11 +25,11 @@ internal class FilterService : IFilterService
             EndDate = dataInfo.When.AddMonths(1)
         };
 
-        if (dataInfo.Theatres != null && dataInfo.Theatres.Any())
-            filter.Theatres = dataInfo.Theatres;
+        if (dataInfo.TheatreIds != null && dataInfo.TheatreIds.Any())
+            filter.TheatreIds = dataInfo.TheatreIds;
 
-        if (dataInfo.Locations != null && dataInfo.Locations.Any())
-            filter.Locations = dataInfo.Locations;
+        if (dataInfo.LocationIds != null && dataInfo.LocationIds.Any())
+            filter.LocationIds = dataInfo.LocationIds;
 
         if (dataInfo.Days != null && dataInfo.Days.Any())
         {
@@ -57,14 +57,28 @@ internal class FilterService : IFilterService
             PlaybillId = playbillEntryId
         };
 
-    public bool IsDataSuitable(IPerformanceData performance, IPerformanceFilter filter) =>
-        IsDataSuitable(-1,performance.Name, performance.Location, performance.Type, performance.DateTime, filter);
+    public bool IsDataSuitable(string name, int locationId, string type, DateTime when, IPerformanceFilter filter)
+    {
+        return IsDataSuitable(-1, name, locationId, type, when, filter);
+    }
 
-    private static bool CheckLocation(string[] filterLocations, string location)
-        => filterLocations == null || !filterLocations.Any() ||
-           filterLocations.Select(l => l.ToLower()).Contains(location.ToLower());
+    public bool CheckOnlyDate(DateTime when, IPerformanceFilter filter)
+    {
+        if (filter == null)
+            return true;
 
-    public bool IsDataSuitable(int playbillEntryId, string name, string location, string type, DateTime when, IPerformanceFilter filter)
+        return filter.StartDate <= when && filter.EndDate >= when;
+    }
+
+    private static bool CheckLocation(int[] filterLocations, int locationId)
+    {
+        if (filterLocations == null || !filterLocations.Any())
+            return true;
+
+        return filterLocations.Contains(locationId);
+    }
+
+    public bool IsDataSuitable(int playbillEntryId, string name, int locationId, string type, DateTime when, IPerformanceFilter filter)
     {
         if (filter == null)
             return true;
@@ -73,9 +87,9 @@ internal class FilterService : IFilterService
             return filter.PlaybillId == playbillEntryId;
 
         if (!string.IsNullOrEmpty(filter.PerformanceName))
-            return name.ToLower().Contains(filter.PerformanceName.ToLower()) && CheckLocation(filter.Locations, location);
+            return name.ToLower().Contains(filter.PerformanceName.ToLower()) && CheckLocation(filter.LocationIds, locationId);
 
-        if (!CheckLocation(filter.Locations, location))
+        if (!CheckLocation(filter.LocationIds, locationId))
             return false;
 
         if (filter.PerformanceTypes != null && filter.PerformanceTypes.Any() && !string.IsNullOrEmpty(filter.PerformanceTypes.First())

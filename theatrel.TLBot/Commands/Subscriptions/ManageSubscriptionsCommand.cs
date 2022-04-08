@@ -116,6 +116,18 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
         };
     }
 
+    private LocationsEntity[] GetLocations(IChatDataInfo chatInfo)
+    {
+        using var repo = DbService.GetPlaybillRepository();
+
+        bool theatresWereSelected = chatInfo.TheatreIds != null && chatInfo.TheatreIds.Any();
+        var theatreIds = theatresWereSelected ? chatInfo.TheatreIds : repo.GetTheatres().OrderBy(x => x.Id).Select(x => x.Id).ToArray();
+
+        return theatreIds.SelectMany(theatreId => repo.GetLocationsList(theatreId).OrderBy(x => x.Id)).ToArray();
+    }
+
+    private string GetLocationButtonName(LocationsEntity location) => string.IsNullOrEmpty(location.Description) ? location.Name : location.Description;
+
     public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
     {
         using var subscriptionRepository = DbService.GetSubscriptionRepository();
@@ -134,25 +146,23 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
 
         stringBuilder.AppendLine("Ваши подписки:");
 
+        LocationsEntity[] locationEntities = GetLocations(chatInfo);
+
         for (int i = 0; i < subscriptions.Length; ++i)
         {
             var filter = subscriptions[i].PerformanceFilter;
             var changesDescription = subscriptions[i].TrackingChanges.GetTrackingChangesDescription().ToLower();
 
+            string locationsString = filter.LocationIds == null || !filter.LocationIds.Any()
+                ? "все площадки"
+                : string.Join(" или ", filter.LocationIds.Where(id => id > 0).Select(id => locationEntities.First(x => x.Id == id)).Select(GetLocationButtonName));
+
             if (!string.IsNullOrEmpty(filter.PerformanceName))
             {
-                string locations = filter.Locations == null || !filter.Locations.Any()
-                    ? "все площадки"
-                    : string.Join("или ", filter.Locations);
-
-                stringBuilder.AppendLine($" {i + 1}. Название содержит \"{filter.PerformanceName}\", место проведения: {locations} отслеживаемые события: {changesDescription}");
+                stringBuilder.AppendLine($" {i + 1}. Название содержит \"{filter.PerformanceName}\", место проведения: {locationsString} отслеживаемые события: {changesDescription}");
             }
             else if (filter.PlaybillId == -1)
             {
-                string locations = filter.Locations == null || !filter.Locations.Any()
-                    ? "все площадки"
-                    : string.Join("или ", filter.Locations);
-
                 string monthName = culture.DateTimeFormat.GetMonthName(filter.StartDate.Month);
 
                 string days = DaysOfWeekHelper.GetDaysDescription(filter.DaysOfWeek, culture);
@@ -161,7 +171,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
                     ? "все представления"
                     : string.Join("или ", filter.PerformanceTypes);
 
-                stringBuilder.AppendLine($" {i + 1}. {monthName} {filter.StartDate.Year}, место проведения: {locations}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
+                stringBuilder.AppendLine($" {i + 1}. {monthName} {filter.StartDate.Year}, место проведения: {locationsString}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
             }
             else
             {

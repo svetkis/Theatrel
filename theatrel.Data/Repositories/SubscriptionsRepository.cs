@@ -133,7 +133,8 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
                 StartDate = filter.StartDate,
                 EndDate = filter.EndDate,
                 DaysOfWeek = filter.DaysOfWeek,
-                Locations = filter.Locations,
+                TheatreIds = filter.TheatreIds,
+                LocationIds = filter.LocationIds,
                 PerformanceTypes = filter.PerformanceTypes,
                 PartOfDay = filter.PartOfDay
             };

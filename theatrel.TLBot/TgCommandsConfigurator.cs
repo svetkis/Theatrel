@@ -35,7 +35,8 @@ internal class TgCommandsConfigurator : ITgCommandsConfigurator
             new IDialogCommand[]
             {
                 new StartSearchByDateCommand(_dbService),
-                new LocationCommand(_dbService),
+                new SelectTheatreCommand(_dbService),
+                new SelectLocationCommand(_dbService),
                 new MonthCommand(_dbService),
                 new DaysOfWeekCommand(_dbService),
                 new PerformanceTypesCommand(_dbService),
@@ -44,7 +45,8 @@ internal class TgCommandsConfigurator : ITgCommandsConfigurator
             new IDialogCommand[]
             {
                 new StartSearchByNameCommand(_dbService),
-                new LocationCommand(_dbService),
+                new SelectTheatreCommand(_dbService),
+                new SelectLocationCommand(_dbService),
                 new AscNameCommand(_dbService),
                 new GetPerformancesCommand(_filterService, _timeZoneService, _dbService)
             },
