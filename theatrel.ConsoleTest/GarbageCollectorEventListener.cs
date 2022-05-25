@@ -1,7 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
 
-namespace theatrel.Worker;
+namespace theatrel.ConsoleTest;
 
 internal sealed class GarbageCollectorEventListener : EventListener
 {
@@ -13,7 +14,7 @@ internal sealed class GarbageCollectorEventListener : EventListener
 
     protected override void OnEventSourceCreated(EventSource eventSource)
     {
-        //Console.WriteLine($"{eventSource.Guid} | {eventSource.Name}");
+        Console.WriteLine($"{eventSource.Guid} | {eventSource.Name}");
 
         // look for .NET Garbage Collection events
         if (eventSource.Name.Equals("Microsoft-Windows-DotNETRuntime"))

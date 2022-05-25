@@ -16,6 +16,8 @@ internal static class Program
     {
         Trace.Listeners.Add(new Trace2StdoutLogger());
 
+        var listener = new GarbageCollectorEventListener();
+
         Bootstrapper.Start();
 
         var timeZoneService = Bootstrapper.Resolve<ITimeZoneService>();
