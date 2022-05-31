@@ -108,9 +108,11 @@ public class PlaybillRepositoryTest : IClassFixture<DatabaseFixture>
 
     private async Task ConfigureDb()
     {
-        using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
+        using Structures.Interfaces.IPlaybillRepository pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
 
         var performance = GetPerformanceMock("TestPerformance", 500, "url", DateTime.UtcNow, TestLocationName, TestTypeName);
+
+        pbRepository.SetTheatre(1, "TestTheatre");
 
         await pbRepository.AddPlaybill(performance, (int)ReasonOfChanges.StartSales);
     }

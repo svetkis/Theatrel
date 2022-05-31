@@ -24,8 +24,7 @@ public class DataUpdaterTestBase : IClassFixture<DatabaseFixture>
         performanceMock.SetupGet(x => x.Name).Returns(name);
         performanceMock.SetupGet(x => x.Type).Returns(type);
         performanceMock.SetupGet(x => x.Location).Returns(location);
-        performanceMock.SetupGet(x => x.TheatreId).Returns(1);
-        performanceMock.SetupGet(x => x.TheatreName).Returns("Мариинский театр");
+
         performanceMock.SetupGet(x => x.MinPrice).Returns(minPrice);
 
         performanceMock.SetupGet(x => x.TicketsUrl).Returns(url);

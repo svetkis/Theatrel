@@ -41,13 +41,11 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
 
         await _dataResolver.AdditionalProcess(theaterId, performances, cancellationToken);
 
+        dbRepository.SetTheatre(theaterId, theaterId == 1 ? "Мариинский театр" : "Михайловский театр");
         foreach (var freshPerformanceData in performances)
         {
-            freshPerformanceData.TheatreId = theaterId;
-            freshPerformanceData.TheatreName = theaterId == 1 ? "Мариинский театр" : "Михайловский театр";
-
             await ProcessDataInternal(freshPerformanceData, dbRepository);
-        }
+        }        
 
         Trace.TraceInformation("PlaybillUpdater finished.");
         return true;

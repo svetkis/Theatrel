@@ -39,4 +39,6 @@ public interface IPlaybillRepository : IDisposable, IDIRegistrable
     IEnumerable<LocationsEntity> GetLocationsList(int theatreId);
 
     IEnumerable<TheatreEntity> GetTheatres();
+
+    void SetTheatre(int theatreId, string theatreName);
 }

@@ -6,10 +6,6 @@ namespace theatrel.Interfaces.Playbill;
 
 public interface IPerformanceData
 {
-    int TheatreId { get; set; }
-
-    string TheatreName { get; set; }
-
     string Location { get; set; }
     string Name { get; set; }
     DateTime DateTime { get; set; }

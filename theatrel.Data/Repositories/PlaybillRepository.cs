@@ -101,7 +101,7 @@ internal class PlaybillRepository : IPlaybillRepository
         {
             LocationsEntity location = locationId != -1
                 ? _dbContext.PerformanceLocations.FirstOrDefault(l => l.Id == locationId)
-                : new LocationsEntity { Name = data.Location, Theatre = GetOrCreateTheatreEntity(data) };
+                : new LocationsEntity { Name = data.Location, Theatre = _theatre };
 
             PerformanceTypeEntity type = typeId != -1
                 ? _dbContext.PerformanceTypes.FirstOrDefault(t => t.Id == typeId)
@@ -125,20 +125,18 @@ internal class PlaybillRepository : IPlaybillRepository
         }
     }
 
-    private TheatreEntity GetOrCreateTheatreEntity(IPerformanceData data)
+    private TheatreEntity _theatre;
+    public void SetTheatre(int theatreId, string theatreName)
     {
         try
         {
-            TheatreEntity theatre = _dbContext.Theatre.AsNoTracking().FirstOrDefault(t => t.Id == data.TheatreId);
-            if (theatre == null)
+            _theatre = _dbContext.Theatre.FirstOrDefault(t => t.Id == theatreId);
+            if (_theatre == null)
             {
-                theatre = new TheatreEntity { Id = data.TheatreId, Name = data.TheatreName };
-                _dbContext.Theatre.Add(theatre);
+                _theatre = new TheatreEntity { Id = theatreId, Name = theatreName };
+                _dbContext.Theatre.Add(_theatre);
                 _dbContext.SaveChangesAsync();
-                _dbContext.Entry(theatre).State = EntityState.Detached;
             }
-
-            return theatre;
         }
         catch (Exception e)
         {
