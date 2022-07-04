@@ -41,7 +41,7 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
 
         await _dataResolver.AdditionalProcess(theaterId, performances, cancellationToken);
 
-        dbRepository.SetTheatre(theaterId, theaterId == 1 ? "Мариинский театр" : "Михайловский театр");
+        dbRepository.EnsureCreateTheatre(theaterId, theaterId == 1 ? "Мариинский театр" : "Михайловский театр");
         foreach (var freshPerformanceData in performances)
         {
             await ProcessDataInternal(freshPerformanceData, dbRepository);
@@ -56,17 +56,13 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
         if (data.DateTime < DateTime.UtcNow)
             return;
 
-        PlaybillEntity playbillEntry = playbillRepository.Get(data);
+        PlaybillEntity playbillEntry = playbillRepository.GetPlaybillByPerformanceData(data);
         if (null == playbillEntry)
         {
             if (data.TicketsUrl == CommonTags.WasMovedTag)
                 return;
 
-            int reason = data.MinPrice == 0
-                ? (int) ReasonOfChanges.Creation
-                : (int) ReasonOfChanges.StartSales;
-
-            await playbillRepository.AddPlaybill(data, reason);
+            await playbillRepository.AddPlaybill(data);
             return;
         }
 

@@ -36,24 +36,29 @@ public class ChatInfoEntity : IChatDataInfo
     [NotMapped]
     public string[] Types
     {
-        get => DbTypes?.Split(',').ToArray();
+        get => GetTypes();
         set => DbTypes = value == null || !value.Any() ? null : string.Join(",", value);
     }
+
+    private string[] GetTypes() => DbTypes?.Split(',').ToArray();
 
     [NotMapped]
     public int[] TheatreIds
     {
-        get => DbTheatres?.Split(',').Select(x => int.Parse(x)).ToArray();
+        get => GetTheatreIds();
         set => DbTheatres = value == null || !value.Any() ? null : string.Join(",", value);
     }
+
+    private int[] GetTheatreIds() => DbTheatres?.Split(',').Select(x => int.Parse(x)).ToArray();
 
     [NotMapped]
     public int[] LocationIds
     {
-        get => DbLocations?.Split(',').Select(x => int.Parse(x)).ToArray();
+        get => GetLocationIds();
         set => DbLocations = value == null || !value.Any() ? null : string.Join(",", value);
     }
 
+    private int[] GetLocationIds() => DbLocations?.Split(',').Select(x => int.Parse(x)).ToArray();
     public string PerformanceName { get; set; }
 
     [EditorBrowsable(EditorBrowsableState.Never)]

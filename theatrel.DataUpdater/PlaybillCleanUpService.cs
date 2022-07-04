@@ -21,14 +21,14 @@ internal class PlaybillCleanUpService : IPlaybillCleanUpService
         bool result = true;
         foreach (var entity in oldPlaybillEntities)
         {
-            if (await repo.Delete(entity))
+            if (await repo.RemovePlaybillEntry(entity))
                 result = false;
         }
 
-        var oldPerformanceEntities = repo.GetOutdatedPerformanceEntities();
+        var oldPerformanceEntities = repo.GetOutdatedPerformances();
         foreach (var entity in oldPerformanceEntities)
         {
-            if (await repo.Delete(entity))
+            if (await repo.RemovePerformance(entity))
                 result = false;
         }
 

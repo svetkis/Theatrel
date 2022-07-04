@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using theatrel.DataAccess.DbService;
-using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
 
@@ -30,10 +29,8 @@ public class SubscriptionService : ISubscriptionService
             return Array.Empty<IPerformanceFilter>();
 
         List<IPerformanceFilter> mergedFilters = new List<IPerformanceFilter>();
-        foreach (var subscription in subscriptions)
+        foreach (var newFilter in subscriptions.Select(item => item.PerformanceFilter))
         {
-            PerformanceFilterEntity newFilter = subscription.PerformanceFilter;
-
             if (newFilter == null)
                 continue;
 
@@ -50,7 +47,7 @@ public class SubscriptionService : ISubscriptionService
             }
             else
             {
-                var playbillEntry = playbillRepository.Get(newFilter.PlaybillId);
+                var playbillEntry = playbillRepository.GetPlaybill(newFilter.PlaybillId);
 
                 if (null == playbillEntry)
                     continue;
@@ -64,7 +61,7 @@ public class SubscriptionService : ISubscriptionService
             MergeFilters(mergedFilters, _filterService.GetFilter(startDate, endDate));
         }
 
-        Trace.TraceInformation("Get update filter finished");
+        Trace.TraceInformation("Get updated filter finished");
         return mergedFilters.ToArray();
     }
 

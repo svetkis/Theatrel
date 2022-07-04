@@ -251,7 +251,7 @@ internal class GetPerformancesCommand : DialogCommandBase
 
         foreach (var entry in entriesList)
         {
-            var pbEntity = playbillRepository.GetWithName(entry.PlaybillEntryId);
+            var pbEntity = playbillRepository.GetPlaybillEntryWithPerformanceData(entry.PlaybillEntryId);
             entry.Name = pbEntity?.Performance.Name;
             entry.When = pbEntity?.When ?? DateTime.UtcNow;
         }

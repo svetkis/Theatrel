@@ -12,17 +12,17 @@ public interface IPlaybillRepository : IDisposable, IDIRegistrable
     IEnumerable<PlaybillEntity> GetList(DateTime from, DateTime to);
     IEnumerable<PlaybillEntity> GetListByName(string name);
 
-    PlaybillEntity Get(IPerformanceData data);
-    PlaybillEntity Get(int id);
-    PlaybillEntity GetWithName(int id);
+    PlaybillEntity GetPlaybillByPerformanceData(IPerformanceData data);
+    PlaybillEntity GetPlaybill(int id);
+    PlaybillEntity GetPlaybillEntryWithPerformanceData(int id);
 
     IEnumerable<PlaybillEntity> GetOutdatedList();
 
-    IEnumerable<PerformanceEntity> GetOutdatedPerformanceEntities();
+    IEnumerable<PerformanceEntity> GetOutdatedPerformances();
 
-    Task<PlaybillEntity> AddPlaybill(IPerformanceData data, int reasonOfFirstChanges);
+    Task<PlaybillEntity> AddPlaybill(IPerformanceData data);
     Task<bool> AddChange(int playbillEntityId, PlaybillChangeEntity change);
-    Task<bool> UpdateChangeLastUpdate(int changeId);
+
     Task<bool> UpdateUrl(int playbillEntityId, string url);
     Task<bool> UpdateDescription(int playbillEntityId, string description);
     Task<bool> UpdateTicketsUrl(int playbillEntityId, string url);
@@ -30,9 +30,9 @@ public interface IPlaybillRepository : IDisposable, IDIRegistrable
     Task<bool> UpdateCast(PlaybillEntity playbillEntry, IPerformanceData data);
     bool IsCastEqual(PlaybillEntity playbillEntry, IPerformanceData data);
 
-    Task<bool> Delete(PlaybillEntity entity);
+    Task<bool> RemovePlaybillEntry(PlaybillEntity entity);
 
-    Task<bool> Delete(PerformanceEntity entity);
+    Task<bool> RemovePerformance(PerformanceEntity entity);
 
     LocationsEntity GetLocation(int id);
 
@@ -40,5 +40,5 @@ public interface IPlaybillRepository : IDisposable, IDIRegistrable
 
     IEnumerable<TheatreEntity> GetTheatres();
 
-    void SetTheatre(int theatreId, string theatreName);
+    void EnsureCreateTheatre(int theatreId, string theatreName);
 }

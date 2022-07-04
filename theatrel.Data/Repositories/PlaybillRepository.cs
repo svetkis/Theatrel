@@ -10,6 +10,7 @@ using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Playbill;
+using System.Runtime.CompilerServices;
 
 namespace theatrel.DataAccess.Repositories;
 
@@ -44,6 +45,9 @@ internal class PlaybillRepository : IPlaybillRepository
 
     private int GetRoleId(string characterName, int performanceId)
     {
+        if (performanceId == -1)
+            return -1;
+
         RoleEntity role = _dbContext.Roles.AsNoTracking().FirstOrDefault(x => x.CharacterName == characterName && x.PerformanceId == performanceId);
         return role?.Id ?? -1;
     }
@@ -58,11 +62,11 @@ internal class PlaybillRepository : IPlaybillRepository
         return actor?.Id ?? -1;
     }
 
-    private IList<ActorInRoleEntity> AddActorsInRole(string roleName, IList<IActor> actorsData, PerformanceEntity performance, int playbillId, int performanceId)
+    private IList<ActorInRoleEntity> AddActorsInRole(string roleName, IList<IActor> actorsData, PerformanceEntity performance, int playbillId)
     {
         try
         {
-            int roleId = -1 == performanceId ? -1 : GetRoleId(roleName, performance.Id);
+            int roleId = GetRoleId(roleName, performance.Id);
 
             RoleEntity role = roleId != -1
                 ? _dbContext.Roles.FirstOrDefault(l => l.Id == roleId)
@@ -80,7 +84,7 @@ internal class PlaybillRepository : IPlaybillRepository
 
                 ActorInRoleEntity actorInRole = actorId != -1 && roleId != -1 && playbillId != -1
                     ? _dbContext.ActorInRole.FirstOrDefault(ar => ar.ActorId == actorId && ar.RoleId == roleId && ar.PlaybillId == playbillId)
-                      ?? new ActorInRoleEntity {Role = role, Actor = actor}
+                      ?? new ActorInRoleEntity { Role = role, Actor = actor }
                     : new ActorInRoleEntity { Role = role, Actor = actor };
 
                 actorsInRoleList.Add(actorInRole);
@@ -88,9 +92,9 @@ internal class PlaybillRepository : IPlaybillRepository
 
             return actorsInRoleList;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine($"AddActorsInRole DbException: {e.Message} {e.InnerException?.Message}");
+            TraceException(ex);
             throw;
         }
     }
@@ -118,15 +122,15 @@ internal class PlaybillRepository : IPlaybillRepository
 
             return performance;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine($"AddPerformanceEntity DbException: {e.Message} {e.InnerException?.Message}");
+            TraceException(ex);
             throw;
         }
     }
 
     private TheatreEntity _theatre;
-    public void SetTheatre(int theatreId, string theatreName)
+    public void EnsureCreateTheatre(int theatreId, string theatreName)
     {
         try
         {
@@ -138,9 +142,9 @@ internal class PlaybillRepository : IPlaybillRepository
                 _dbContext.SaveChangesAsync();
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine($"GetOrCreateTheatreEntity DbException: {e.Message} {e.InnerException?.Message}");
+            TraceException(ex);
             throw;
         }
     }
@@ -178,8 +182,7 @@ internal class PlaybillRepository : IPlaybillRepository
 
         ActorInRoleEntity[] toRemoveList = checkList.Where(item => !item.Exists).Select(c => c.ActorInRole).ToArray();
         ActorInRoleEntity[] toAddList = toAddListData.Select(data
-                => AddActorsInRole(data.Key, data.Value, playbillEntry.Performance, playbillEntry.Id,
-                    playbillEntry.PerformanceId))
+                => AddActorsInRole(data.Key, data.Value, playbillEntry.Performance, playbillEntry.Id))
             .SelectMany(group => group.ToArray()).ToArray();
 
         PlaybillEntity oldValue = await GetById(playbillEntry.Id);
@@ -207,9 +210,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation(
-                $"UpdateCast DbException {ex.Message} InnerException {ex.InnerException?.Message}");
-
+            TraceException(ex);
             return false;
         }
         finally
@@ -238,7 +239,7 @@ internal class PlaybillRepository : IPlaybillRepository
 
     public bool IsCastEqual(PlaybillEntity playbillEntry, IPerformanceData data)
     {
-        CheckData[] checkList = playbillEntry.Cast.Select(a => new CheckData { Exists = false, ActorInRole = a}).ToArray();
+        CheckData[] checkList = playbillEntry.Cast.Select(a => new CheckData { Exists = false, ActorInRole = a }).ToArray();
         foreach (KeyValuePair<string, IList<IActor>> castDataFresh in data.Cast.Cast)
         {
             string character = castDataFresh.Key;
@@ -265,13 +266,13 @@ internal class PlaybillRepository : IPlaybillRepository
         bool result = checkList.All(item => item.Exists);
         if (!result)
         {
-            var changedData = checkList.Where(item => !item.Exists).ToArray();
-            if (changedData.Any())
+            var removedActorInRole = checkList.Where(item => !item.Exists).Select(item => item.ActorInRole).ToArray();
+            if (removedActorInRole.Any())
             {
                 Trace.TraceInformation($"Cast is not equal {playbillEntry.Id}.");
-                foreach (var item in changedData)
+                foreach (var actorInRole in removedActorInRole)
                 {
-                    Trace.TraceInformation($"No data in fresh {item.ActorInRole.Role.CharacterName} - {item.ActorInRole.Actor.Name}");
+                    Trace.TraceInformation($"No actorInRole in fresh data: {actorInRole.Role.CharacterName} - {actorInRole.Actor.Name}");
                 }
             }
         }
@@ -279,7 +280,7 @@ internal class PlaybillRepository : IPlaybillRepository
         return checkList.All(item => item.Exists);
     }
 
-    public async Task<PlaybillEntity> AddPlaybill(IPerformanceData data, int reasonOfFirstChanges)
+    public async Task<PlaybillEntity> AddPlaybill(IPerformanceData data)
     {
         PerformanceEntity performance = null;
         PlaybillEntity playBillEntry = null;
@@ -302,9 +303,13 @@ internal class PlaybillRepository : IPlaybillRepository
                     IList<IActor> actorsData = castData.Value;
                     string characterName = castData.Key;
 
-                    castList.AddRange(AddActorsInRole(characterName, actorsData, performance, -1, performanceId));
+                    castList.AddRange(AddActorsInRole(characterName, actorsData, performance, -1));
                 }
             }
+
+            int reason = data.MinPrice == 0
+                                ? (int)ReasonOfChanges.Creation
+                                : (int)ReasonOfChanges.StartSales;
 
             playBillEntry = new PlaybillEntity
             {
@@ -318,7 +323,7 @@ internal class PlaybillRepository : IPlaybillRepository
                     {
                         LastUpdate = DateTime.UtcNow,
                         MinPrice = data.MinPrice,
-                        ReasonOfChanges = reasonOfFirstChanges,
+                        ReasonOfChanges = reason,
                     }
                 },
                 Cast = castList,
@@ -334,32 +339,12 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"AddPlaybill DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
         }
         finally
         {
-            if (performance != null)
-            {
-                _dbContext.Entry(performance.Location).State = EntityState.Detached;
-                _dbContext.Entry(performance.Type).State = EntityState.Detached;
-                _dbContext.Entry(performance).State = EntityState.Detached;
-            }
-
-            if (playBillEntry != null)
-            {
-                _dbContext.Entry(playBillEntry).State = EntityState.Detached;
-                _dbContext.Entry(playBillEntry.Changes.First()).State = EntityState.Detached;
-
-                if (playBillEntry.Cast != null)
-                {
-                    foreach (var castItem in playBillEntry.Cast)
-                    {
-                        _dbContext.Entry(castItem).State = EntityState.Detached;
-                        _dbContext.Entry(castItem.Actor).State = EntityState.Detached;
-                        _dbContext.Entry(castItem.Role).State = EntityState.Detached;
-                    }
-                }
-            }
+            StopTracking(performance);
+            StopTracking(playBillEntry);
         }
 
         return null;
@@ -373,13 +358,13 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
         }
 
         return Array.Empty<PlaybillEntity>();
     }
 
-    public IEnumerable<PerformanceEntity> GetOutdatedPerformanceEntities()
+    public IEnumerable<PerformanceEntity> GetOutdatedPerformances()
     {
         try
         {
@@ -394,7 +379,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
         }
 
         return Array.Empty<PerformanceEntity>();
@@ -415,7 +400,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
         }
 
         return Array.Empty<PlaybillEntity>();
@@ -437,13 +422,13 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"GetList PlaybillEntity by name DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
         }
 
         return Array.Empty<PlaybillEntity>();
     }
 
-    public PlaybillEntity Get(IPerformanceData data)
+    public PlaybillEntity GetPlaybillByPerformanceData(IPerformanceData data)
     {
         try
         {
@@ -464,13 +449,13 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
         }
 
         return null;
     }
 
-    public PlaybillEntity Get(int id)
+    public PlaybillEntity GetPlaybill(int id)
     {
         try
         {
@@ -478,13 +463,13 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
         }
 
         return null;
     }
 
-    public PlaybillEntity GetWithName(int id)
+    public PlaybillEntity GetPlaybillEntryWithPerformanceData(int id)
     {
         try
         {
@@ -494,7 +479,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"GetList PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
         }
 
         return null;
@@ -510,7 +495,7 @@ internal class PlaybillRepository : IPlaybillRepository
         if (oldValue == null)
             return false;
 
-        PlaybillEntity playbillEntity = GetTrackedWithAllIncludesById(playbillEntityId);
+        PlaybillEntity playbillEntity = GetPlaybillTrackedWithAllIncludes(playbillEntityId);
         try
         {
             playbillEntity.Changes.Add(change);
@@ -522,64 +507,60 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"AddChange DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
             return false;
         }
         finally
         {
-            if (playbillEntity != null)
-            {
-                _dbContext.Entry(playbillEntity.Performance.Location).State = EntityState.Detached;
-                _dbContext.Entry(playbillEntity.Performance.Type).State = EntityState.Detached;
-                _dbContext.Entry(playbillEntity.Performance).State = EntityState.Detached;
-                foreach (var ch in playbillEntity.Changes)
-                    _dbContext.Entry(ch).State = EntityState.Detached;
+            StopTracking(playbillEntity);
+        }
+    }
 
-                _dbContext.Entry(playbillEntity).State = EntityState.Detached;
+    private void StopTracking(PerformanceEntity performance)
+    {
+        if (performance == null)
+            return;
+        
+        _dbContext.Entry(performance.Location).State = EntityState.Detached;
+        _dbContext.Entry(performance.Type).State = EntityState.Detached;
+        _dbContext.Entry(performance).State = EntityState.Detached;
+    }
+
+    private void StopTracking(PlaybillEntity playbillEntity)
+    {
+        if (playbillEntity == null)
+            return;
+
+        _dbContext.Entry(playbillEntity).State = EntityState.Detached;
+
+        _dbContext.Entry(playbillEntity.Performance.Location).State = EntityState.Detached;
+        _dbContext.Entry(playbillEntity.Performance.Type).State = EntityState.Detached;
+        _dbContext.Entry(playbillEntity.Performance).State = EntityState.Detached;
+        foreach (var ch in playbillEntity.Changes)
+            _dbContext.Entry(ch).State = EntityState.Detached;
+
+        if (playbillEntity.Cast != null)
+        {
+            foreach (var castItem in playbillEntity.Cast)
+            {
+                _dbContext.Entry(castItem).State = EntityState.Detached;
+                _dbContext.Entry(castItem.Actor).State = EntityState.Detached;
+                _dbContext.Entry(castItem.Role).State = EntityState.Detached;
             }
         }
     }
 
-    private Task<PlaybillChangeEntity> GetChangeById(long id)
-        => _dbContext.PlaybillChanges.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
-
-    public async Task<bool> UpdateChangeLastUpdate(int changeId)
-    {
-        PlaybillChangeEntity oldValue = await GetChangeById(changeId);
-
-        if (oldValue == null)
-            return false;
-
-        try
-        {
-            oldValue.LastUpdate = DateTime.UtcNow;
-            _dbContext.Entry(oldValue).State = EntityState.Modified;
-
-            await _dbContext.SaveChangesAsync();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Trace.TraceInformation($"Update Change entity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
-            return false;
-        }
-        finally
-        {
-            _dbContext.Entry(oldValue).State = EntityState.Detached;
-        }
-    }
-
-    private PlaybillEntity GetTrackedWithAllIncludesById(int playbillEntryId) => _dbContext.Playbill
+    private PlaybillEntity GetPlaybillTrackedWithAllIncludes(int playbillId) => _dbContext.Playbill
         .Include(p => p.Performance)
         .ThenInclude(p => p.Type)
         .Include(p => p.Performance)
         .ThenInclude(p => p.Location)
         .Include(p => p.Changes)
-        .FirstOrDefault(p => p.Id == playbillEntryId);
+        .FirstOrDefault(p => p.Id == playbillId);
 
     public async Task<bool> UpdateDescription(int playbillEntityId, string description)
     {
-        PlaybillEntity oldValue = Get(playbillEntityId);
+        PlaybillEntity oldValue = GetPlaybill(playbillEntityId);
 
         if (oldValue == null)
         {
@@ -590,7 +571,7 @@ internal class PlaybillRepository : IPlaybillRepository
         PlaybillEntity playbillEntity = null;
         try
         {
-            playbillEntity = GetTrackedWithAllIncludesById(playbillEntityId);
+            playbillEntity = GetPlaybillTrackedWithAllIncludes(playbillEntityId);
 
             playbillEntity.Description = description;
 
@@ -599,8 +580,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation(
-                $"UpdateTicketsUrl DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
             return false;
         }
         finally
@@ -618,9 +598,12 @@ internal class PlaybillRepository : IPlaybillRepository
         }
     }
 
+    private void TraceException(Exception ex, [CallerMemberName] string method = "")
+        => Trace.TraceInformation($"{method} failed. Exception: {ex.Message} InnerException: {ex.InnerException?.Message}");
+
     public async Task<bool> UpdateTicketsUrl(int playbillEntityId, string url)
     {
-        PlaybillEntity oldValue = Get(playbillEntityId);
+        PlaybillEntity oldValue = GetPlaybill(playbillEntityId);
 
         if (oldValue == null)
         {
@@ -631,7 +614,7 @@ internal class PlaybillRepository : IPlaybillRepository
         PlaybillEntity playbillEntity = null;
         try
         {
-            playbillEntity = GetTrackedWithAllIncludesById(playbillEntityId);
+            playbillEntity = GetPlaybillTrackedWithAllIncludes(playbillEntityId);
 
             playbillEntity.TicketsUrl = url;
 
@@ -640,8 +623,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation(
-                $"UpdateTicketsUrl DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
             return false;
         }
         finally
@@ -661,7 +643,7 @@ internal class PlaybillRepository : IPlaybillRepository
 
     public async Task<bool> UpdateUrl(int playbillEntityId, string url)
     {
-        PlaybillEntity oldValue = Get(playbillEntityId);
+        PlaybillEntity oldValue = GetPlaybill(playbillEntityId);
 
         if (oldValue == null)
             return false;
@@ -669,7 +651,7 @@ internal class PlaybillRepository : IPlaybillRepository
         PlaybillEntity playbillEntity = null;
         try
         {
-            playbillEntity = GetTrackedWithAllIncludesById(playbillEntityId);
+            playbillEntity = GetPlaybillTrackedWithAllIncludes(playbillEntityId);
 
             playbillEntity.Url = url;
 
@@ -678,7 +660,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"UpdateUrl DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
             return false;
         }
         finally
@@ -696,8 +678,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
     }
 
-
-    public async Task<bool> Delete(PlaybillEntity entity)
+    public async Task<bool> RemovePlaybillEntry(PlaybillEntity entity)
     {
         try
         {
@@ -708,12 +689,12 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"Delete PlaybillEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
             return false;
         }
     }
 
-    public async Task<bool> Delete(PerformanceEntity entity)
+    public async Task<bool> RemovePerformance(PerformanceEntity entity)
     {
         try
         {
@@ -724,7 +705,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"Delete PerformanceEntity DbException {ex.Message} InnerException {ex.InnerException?.Message}");
+            TraceException(ex);
             return false;
         }
     }
@@ -736,6 +717,12 @@ internal class PlaybillRepository : IPlaybillRepository
     public IEnumerable<TheatreEntity> GetTheatres() => _dbContext.Theatre.AsNoTracking();
 
     public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
     {
         if (_dbContext == null)
             return;

@@ -1,0 +1,91 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "e8a498c3-009d-4ed4-9b00-1f898cb0c9aa": {
+      "ProjectGuid": "e8a498c3-009d-4ed4-9b00-1f898cb0c9aa",
+      "DisplayName": "theatrel.ConsoleTest",
+      "ColorIndex": 0
+    },
+    "e29f9cc4-53cc-4c21-b638-1a0bffbfde06": {
+      "ProjectGuid": "e29f9cc4-53cc-4c21-b638-1a0bffbfde06",
+      "DisplayName": "theatrel.Worker",
+      "ColorIndex": 1
+    },
+    "d36bb35f-4eb3-4b27-ac49-2ab8f4814133": {
+      "ProjectGuid": "d36bb35f-4eb3-4b27-ac49-2ab8f4814133",
+      "DisplayName": "theatrel.DataAccess",
+      "ColorIndex": 2
+    },
+    "f38991d7-aa8e-46b7-a5f7-b8b152291c3f": {
+      "ProjectGuid": "f38991d7-aa8e-46b7-a5f7-b8b152291c3f",
+      "DisplayName": "theatrel.DataUpdater.Tests",
+      "ColorIndex": 3
+    },
+    "0442000b-3205-4608-b7a5-5e750a1ec625": {
+      "ProjectGuid": "0442000b-3205-4608-b7a5-5e750a1ec625",
+      "DisplayName": "theatrel.Lib.Tests",
+      "ColorIndex": 4
+    },
+    "a3112d70-1d12-4542-86f9-f665a629cc83": {
+      "ProjectGuid": "a3112d70-1d12-4542-86f9-f665a629cc83",
+      "DisplayName": "theatrel.TLBot",
+      "ColorIndex": 5
+    },
+    "761084de-befe-4cce-882f-beff5fd35a72": {
+      "ProjectGuid": "761084de-befe-4cce-882f-beff5fd35a72",
+      "DisplayName": "theatrel.Subscriptions.Tests",
+      "ColorIndex": 6
+    },
+    "830c066f-45cf-4b73-b71d-0ca8ff7c4901": {
+      "ProjectGuid": "830c066f-45cf-4b73-b71d-0ca8ff7c4901",
+      "DisplayName": "theatrel.DataAccess.Structures",
+      "ColorIndex": 7
+    },
+    "690e39b1-33ee-4ad4-8e4d-c97f13052331": {
+      "ProjectGuid": "690e39b1-33ee-4ad4-8e4d-c97f13052331",
+      "DisplayName": "theatrel.DataUpdater",
+      "ColorIndex": 8
+    },
+    "2ca8fe8a-100e-448c-b002-975718286f74": {
+      "ProjectGuid": "2ca8fe8a-100e-448c-b002-975718286f74",
+      "DisplayName": "theatrel.TLBot.Tests",
+      "ColorIndex": 9
+    },
+    "12e8f016-5e98-4350-97fa-5c606440852d": {
+      "ProjectGuid": "12e8f016-5e98-4350-97fa-5c606440852d",
+      "DisplayName": "theatrel.Lib",
+      "ColorIndex": 10
+    },
+    "f5e9987f-9589-428e-9004-98f36da8ade2": {
+      "ProjectGuid": "f5e9987f-9589-428e-9004-98f36da8ade2",
+      "DisplayName": "theatrel.Subscriptions",
+      "ColorIndex": 11
+    },
+    "59bd325a-af6c-4aea-b6de-ac95223305af": {
+      "ProjectGuid": "59bd325a-af6c-4aea-b6de-ac95223305af",
+      "DisplayName": "theatrel.DataAccess.Tests",
+      "ColorIndex": 12
+    },
+    "7408c420-c564-44cc-b9c8-6e142826b289": {
+      "ProjectGuid": "7408c420-c564-44cc-b9c8-6e142826b289",
+      "DisplayName": "theatrel.Common",
+      "ColorIndex": 13
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
+    },
+    "106db829-0532-4200-82f2-c5e1b459fa96": {
+      "ProjectGuid": "106db829-0532-4200-82f2-c5e1b459fa96",
+      "DisplayName": "theatrel.TLBot.Interfaces",
+      "ColorIndex": 14
+    },
+    "d36576cd-d155-4fcd-b4e5-add92870596e": {
+      "ProjectGuid": "d36576cd-d155-4fcd-b4e5-add92870596e",
+      "DisplayName": "theatrel.Interfaces",
+      "ColorIndex": 15
+    }
+  },
+  "NextColorIndex": 0
+}

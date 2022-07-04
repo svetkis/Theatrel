@@ -55,7 +55,7 @@ public class SubscriptionsServiceTest : IClassFixture<DatabaseFixture>
         subscriptionRepo.Setup(x => x.GetAllWithFilter()).Returns(subscriptionEntities);
 
         var playbillRepo = new Mock<IPlaybillRepository>();
-        playbillRepo.Setup(x => x.Get(It.IsAny<int>())).Returns(new PlaybillEntity
+        playbillRepo.Setup(x => x.GetPlaybill(It.IsAny<int>())).Returns(new PlaybillEntity
         {
             When = new DateTime(2020, months.First(), 1, 0, 0, 0, DateTimeKind.Utc)
         });

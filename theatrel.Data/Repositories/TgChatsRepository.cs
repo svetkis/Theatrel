@@ -92,10 +92,16 @@ internal class TgChatsRepository : ITgChatsRepository
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
         if (_dbContext == null)
             return;
 
-        _dbContext?.Dispose();
+        _dbContext.Dispose();
         _dbContext = null;
     }
 }

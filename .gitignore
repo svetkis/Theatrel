@@ -48,3 +48,6 @@
 /theatrel.Worker/Properties/PublishProfiles/*.user
 /Backup
 /theatrel.Data/Properties/launchSettings.json
+/.vs/Theatrel/v17
+/.vs/Theatrel/FileContentIndex
+/.vs/ProjectEvaluation

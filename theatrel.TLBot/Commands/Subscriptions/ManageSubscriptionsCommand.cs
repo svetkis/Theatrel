@@ -175,7 +175,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
             }
             else
             {
-                var playbillEntry = playbillRepository.GetWithName(filter.PlaybillId);
+                var playbillEntry = playbillRepository.GetPlaybillEntryWithPerformanceData(filter.PlaybillId);
 
                 if (playbillEntry == null)
                     stringBuilder.AppendLine($" {i + 1}. Подписка на уже прошедший спектакль, отслеживаемые события: {changesDescription}");

@@ -32,28 +32,13 @@ public class PlaybillRepositoryTest : IClassFixture<DatabaseFixture>
 
         var exceptions = await Record.ExceptionAsync(async () =>
         {
-            var res2 = await pbRepository.AddPlaybill(performance2, (int)ReasonOfChanges.StartSales);
-            var res3 = await pbRepository.AddPlaybill(performance3, (int)ReasonOfChanges.StartSales);
+            var res2 = await pbRepository.AddPlaybill(performance2);
+            var res3 = await pbRepository.AddPlaybill(performance3);
             Assert.NotNull(res2);
             Assert.NotNull(res3);
         });
 
         Assert.Null(exceptions);
-    }
-
-    [Fact]
-    public async Task UpdateTest()
-    {
-        using var pbRepository = Fixture.RootScope.Resolve<IDbService>().GetPlaybillRepository();
-
-        var performance4 = GetPerformanceMock("TestPerformance4", 800, "url4", DateTime.UtcNow, TestLocationName, TestTypeName);
-
-        var pb4 = await pbRepository.AddPlaybill(performance4, (int)ReasonOfChanges.StartSales);
-        var change = pb4.Changes.Last();
-        bool updateResult = await pbRepository.UpdateChangeLastUpdate(change.Id);
-
-        Assert.NotNull(pb4);
-        Assert.True(updateResult);
     }
 
     [Fact]
@@ -63,7 +48,7 @@ public class PlaybillRepositoryTest : IClassFixture<DatabaseFixture>
 
         var performance2 = GetPerformanceMock("TestPerformance2", 500, "url2", DateTime.UtcNow.AddDays(50), TestLocationName, TestTypeName);
 
-        await pbRepository.AddPlaybill(performance2, (int)ReasonOfChanges.StartSales);
+        await pbRepository.AddPlaybill(performance2);
 
         var list = pbRepository.GetList(DateTime.UtcNow.AddDays(49), DateTime.UtcNow.AddDays(51));
 
@@ -112,8 +97,8 @@ public class PlaybillRepositoryTest : IClassFixture<DatabaseFixture>
 
         var performance = GetPerformanceMock("TestPerformance", 500, "url", DateTime.UtcNow, TestLocationName, TestTypeName);
 
-        pbRepository.SetTheatre(1, "TestTheatre");
+        pbRepository.EnsureCreateTheatre(1, "TestTheatre");
 
-        await pbRepository.AddPlaybill(performance, (int)ReasonOfChanges.StartSales);
+        await pbRepository.AddPlaybill(performance);
     }
 }
