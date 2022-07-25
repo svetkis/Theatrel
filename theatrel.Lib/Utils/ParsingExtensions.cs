@@ -27,8 +27,8 @@ internal static class ParsingExtensions
 
     public static string GetCharacterName(this string actorLine)
     {
-        return actorLine.Contains('—') || actorLine.Contains(':')
-            ? actorLine.Split('—', ':').First().Replace("&nbsp;", " ").Trim()
+        return actorLine.Contains('—') || actorLine.Contains(':') || actorLine.Contains('–')
+            ? actorLine.Split('—', ':', '–').First().Replace("&nbsp;", " ").Trim()
             : CommonTags.Actor;
     }
 }
