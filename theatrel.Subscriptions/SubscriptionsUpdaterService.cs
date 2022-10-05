@@ -61,7 +61,8 @@ internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
             var existSubscriptions = subscriptionRepository.GetUserSubscriptions(userId);
             for(int addMonth = 0; addMonth < prolongMonths; ++addMonth)
             {
-                DateTime startDate = new DateTime(DateTime.Now.AddMonths(addMonth).Year, DateTime.Now.AddMonths(addMonth).Month, 0);
+                var currDt = DateTime.Now.AddMonths(addMonth);
+                DateTime startDate = new DateTime(currDt.Year, currDt.Month, 1);
 
                 var existSubscription = existSubscriptions.FirstOrDefault(x =>
                 {
