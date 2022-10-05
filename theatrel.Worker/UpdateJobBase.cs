@@ -178,7 +178,7 @@ public abstract class UpdateJobBase : IJob
             await using var scope = Bootstrapper.BeginLifetimeScope();
             ISubscriptionsUpdaterService subscriptionsUpdaterService = scope.Resolve<ISubscriptionsUpdaterService>();
 
-            await subscriptionsUpdaterService.ProlongSubscriptions();
+            await subscriptionsUpdaterService.ProlongSubscriptions(cToken);
 
             return true;
         }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using theatrel.Interfaces.Filters;
-using theatrel.Interfaces.Playbill;
 using theatrel.Interfaces.TgBot;
 
 namespace theatrel.Lib.Filters;

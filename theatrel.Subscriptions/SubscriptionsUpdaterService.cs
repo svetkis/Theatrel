@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using theatrel.Common.Enums;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
+using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
 
 namespace theatrel.Subscriptions;
@@ -11,9 +15,12 @@ namespace theatrel.Subscriptions;
 internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
 {
     private readonly IDbService _dbService;
-    public SubscriptionsUpdaterService(IDbService dbService)
+    private readonly IFilterService _filterService;
+
+    public SubscriptionsUpdaterService(IDbService dbService, IFilterService filterService)
     {
         _dbService = dbService;
+        _filterService = filterService;
     }
 
     public async Task<bool> CleanUpOutDatedSubscriptions()
@@ -31,10 +38,48 @@ internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
         return result;
     }
 
-    public Task<bool> ProlongSubscriptions()
+    public async Task<bool> ProlongSubscriptions(CancellationToken cancellationToken)
     {
-        using ISubscriptionsRepository repo = _dbService.GetSubscriptionRepository();
+        using ISubscriptionsRepository subscriptionRepository = _dbService.GetSubscriptionRepository();
+        string[] prolongFor = Environment.GetEnvironmentVariable("AutoProlongFullSubscriptionsUsers")?.Split(";").ToArray();
+        string prolongMonthsString = Environment.GetEnvironmentVariable("AutoProlongFullSubscriptionsMonths");
+        if (null == prolongFor && string.IsNullOrEmpty(prolongMonthsString))
+            return true;
 
-        return repo.ProlongSubscriptions();
+        int prolongMonths = int.Parse(prolongMonthsString);
+
+        int trackIt = (int)(ReasonOfChanges.StartSales | ReasonOfChanges.Creation |
+                    ReasonOfChanges.PriceDecreased | ReasonOfChanges.CastWasChanged | ReasonOfChanges.CastWasSet);
+
+        int currMonth = DateTime.Now.Month;
+        int currYear = DateTime.Now.Year;
+
+        foreach (string user in prolongFor)
+        {
+            long userId = long.Parse(user);
+
+            var existSubscriptions = subscriptionRepository.GetUserSubscriptions(userId);
+            for(int addMonth = 0; addMonth < prolongMonths; ++addMonth)
+            {
+                DateTime startDate = new DateTime(DateTime.Now.AddMonths(addMonth).Year, DateTime.Now.AddMonths(addMonth).Month, 0);
+
+                var existSubscription = existSubscriptions.FirstOrDefault(x =>
+                {
+                    return x.TrackingChanges == trackIt &&
+                            x.PerformanceFilter.StartDate.Month == startDate.Month &&
+                            x.PerformanceFilter.StartDate.Year == startDate.Year;
+                });
+                
+                if (null != existSubscription)
+                    continue;
+
+                SubscriptionEntity subscription = await subscriptionRepository.Create(
+                        userId,
+                        trackIt,
+                        _filterService.GetFilter(startDate, startDate.AddMonths(1)), cancellationToken);
+            }
+        }
+
+        return true;
     }
 }

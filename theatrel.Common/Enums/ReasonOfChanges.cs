@@ -33,7 +33,7 @@ public enum ReasonOfChanges
     [Description("Переносится")]
     WasMoved = 128,
 
-    [Description("Обьявлен состав испольнителей")]
+    [Description("Обьявлен состав исполнителей")]
     CastWasSet = 256,
 
     [Description("Состав исполнителей был изменен")]

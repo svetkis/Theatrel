@@ -67,33 +67,6 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
         }
     }
 
-    public Task<bool> ProlongSubscriptions()
-    {
-        SubscriptionEntity[] prolongationList = _dbContext.Subscriptions.Where(s => s.AutoProlongation > 0)
-            .Include(s => s.PerformanceFilter)
-            .AsNoTracking().ToArray();
-
-        if (!prolongationList.Any())
-            return Task.FromResult(true);
-
-        foreach (var item in prolongationList)
-        {
-            //item.PerformanceFilter.EndDate = item.PerformanceFilter.StartDate.AddMonths(item.AutoProlongation);
-            // _dbContext.Entry(item.PerformanceFilter).State = EntityState.Modified;
-        }
-
-        try
-        {
-            //await _dbContext.SaveChangesAsync();
-            return Task.FromResult(true);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"Failed to prolong subscriptions {e.Message}");
-            return Task.FromResult(false);
-        }
-    }
-
     public IEnumerable<SubscriptionEntity> GetOutdatedList()
     {
         SubscriptionEntity[] outdatedByDate = _dbContext.Subscriptions.Where(s =>

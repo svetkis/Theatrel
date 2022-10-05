@@ -1,6 +1,5 @@
 ﻿using System;
 using theatrel.Interfaces.Autofac;
-using theatrel.Interfaces.Playbill;
 using theatrel.Interfaces.TgBot;
 
 namespace theatrel.Interfaces.Filters;
