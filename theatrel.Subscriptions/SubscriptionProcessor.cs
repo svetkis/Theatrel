@@ -68,7 +68,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                     if (!_filterChecker.IsDataSuitable(
                         playbillEntry.Id,
                         playbillEntry.Performance.Name,
-                        string.Join(',', playbillEntry.Cast.Select(c => c.Actor)),
+                        playbillEntry.Cast != null ? string.Join(',', playbillEntry.Cast.Select(c => c.Actor)) : null,
                         p.PlaybillEntity.Performance.Location.Id,
                         p.PlaybillEntity.Performance.Type.TypeName,
                         p.PlaybillEntity.When, filter))
@@ -96,7 +96,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                     .Where(p => _filterChecker.IsDataSuitable(
                         p.PlaybillEntityId,
                         p.PlaybillEntity.Performance.Name,
-                        string.Join(',', p.PlaybillEntity.Cast.Select(c => c.Actor)),
+                        playbillEntry.Cast != null ? string.Join(',', playbillEntry.Cast.Select(c => c.Actor)) : null,
                         p.PlaybillEntity.Performance.Location.Id,
                         p.PlaybillEntity.Performance.Type.TypeName,
                         p.PlaybillEntity.When, filter)
