@@ -46,7 +46,7 @@ public class TgBotTests : IClassFixture<DatabaseFixture>
         var performanceFilterMock = new Mock<IPerformanceFilter>();
 
         var filterServiceMock = new Mock<IFilterService>();
-        filterServiceMock.Setup(h => h.IsDataSuitable(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<IPerformanceFilter>()))
+        filterServiceMock.Setup(h => h.IsDataSuitable(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<IPerformanceFilter>()))
             .Returns(() => true);
 
         filterServiceMock.Setup(h => h.GetFilter(It.IsAny<IChatDataInfo>()))

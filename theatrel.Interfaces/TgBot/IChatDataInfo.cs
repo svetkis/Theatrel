@@ -23,6 +23,7 @@ public interface IChatDataInfo
     int[] TheatreIds { get; set; }
     int[] LocationIds { get; set; }
     string PerformanceName { get; set; }
+    string Actor { get; set; }
     DateTime LastMessage { get; set; }
     DialogState DialogState { get; set; }
 

@@ -99,9 +99,10 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
     {
         try
         {
-            PerformanceFilterEntity filterEntity = new PerformanceFilterEntity
+            var filterEntity = new PerformanceFilterEntity
             {
                 PerformanceName = filter.PerformanceName,
+                Actor = filter.Actor,
                 PlaybillId = filter.PlaybillId,
                 StartDate = filter.StartDate,
                 EndDate = filter.EndDate,

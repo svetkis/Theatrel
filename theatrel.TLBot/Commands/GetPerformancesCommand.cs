@@ -267,10 +267,17 @@ internal class GetPerformancesCommand : DialogCommandBase
 
         return performances.Where(x =>
         {
-            if (!_filterService.IsDataSuitable(x.PerformanceId, x.Performance.Name, x.Performance.Location.Id,
-                    x.Performance.Type.TypeName,
-                    x.When, filter))
+            if (!_filterService.IsDataSuitable(
+                x.PerformanceId,
+                x.Performance.Name,
+                string.Join(',', x.Cast.Select(a => a.Actor)),
+                x.Performance.Location.Id,
+                x.Performance.Type.TypeName,
+                x.When,
+                filter))
+            {
                 return false;
+            }
 
             if (!x.Changes.Any())
                 return true;

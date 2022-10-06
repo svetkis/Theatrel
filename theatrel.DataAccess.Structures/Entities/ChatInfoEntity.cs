@@ -68,8 +68,11 @@ public class ChatInfoEntity : IChatDataInfo
 
     public string DbTheatres { get; set; }
 
+    public string Actor { get; set; }
+
     public DateTime LastMessage { get; set; } = DateTime.UtcNow;
     public DialogState DialogState { get; set; }
+
 
     public void Clear()
     {

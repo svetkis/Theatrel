@@ -22,6 +22,7 @@ public class FilterCheckerTest
 
         var filter = new Mock<IPerformanceFilter>();
         filter.SetupGet(x => x.PerformanceName).Returns(string.Empty);
+        filter.SetupGet(x => x.Actor).Returns(string.Empty);
         filter.SetupGet(x => x.DaysOfWeek).Returns(filterDays);
         filter.SetupGet(x => x.PerformanceTypes).Returns(filterTypes);
         filter.SetupGet(x => x.LocationIds).Returns(Array.Empty<int>());
@@ -32,7 +33,7 @@ public class FilterCheckerTest
         performance.SetupGet(x => x.DateTime).Returns(dt);
         performance.SetupGet(x => x.Type).Returns(performanceType);
 
-        bool result = filterChecker.IsDataSuitable(performance.Object.Name, -1, performance.Object.Type, performance.Object.DateTime, filter.Object);
+        bool result = filterChecker.IsDataSuitable(performance.Object.Name, string.Empty, -1, performance.Object.Type, performance.Object.DateTime, filter.Object);
 
         Assert.Equal(expected, result);
     }

@@ -12,6 +12,8 @@ public class PerformanceFilterEntity : IPerformanceFilter
 
     public string PerformanceName { get; set; }
 
+    public string Actor { get; set; }
+
     [NotMapped]
     public DayOfWeek[] DaysOfWeek
     {
@@ -80,33 +82,4 @@ public class PerformanceFilterEntity : IPerformanceFilter
     public DateTime EndDate { get; set; }
 
     public int PlaybillId { get; set; } = -1;
-
-    public bool IsEqual(PerformanceFilterEntity otherFilter)
-    {
-        if (DbDaysOfWeek != otherFilter.DbDaysOfWeek)
-            return false;
-
-        if (DbPerformanceTypes != otherFilter.DbPerformanceTypes)
-            return false;
-
-        if (PartOfDay != otherFilter.PartOfDay)
-            return false;
-
-        if (StartDate != otherFilter.StartDate)
-            return false;
-
-        if (EndDate != otherFilter.EndDate)
-            return false;
-
-        if (PlaybillId != otherFilter.PlaybillId)
-            return false;
-
-        if (0 != string.CompareOrdinal(DbTheatres, otherFilter.DbTheatres))
-            return false;
-
-        if (0 != string.CompareOrdinal(DbLocations, otherFilter.DbLocations))
-            return false;
-
-        return true;
-    }
 }

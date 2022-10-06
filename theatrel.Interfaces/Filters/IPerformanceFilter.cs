@@ -23,6 +23,8 @@ public interface IPerformanceFilter
 {
     string PerformanceName { get; set; }
 
+    string Actor { get; set; }
+
     DayOfWeek[] DaysOfWeek { get; set; }
     string[] PerformanceTypes { get; set; }
     int[] TheatreIds { get; set; }

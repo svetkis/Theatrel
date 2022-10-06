@@ -59,13 +59,27 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             if (!string.IsNullOrEmpty(filter.PerformanceName))
             {
                 performanceChanges = changes.Where(p =>
-                        string.Equals(p.PlaybillEntity.Performance.Name, filter.PerformanceName, StringComparison.OrdinalIgnoreCase)
-                        && _filterChecker.IsDataSuitable(p.PlaybillEntity.Id, p.PlaybillEntity.Performance.Name, p.PlaybillEntity.Performance.Location.Id,
-                            p.PlaybillEntity.Performance.Type.TypeName, p.PlaybillEntity.When, filter)
-                        && p.LastUpdate > subscription.LastUpdate
-                        && (subscription.TrackingChanges & p.ReasonOfChanges) != 0
-                        && subscription.TrackingChanges != 0)
-                    .OrderBy(p => p.LastUpdate).ToArray();
+                {
+                    var playbillEntry = p.PlaybillEntity;
+
+                    if (!string.Equals(playbillEntry.Performance.Name, filter.PerformanceName, StringComparison.OrdinalIgnoreCase))
+                        return false;
+
+                    if (!_filterChecker.IsDataSuitable(
+                        playbillEntry.Id,
+                        playbillEntry.Performance.Name,
+                        string.Join(',', playbillEntry.Cast.Select(c => c.Actor)),
+                        p.PlaybillEntity.Performance.Location.Id,
+                        p.PlaybillEntity.Performance.Type.TypeName,
+                        p.PlaybillEntity.When, filter))
+                    {
+                        return false;
+                    }
+
+                    return p.LastUpdate > subscription.LastUpdate &&
+                           (subscription.TrackingChanges & p.ReasonOfChanges) != 0 && subscription.TrackingChanges != 0;
+
+                }).OrderBy(p => p.LastUpdate).ToArray();
             }
             else if (filter.PlaybillId > 0)
             {
@@ -79,8 +93,13 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             else
             {
                 performanceChanges = changes
-                    .Where(p => _filterChecker.IsDataSuitable(p.PlaybillEntityId, p.PlaybillEntity.Performance.Name, p.PlaybillEntity.Performance.Location.Id,
-                                    p.PlaybillEntity.Performance.Type.TypeName, p.PlaybillEntity.When, filter)
+                    .Where(p => _filterChecker.IsDataSuitable(
+                        p.PlaybillEntityId,
+                        p.PlaybillEntity.Performance.Name,
+                        string.Join(',', p.PlaybillEntity.Cast.Select(c => c.Actor)),
+                        p.PlaybillEntity.Performance.Location.Id,
+                        p.PlaybillEntity.Performance.Type.TypeName,
+                        p.PlaybillEntity.When, filter)
                                 && p.LastUpdate > subscription.LastUpdate
                                 && (subscription.TrackingChanges & p.ReasonOfChanges) != 0
                                 && subscription.TrackingChanges != 0)

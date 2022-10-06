@@ -11,6 +11,6 @@ public interface IFilterService : IDISingleton
     IPerformanceFilter GetFilter(int playbillEntryId);
 
     bool CheckOnlyDate(DateTime when, IPerformanceFilter filter);
-    bool IsDataSuitable(string name, int locationId, string type, DateTime when, IPerformanceFilter filter);
-    bool IsDataSuitable(int playbillEntryId, string name, int locationId, string type, DateTime when, IPerformanceFilter filter);
+    bool IsDataSuitable(string name, string cast, int locationId, string type, DateTime when, IPerformanceFilter filter);
+    bool IsDataSuitable(int playbillEntryId, string name, string cast, int locationId, string type, DateTime when, IPerformanceFilter filter);
 }
