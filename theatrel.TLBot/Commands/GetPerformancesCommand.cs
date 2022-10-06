@@ -270,7 +270,7 @@ internal class GetPerformancesCommand : DialogCommandBase
             if (!_filterService.IsDataSuitable(
                 x.PerformanceId,
                 x.Performance.Name,
-                playbillEntry.Cast != null ? string.Join(',', playbillEntry.Cast.Select(c => c.Actor)) : null,
+                x.Cast != null ? string.Join(',', x.Cast.Select(c => c.Actor)) : null,
                 x.Performance.Location.Id,
                 x.Performance.Type.TypeName,
                 x.When,
