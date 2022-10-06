@@ -49,7 +49,8 @@ internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
         int prolongMonths = int.Parse(prolongMonthsString);
 
         int trackIt = (int)(ReasonOfChanges.StartSales | ReasonOfChanges.Creation |
-                    ReasonOfChanges.PriceDecreased | ReasonOfChanges.CastWasChanged | ReasonOfChanges.CastWasSet);
+                    ReasonOfChanges.PriceDecreased | ReasonOfChanges.CastWasChanged |
+                    ReasonOfChanges.CastWasSet | ReasonOfChanges.WasMoved);
 
         int currMonth = DateTime.Now.Month;
         int currYear = DateTime.Now.Year;
