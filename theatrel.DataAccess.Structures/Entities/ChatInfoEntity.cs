@@ -77,6 +77,8 @@ public class ChatInfoEntity : IChatDataInfo
     public void Clear()
     {
         PerformanceName = null;
+        Actor = null;
+
         CommandLine = 0;
 
         CurrentStepId = 0;
