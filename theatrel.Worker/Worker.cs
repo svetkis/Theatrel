@@ -47,6 +47,7 @@ public class Worker : BackgroundService
 
         await ScheduleDataUpdates(cancellationToken);
         await ScheduleMichailovskyDataUpdates(cancellationToken);
+        await ScheduleProlongSubscription(cancellationToken);
         await ScheduleOneTimeDataUpdate(cancellationToken);
     }
 
@@ -126,6 +127,31 @@ public class Worker : BackgroundService
         await scheduler.ScheduleJob(job, trigger, cancellationToken);
 
         _logger.LogInformation($"UpdateMichailovskyJob {upgradeJobCron} was scheduled");
+    }
+
+    private async Task ScheduleProlongSubscription(CancellationToken cancellationToken)
+    {
+        string upgradeJobCron = "0 0 * ? * *";
+
+        string group = "prolongSubscriptionGroup";
+
+        ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
+
+        IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
+        await scheduler.Start(cancellationToken);
+
+        IJobDetail job = JobBuilder.Create<ProlongSubscriptionJob>()
+            .WithIdentity("prolongSubscriptionJob", group)
+            .Build();
+
+        ITrigger trigger = TriggerBuilder.Create()
+            .WithIdentity("prolongSubscriptionTrigger", group)
+            .WithCronSchedule(upgradeJobCron, cron => { cron.InTimeZone(Bootstrapper.Resolve<ITimeZoneService>().TimeZone); })
+            .Build();
+
+        await scheduler.ScheduleJob(job, trigger, cancellationToken);
+
+        _logger.LogInformation($"prolongSubscriptionJob {upgradeJobCron} was scheduled");
     }
 
     private async Task ScheduleOneTimeDataUpdate(CancellationToken cancellationToken)

@@ -3,6 +3,7 @@ using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Commands;
 using theatrel.TLBot.Commands.IntroduceBot;
+using theatrel.TLBot.Commands.SearchByActor;
 using theatrel.TLBot.Commands.SearchByDate;
 using theatrel.TLBot.Commands.SearchByName;
 using theatrel.TLBot.Commands.Subscriptions;
@@ -48,6 +49,12 @@ internal class TgCommandsConfigurator : ITgCommandsConfigurator
                 new SelectTheatreCommand(_dbService),
                 new SelectLocationCommand(_dbService),
                 new AscNameCommand(_dbService),
+                new GetPerformancesCommand(_filterService, _timeZoneService, _dbService)
+            },
+            new IDialogCommand[]
+            {
+                new StartSearchByActorCommand(_dbService),
+                new AcsActorCommand(_dbService),
                 new GetPerformancesCommand(_filterService, _timeZoneService, _dbService)
             },
             new IDialogCommand[]

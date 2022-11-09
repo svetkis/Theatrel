@@ -25,6 +25,49 @@ public class UpdateMichailovskyJob : UpdateJobBase
     protected override int TheatreId => 2;
 }
 
+public class ProlongSubscriptionJob : IJob
+{
+    public async Task Execute(IJobExecutionContext context)
+    {
+        Trace.TraceInformation("ProlongSubscription was started");
+
+        if (!await ProlongSubscriptions(context.CancellationToken))
+            return;
+    }
+
+    private async Task<bool> ProlongSubscriptions(CancellationToken cToken)
+    {
+        try
+        {
+            Trace.TraceInformation("ProlongSubscriptions");
+
+            await using var scope = Bootstrapper.BeginLifetimeScope();
+            ISubscriptionsUpdaterService subscriptionsUpdaterService = scope.Resolve<ISubscriptionsUpdaterService>();
+
+            await subscriptionsUpdaterService.ProlongSubscriptions(cToken);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            await SendExceptionMessageToOwner("ProlongSubscriptions failed", ex);
+            Trace.TraceError($"ProlongSubscriptions failed {ex.Message}");
+            return false;
+        }
+    }
+
+    private static async Task SendExceptionMessageToOwner(string jobName, Exception ex)
+    {
+        if (long.TryParse(Environment.GetEnvironmentVariable("OwnerTelegramgId"), out var ownerId))
+        {
+            var telegramService = Bootstrapper.Resolve<ITgBotService>();
+            await telegramService.SendMessageAsync(ownerId, $"{jobName} failed", CancellationToken.None);
+            await telegramService.SendMessageAsync(ownerId, $"{ex.Message}", CancellationToken.None);
+            Trace.TraceError(ex.StackTrace);
+        }
+    }
+}
+
 public abstract class UpdateJobBase : IJob
 {
     protected abstract int TheatreId { get; }
@@ -39,22 +82,14 @@ public abstract class UpdateJobBase : IJob
         if (!await UpdatePlaybill(context.CancellationToken))
             return;
 
-        MemoryHelper.Collect(true);
-
         if (!await ProcessSubscriptions(context.CancellationToken))
             return;
-
-        MemoryHelper.Collect(false);
 
         if (!await PlaybillCleanup(context.CancellationToken))
             return;
 
-        MemoryHelper.Collect(false);
-
         if (!await SubscriptionsCleanup(context.CancellationToken))
             return;
-
-        MemoryHelper.Collect(false);
 
         Trace.TraceInformation("UpdateJob was finished");
     }

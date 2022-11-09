@@ -43,10 +43,10 @@ internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
         using ISubscriptionsRepository subscriptionRepository = _dbService.GetSubscriptionRepository();
         string[] prolongFor = Environment.GetEnvironmentVariable("AutoProlongFullSubscriptionsUsers")?.Split(";").ToArray();
         string prolongMonthsString = Environment.GetEnvironmentVariable("AutoProlongFullSubscriptionsMonths");
-        if (null == prolongFor && string.IsNullOrEmpty(prolongMonthsString))
+        if (null == prolongFor)
             return true;
 
-        int prolongMonths = int.Parse(prolongMonthsString);
+        int prolongMonths = int.TryParse(prolongMonthsString, out int outInt) ? outInt : 1;
 
         int trackIt = (int)(ReasonOfChanges.StartSales | ReasonOfChanges.Creation |
                     ReasonOfChanges.PriceDecreased | ReasonOfChanges.CastWasChanged |
