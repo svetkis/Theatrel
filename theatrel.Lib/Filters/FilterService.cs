@@ -18,6 +18,14 @@ internal class FilterService : IFilterService
             };
         }
 
+        if (!string.IsNullOrEmpty(dataInfo.Actor))
+        {
+            return new PerformanceFilter
+            {
+                Actor = dataInfo.Actor
+            };
+        }
+
         var filter = new PerformanceFilter
         {
             StartDate = dataInfo.When,
