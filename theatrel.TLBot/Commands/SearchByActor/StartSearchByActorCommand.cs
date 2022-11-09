@@ -10,7 +10,7 @@ namespace theatrel.TLBot.Commands.SearchByActor
 {
     internal class StartSearchByActorCommand : DialogCommandBase
     {
-        private const string MainCommandKey = "/searchActor";
+        private const string MainCommandKey = "/actor";
 
         protected override string ReturnCommandMessage { get; set; } = string.Empty;
 
