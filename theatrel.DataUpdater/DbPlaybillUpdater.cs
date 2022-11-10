@@ -85,12 +85,14 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
             await playbillRepository.UpdateDescription(playbillEntry.Id, data.Description);
         }
 
-        var compareCastResult = CompareCast(playbillRepository, playbillEntry, data);
+        ReasonOfChanges compareCastResult = CompareCast(playbillRepository, playbillEntry, data, out string[] added, out string[] removed);
         if (data.State == TicketsState.Ok && (compareCastResult == ReasonOfChanges.CastWasSet || compareCastResult == ReasonOfChanges.CastWasChanged) 
                                           && await playbillRepository.UpdateCast(playbillEntry, data))
         {
             await playbillRepository.AddChange(playbillEntry.Id, new PlaybillChangeEntity
             {
+                CastAdded = string.Join(',', added),
+                CastRemoved = string.Join(',', removed),
                 LastUpdate = DateTime.UtcNow,
                 MinPrice = data.MinPrice,
                 ReasonOfChanges = (int)compareCastResult
@@ -157,8 +159,11 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
         return ReasonOfChanges.None;
     }
 
-    private ReasonOfChanges CompareCast(IPlaybillRepository playbillRepository, PlaybillEntity playbillEntity, IPerformanceData freshData)
+    private ReasonOfChanges CompareCast(IPlaybillRepository playbillRepository, PlaybillEntity playbillEntity, IPerformanceData freshData, out string[] added, out string[] removed)
     {
+        added = Array.Empty<string>();
+        removed = Array.Empty<string>();
+
         switch (freshData.Cast.State)
         {
             case CastState.TechnicalError:
@@ -178,7 +183,7 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
                 if (wasEmpty)
                     return ReasonOfChanges.CastWasSet;
 
-                return playbillRepository.IsCastEqual(playbillEntity, freshData)
+                return playbillRepository.IsCastEqual(playbillEntity, freshData, out added, out removed)
                     ? ReasonOfChanges.None
                     : ReasonOfChanges.CastWasChanged;
         }

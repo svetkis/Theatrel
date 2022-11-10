@@ -88,7 +88,10 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                     if (change.ReasonOfChanges != (int)ReasonOfChanges.CastWasChanged && change.ReasonOfChanges != (int)ReasonOfChanges.CastWasSet)
                         return false;
 
-                    var playbillEntry = change.PlaybillEntity;
+                    if (!change.CastAdded.ToLower().Contains(filter.Actor.ToLower()))
+                        return false;
+
+                    /*var playbillEntry = change.PlaybillEntity;
 
                     if (!_filterChecker.IsDataSuitable(
                         playbillEntry.Id,
@@ -99,7 +102,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                         playbillEntry.When, filter))
                     {
                         return false;
-                    }
+                    }*/
 
                     return change.LastUpdate > subscription.LastUpdate &&
                            (subscription.TrackingChanges & change.ReasonOfChanges) != 0 && subscription.TrackingChanges != 0;

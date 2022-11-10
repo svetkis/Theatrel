@@ -10,6 +10,10 @@ public class PlaybillChangeEntity
 
     public int MinPrice { get; set; }
 
+    public string CastAdded { get; set; }
+
+    public string CastRemoved { get; set; }
+
     public int ReasonOfChanges { get; set; }
 
     [DataType(DataType.DateTime)]

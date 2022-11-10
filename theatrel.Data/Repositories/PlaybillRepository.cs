@@ -237,15 +237,17 @@ internal class PlaybillRepository : IPlaybillRepository
         public ActorInRoleEntity ActorInRole { get; set; }
     }
 
-    public bool IsCastEqual(PlaybillEntity playbillEntry, IPerformanceData data)
+    public bool IsCastEqual(PlaybillEntity playbillEntry, IPerformanceData freshData, out string[] added, out string[] removed)
     {
         CheckData[] checkList = playbillEntry.Cast.Select(a => new CheckData { Exists = false, ActorInRole = a }).ToArray();
-        foreach (KeyValuePair<string, IList<IActor>> castDataFresh in data.Cast.Cast)
+        List<string> addedActors = new();
+
+        foreach (KeyValuePair<string, IList<IActor>> castDataFresh in freshData.Cast.Cast)
         {
             string character = castDataFresh.Key;
             foreach (var actorFresh in castDataFresh.Value)
             {
-                var checkItem = actorFresh.Url == CommonTags.NotDefinedTag
+                CheckData checkItem = actorFresh.Url == CommonTags.NotDefinedTag
                     ? checkList.FirstOrDefault(item =>
                         item.ActorInRole.Role.CharacterName == character &&
                         item.ActorInRole.Actor.Name == actorFresh.Name)
@@ -255,11 +257,13 @@ internal class PlaybillRepository : IPlaybillRepository
 
                 if (checkItem == null)
                 {
-                    Trace.TraceInformation($"Cast is not equal {playbillEntry.Id}. Not found {character} - {actorFresh.Name} {actorFresh.Url}");
-                    return false;
+                    addedActors.Add(actorFresh.Name);
+                    Trace.TraceInformation($"Added actor to {playbillEntry.Id}. {character} - {actorFresh.Name} {actorFresh.Url}"); 
                 }
-
-                checkItem.Exists = true;
+                else
+                {
+                    checkItem.Exists = true;
+                }
             }
         }
 
@@ -272,12 +276,15 @@ internal class PlaybillRepository : IPlaybillRepository
                 Trace.TraceInformation($"Cast is not equal {playbillEntry.Id}.");
                 foreach (var actorInRole in removedActorInRole)
                 {
-                    Trace.TraceInformation($"No actorInRole in fresh data: {actorInRole.Role.CharacterName} - {actorInRole.Actor.Name}");
+                    Trace.TraceInformation($"Actor was removed from cast: {actorInRole.Role.CharacterName} - {actorInRole.Actor.Name}");
                 }
             }
         }
 
-        return checkList.All(item => item.Exists);
+        added = addedActors.ToArray();
+        removed = checkList.Where(x => !x.Exists).Select(x => x.ActorInRole.Actor.Name).ToArray();
+
+        return !addedActors.Any() && checkList.All(item => item.Exists);
     }
 
     public async Task<PlaybillEntity> AddPlaybill(IPerformanceData data)

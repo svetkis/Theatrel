@@ -28,7 +28,7 @@ public interface IPlaybillRepository : IDisposable, IDIRegistrable
     Task<bool> UpdateTicketsUrl(int playbillEntityId, string url);
 
     Task<bool> UpdateCast(PlaybillEntity playbillEntry, IPerformanceData data);
-    bool IsCastEqual(PlaybillEntity playbillEntry, IPerformanceData data);
+    bool IsCastEqual(PlaybillEntity playbillEntry, IPerformanceData data, out string[] added, out string[] removed);
 
     Task<bool> RemovePlaybillEntry(PlaybillEntity entity);
 
