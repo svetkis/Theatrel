@@ -102,11 +102,7 @@ internal class FilterService : IFilterService
 
         if (!string.IsNullOrEmpty(filter.PerformanceName))
         {
-            var suitableNameAndLocation = name.ToLower().Contains(filter.PerformanceName.ToLower()) && CheckLocation(filter.LocationIds, locationId);
-            if (!string.IsNullOrEmpty(filter.Actor))
-                return suitableNameAndLocation && cast.ToLower().Contains(filter.Actor.ToLower());
-            else
-                return suitableNameAndLocation;
+            return name.ToLower().Contains(filter.PerformanceName.ToLower()) && CheckLocation(filter.LocationIds, locationId);
         }
 
         if (!CheckLocation(filter.LocationIds, locationId))
