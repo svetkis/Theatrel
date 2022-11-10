@@ -12,6 +12,8 @@ public interface IPlaybillRepository : IDisposable, IDIRegistrable
     IEnumerable<PlaybillEntity> GetList(DateTime from, DateTime to);
     IEnumerable<PlaybillEntity> GetListByName(string name);
 
+    IEnumerable<PlaybillEntity> GetListByActor(string actor);
+
     PlaybillEntity GetPlaybillByPerformanceData(IPerformanceData data);
     PlaybillEntity GetPlaybill(int id);
     PlaybillEntity GetPlaybillEntryWithPerformanceData(int id);

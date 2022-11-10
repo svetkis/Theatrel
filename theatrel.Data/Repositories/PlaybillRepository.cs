@@ -436,6 +436,28 @@ internal class PlaybillRepository : IPlaybillRepository
         return Array.Empty<PlaybillEntity>();
     }
 
+    public IEnumerable<PlaybillEntity> GetListByActor(string actor)
+    {
+        try
+        {
+            string lowerActor = actor.ToLower();
+            return _dbContext.Playbill
+                .Where(x => x.Cast.Any(actor => actor.Actor.Name.ToLower().Contains(lowerActor)))
+                .Include(x => x.Performance)
+                .ThenInclude(x => x.Location)
+                .Include(x => x.Performance)
+                .ThenInclude(x => x.Type)
+                .Include(x => x.Changes)
+                .AsNoTracking().ToArray();
+        }
+        catch (Exception ex)
+        {
+            TraceException(ex);
+        }
+
+        return Array.Empty<PlaybillEntity>();
+    }
+
     public PlaybillEntity GetPlaybillByPerformanceData(IPerformanceData data)
     {
         try

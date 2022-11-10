@@ -261,9 +261,19 @@ internal class GetPerformancesCommand : DialogCommandBase
     {
         using var playbillRepo = DbService.GetPlaybillRepository();
 
-        PlaybillEntity[] performances = !string.IsNullOrEmpty(chatInfo.PerformanceName)
-            ? playbillRepo.GetListByName(chatInfo.PerformanceName).ToArray()
-            : playbillRepo.GetList(filter.StartDate, filter.EndDate).ToArray();
+        PlaybillEntity[] performances;
+        if (!string.IsNullOrEmpty(chatInfo.PerformanceName))
+        {
+            performances = playbillRepo.GetListByName(chatInfo.PerformanceName).ToArray();
+        }
+        else if (!string.IsNullOrEmpty(chatInfo.Actor))
+        {
+            performances = playbillRepo.GetListByActor(chatInfo.Actor).ToArray();
+        }
+        else
+        {
+            performances = playbillRepo.GetList(filter.StartDate, filter.EndDate).ToArray();
+        }
 
         return performances.Where(x =>
         {
