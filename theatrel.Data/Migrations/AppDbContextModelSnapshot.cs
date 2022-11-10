@@ -233,6 +233,12 @@ namespace theatrel.DataAccess.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CastAdded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CastRemoved")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("LastUpdate")
                         .HasColumnType("timestamp with time zone");
 
