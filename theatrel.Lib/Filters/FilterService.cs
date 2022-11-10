@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.TgBot;
@@ -87,6 +88,8 @@ internal class FilterService : IFilterService
 
     public bool IsDataSuitable(int playbillEntryId, string name, string cast, int locationId, string type, DateTime when, IPerformanceFilter filter)
     {
+        Trace.TraceInformation($"IsDataSuitable filter actor: {filter.Actor} cast:{cast}");
+
         if (filter == null)
             return true;
 

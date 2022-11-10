@@ -444,10 +444,8 @@ internal class PlaybillRepository : IPlaybillRepository
             return _dbContext.Playbill
                 .Where(x => x.Cast.Any(actor => actor.Actor.Name.ToLower().Contains(lowerActor)))
                 .Include(x => x.Cast).ThenInclude(x => x.Actor)
-                .Include(x => x.Performance)
-                .ThenInclude(x => x.Location)
-                .Include(x => x.Performance)
-                .ThenInclude(x => x.Type)
+                .Include(x => x.Performance).ThenInclude(x => x.Location)
+                .Include(x => x.Performance).ThenInclude(x => x.Type)
                 .Include(x => x.Changes)
                 .AsNoTracking().ToArray();
         }

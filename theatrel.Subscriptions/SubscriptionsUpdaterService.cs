@@ -46,7 +46,7 @@ internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
         try
         {
             string prolongForString = Environment.GetEnvironmentVariable("AutoProlongFullSubscriptionsUsers");
-            prolongFor = prolongForString?.Split(";").ToArray();
+            prolongFor = prolongForString.Split(";", StringSplitOptions.RemoveEmptyEntries).ToArray();
             prolongMonthsString = Environment.GetEnvironmentVariable("AutoProlongFullSubscriptionsMonths");
 
             if (null == prolongFor || !prolongFor.Any())
