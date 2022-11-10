@@ -396,6 +396,7 @@ internal class PlaybillRepository : IPlaybillRepository
                 .Include(x => x.Performance)
                 .ThenInclude(x => x.Type)
                 .Include(x => x.Changes)
+                .Include(x => x.Cast)
                 .AsNoTracking().ToArray();
         }
         catch (Exception ex)

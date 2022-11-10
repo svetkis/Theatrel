@@ -69,15 +69,40 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                         playbillEntry.Id,
                         playbillEntry.Performance.Name,
                         playbillEntry.Cast != null ? string.Join(',', playbillEntry.Cast.Select(c => c.Actor)) : null,
-                        p.PlaybillEntity.Performance.Location.Id,
-                        p.PlaybillEntity.Performance.Type.TypeName,
-                        p.PlaybillEntity.When, filter))
+                        playbillEntry.Performance.Location.Id,
+                        playbillEntry.Performance.Type.TypeName,
+                        playbillEntry.When, filter))
                     {
                         return false;
                     }
 
                     return p.LastUpdate > subscription.LastUpdate &&
                            (subscription.TrackingChanges & p.ReasonOfChanges) != 0 && subscription.TrackingChanges != 0;
+
+                }).OrderBy(p => p.LastUpdate).ToArray();
+            }
+            else if (!string.IsNullOrEmpty(filter.Actor))
+            {
+                performanceChanges = changes.Where(change =>
+                {
+                    if (change.ReasonOfChanges != (int)ReasonOfChanges.CastWasChanged && change.ReasonOfChanges != (int)ReasonOfChanges.CastWasSet)
+                        return false;
+
+                    var playbillEntry = change.PlaybillEntity;
+
+                    if (!_filterChecker.IsDataSuitable(
+                        playbillEntry.Id,
+                        playbillEntry.Performance.Name,
+                        playbillEntry.Cast != null ? string.Join(',', playbillEntry.Cast.Select(c => c.Actor)) : null,
+                        playbillEntry.Performance.Location.Id,
+                        playbillEntry.Performance.Type.TypeName,
+                        playbillEntry.When, filter))
+                    {
+                        return false;
+                    }
+
+                    return change.LastUpdate > subscription.LastUpdate &&
+                           (subscription.TrackingChanges & change.ReasonOfChanges) != 0 && subscription.TrackingChanges != 0;
 
                 }).OrderBy(p => p.LastUpdate).ToArray();
             }

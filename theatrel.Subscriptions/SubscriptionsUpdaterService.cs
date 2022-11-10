@@ -40,11 +40,22 @@ internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
 
     public async Task<bool> ProlongSubscriptions(CancellationToken cancellationToken)
     {
-        using ISubscriptionsRepository subscriptionRepository = _dbService.GetSubscriptionRepository();
-        string[] prolongFor = Environment.GetEnvironmentVariable("AutoProlongFullSubscriptionsUsers")?.Split(";").ToArray();
-        string prolongMonthsString = Environment.GetEnvironmentVariable("AutoProlongFullSubscriptionsMonths");
-        if (null == prolongFor)
+        string[] prolongFor;
+        string prolongMonthsString;
+
+        try
+        {
+            prolongFor = Environment.GetEnvironmentVariable("AutoProlongFullSubscriptionsUsers")?.Split(";").ToArray();
+            prolongMonthsString = Environment.GetEnvironmentVariable("AutoProlongFullSubscriptionsMonths");
+            if (null == prolongFor)
+                return true;
+        }
+        catch(Exception ex)
+        {
             return true;
+        }
+
+        using ISubscriptionsRepository subscriptionRepository = _dbService.GetSubscriptionRepository();
 
         int prolongMonths = int.TryParse(prolongMonthsString, out int outInt) ? outInt : 1;
 
