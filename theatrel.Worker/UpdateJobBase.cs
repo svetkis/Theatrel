@@ -50,7 +50,7 @@ public class ProlongSubscriptionJob : IJob
         }
         catch (Exception ex)
         {
-            await SendExceptionMessageToOwner("ProlongSubscriptions failed", ex);
+            await SendExceptionMessageToOwner("ProlongSubscriptions", ex);
             Trace.TraceError($"ProlongSubscriptions failed {ex.Message}");
             return false;
         }
