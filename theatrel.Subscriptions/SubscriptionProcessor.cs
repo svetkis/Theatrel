@@ -12,6 +12,7 @@ using theatrel.Common.FormatHelper;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
+using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
 using theatrel.Interfaces.TimeZoneService;
@@ -41,6 +42,11 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         using ISubscriptionsRepository subscriptionRepository = _dbService.GetSubscriptionRepository();
         var subscriptions = subscriptionRepository.GetAllWithFilter().ToArray();
 
+        using IPlaybillRepository playbillRepository =
+            subscriptions.Any(s => !string.IsNullOrEmpty(s.PerformanceFilter.Actor))
+            ? _dbService.GetPlaybillRepository()
+            : null;
+
         if (!subscriptions.Any())
             return true;
 
@@ -52,75 +58,43 @@ public class SubscriptionProcessor : ISubscriptionProcessor
 
         foreach (SubscriptionEntity subscription in subscriptions)
         {
-            var filter = subscription.PerformanceFilter;
+            if (subscription.TrackingChanges == 0)
+                continue;
+
+            PerformanceFilterEntity filter = subscription.PerformanceFilter;
+
+            var changesToSubscription = changes.Where(x =>
+                x.LastUpdate > subscription.LastUpdate && (subscription.TrackingChanges & x.ReasonOfChanges) != 0)
+                .OrderBy(p => p.LastUpdate);
 
             PlaybillChangeEntity[] performanceChanges;
 
             if (!string.IsNullOrEmpty(filter.PerformanceName))
             {
-                performanceChanges = changes.Where(p =>
-                {
-                    var playbillEntry = p.PlaybillEntity;
-
-                    if (!string.Equals(playbillEntry.Performance.Name, filter.PerformanceName, StringComparison.OrdinalIgnoreCase))
-                        return false;
-
-                    if (!_filterChecker.IsDataSuitable(
-                        playbillEntry.Id,
-                        playbillEntry.Performance.Name,
-                        playbillEntry.Cast != null ? string.Join(',', playbillEntry.Cast.Select(c => c.Actor)) : null,
-                        playbillEntry.Performance.Location.Id,
-                        playbillEntry.Performance.Type.TypeName,
-                        playbillEntry.When, filter))
-                    {
-                        return false;
-                    }
-
-                    return p.LastUpdate > subscription.LastUpdate &&
-                           (subscription.TrackingChanges & p.ReasonOfChanges) != 0 && subscription.TrackingChanges != 0;
-
-                }).OrderBy(p => p.LastUpdate).ToArray();
+                performanceChanges = changesToSubscription
+                    .Where(change => FilterByPerformanceName(change, filter))
+                    .ToArray();
             }
             else if (!string.IsNullOrEmpty(filter.Actor))
             {
-                performanceChanges = changes.Where(change =>
-                {
-                    if (change.ReasonOfChanges != (int)ReasonOfChanges.CastWasChanged && change.ReasonOfChanges != (int)ReasonOfChanges.CastWasSet)
-                        return false;
+                string[] filterActors = playbillRepository
+                    .GetActorsByNameFilter(subscription.PerformanceFilter.Actor)
+                    .Select(x => x.Name)
+                    .ToArray();
 
-                    if (!change.CastAdded.ToLower().Contains(filter.Actor.ToLower()))
-                        return false;
-
-                    /*var playbillEntry = change.PlaybillEntity;
-
-                    if (!_filterChecker.IsDataSuitable(
-                        playbillEntry.Id,
-                        playbillEntry.Performance.Name,
-                        playbillEntry.Cast != null ? string.Join(',', playbillEntry.Cast.Select(c => c.Actor)) : null,
-                        playbillEntry.Performance.Location.Id,
-                        playbillEntry.Performance.Type.TypeName,
-                        playbillEntry.When, filter))
-                    {
-                        return false;
-                    }*/
-
-                    return change.LastUpdate > subscription.LastUpdate &&
-                           (subscription.TrackingChanges & change.ReasonOfChanges) != 0 && subscription.TrackingChanges != 0;
-
-                }).OrderBy(p => p.LastUpdate).ToArray();
+                performanceChanges = !filterActors.Any()
+                    ? Array.Empty<PlaybillChangeEntity>()
+                    : changesToSubscription.Where(change => FilterByActor(change, filterActors)).ToArray();
             }
             else if (filter.PlaybillId > 0)
             {
-                performanceChanges = changes
-                    .Where(p => p.PlaybillEntity.Id == filter.PlaybillId
-                                && p.LastUpdate > subscription.LastUpdate
-                                && (subscription.TrackingChanges & p.ReasonOfChanges) != 0
-                                && subscription.TrackingChanges != 0)
-                    .OrderBy(p => p.LastUpdate).ToArray();
+                performanceChanges = changesToSubscription
+                    .Where(p => p.PlaybillEntity.Id == filter.PlaybillId)
+                    .ToArray();
             }
             else
             {
-                performanceChanges = changes
+                performanceChanges = changesToSubscription
                     .Where(p => _filterChecker.IsDataSuitable(
                         p.PlaybillEntityId,
                         p.PlaybillEntity.Performance.Name,
@@ -131,7 +105,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                                 && p.LastUpdate > subscription.LastUpdate
                                 && (subscription.TrackingChanges & p.ReasonOfChanges) != 0
                                 && subscription.TrackingChanges != 0)
-                    .OrderBy(p => p.LastUpdate).ToArray();
+                    .ToArray();
             }
 
             if (!performanceChanges.Any())
@@ -171,7 +145,34 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         return true;
     }
 
-    private readonly ReasonOfChanges[] _reasonToShowCast = {ReasonOfChanges.CastWasChanged, ReasonOfChanges.CastWasSet, ReasonOfChanges.Creation, ReasonOfChanges.StartSales};
+    private bool FilterByPerformanceName(PlaybillChangeEntity change, PerformanceFilterEntity filter)
+    {
+        var playbillEntry = change.PlaybillEntity;
+
+        return _filterChecker.IsDataSuitable(
+            playbillEntry.Id,
+            playbillEntry.Performance.Name,
+            playbillEntry.Cast != null ? string.Join(',', playbillEntry.Cast.Select(c => c.Actor)) : null,
+            playbillEntry.Performance.Location.Id,
+            playbillEntry.Performance.Type.TypeName,
+            playbillEntry.When, filter);
+    }
+
+    private bool FilterByActor(PlaybillChangeEntity change, string[] filterActors)
+    {
+        if (change.ReasonOfChanges != (int)ReasonOfChanges.CastWasChanged && change.ReasonOfChanges != (int)ReasonOfChanges.CastWasSet)
+            return false;
+
+        var addedList = change.CastAdded?.ToLower().Split(",", StringSplitOptions.RemoveEmptyEntries).ToArray();
+        var removedList = change.CastRemoved?.ToLower().Split(",", StringSplitOptions.RemoveEmptyEntries).ToArray();
+
+        bool added = addedList != null && addedList.Any(actor => filterActors.Contains(actor));
+        bool removed = removedList != null && removedList.Any(actor => filterActors.Contains(actor));
+
+        return added || removed;
+    }
+
+    private static readonly ReasonOfChanges[] ReasonToShowCast = {ReasonOfChanges.CastWasChanged, ReasonOfChanges.CastWasSet, ReasonOfChanges.Creation, ReasonOfChanges.StartSales};
     private string GetChangesDescription(PlaybillChangeEntity[] changes)
     {
         StringBuilder sb = new StringBuilder();
@@ -240,7 +241,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                 : $"от [{change.MinPrice}]({playbillEntity.TicketsUrl.EscapeMessageForMarkupV2()})";
 
             sb.AppendLine($"{firstPart} {performanceString}{description} {lastPart}");
-            if (playbillEntity.Cast != null && _reasonToShowCast.Contains(reason))
+            if (playbillEntity.Cast != null && ReasonToShowCast.Contains(reason))
             {
                 IDictionary<string, IList<ActorEntity>> actorsDictionary = new Dictionary<string, IList<ActorEntity>>();
                 foreach (var item in playbillEntity.Cast)
@@ -253,19 +254,25 @@ public class SubscriptionProcessor : ISubscriptionProcessor
 
                 foreach (var group in actorsDictionary.OrderBy(kp => kp.Key, CharactersComparer.Create()))
                 {
-                    string actorsList = string.Join(", ", group.Value.Select(item =>
+                    string actors = string.Join(", ", group.Value.Select(item =>
                         item.Url == CommonTags.NotDefinedTag || string.IsNullOrEmpty(item.Url)
                             ? item.Name.EscapeMessageForMarkupV2()
                             : $"[{item.Name.EscapeMessageForMarkupV2()}]({item.Url.EscapeMessageForMarkupV2()})"));
 
+                    bool wasAdded = group.Value.Any(item => change.CastAdded.Contains(item.Name));
+
                     bool isPhonogram = group.Key == CommonTags.Conductor && group.Value.First().Name == CommonTags.Phonogram;
 
-                    string characterPart = group.Key == CommonTags.Actor || isPhonogram
+                    string character = group.Key == CommonTags.Actor || isPhonogram
                         ? string.Empty
                         : $"{group.Key} - ".EscapeMessageForMarkupV2();
 
-                    sb.AppendLine($"{characterPart}{actorsList}");
+                    string addedPart = wasAdded ? " (добавлен):" : string.Empty;
+
+                    sb.AppendLine($"{character}{actors}{addedPart}");
                 }
+
+                sb.AppendLine($"Были удалены: {change.CastRemoved}");
             }
 
             sb.AppendLine();

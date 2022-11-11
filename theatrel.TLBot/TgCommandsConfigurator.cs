@@ -55,7 +55,7 @@ internal class TgCommandsConfigurator : ITgCommandsConfigurator
             {
                 new StartSearchByActorCommand(_dbService),
                 new AcsActorCommand(_dbService),
-                new GetPerformancesCommand(_filterService, _timeZoneService, _dbService)
+                new GetPerformancesByActorCommand(_filterService, _timeZoneService, _dbService)
             },
             new IDialogCommand[]
             {

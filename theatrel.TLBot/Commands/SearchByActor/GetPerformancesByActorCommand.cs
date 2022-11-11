@@ -17,16 +17,14 @@ using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
-namespace theatrel.TLBot.Commands;
+namespace theatrel.TLBot.Commands.SearchByActor;
 
-internal class GetPerformancesCommand : DialogCommandBase
+internal class GetPerformancesByActorCommand : DialogCommandBase
 {
     private readonly IFilterService _filterService;
     private readonly ITimeZoneService _timeZoneService;
 
-    private const string DecreasePriceSubscription = "Подписаться на снижение цены на билеты";
-    private const string NewInPlaybillSubscription = "Подписаться на новые спектакли и появление билетов в продаже";
-    private const string CastSubscription = "Подписаться на изменения в составе исполнителей";
+    private const string CastSubscription = "Подписка на изменения в афише с выбранным исполнителем";
 
     private const string No = "Спасибо, не надо";
 
@@ -34,14 +32,14 @@ internal class GetPerformancesCommand : DialogCommandBase
 
     public override string Name => "Искать";
 
-    public GetPerformancesCommand(IFilterService filterService, ITimeZoneService timeZoneService, IDbService dbService)
+    public GetPerformancesByActorCommand(IFilterService filterService, ITimeZoneService timeZoneService, IDbService dbService)
         : base(dbService)
     {
         _filterService = filterService;
         _timeZoneService = timeZoneService;
 
         CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(1, new[] {
-            new KeyboardButton(DecreasePriceSubscription),
+            new KeyboardButton(CastSubscription),
             new KeyboardButton(No),
         }))
         {
@@ -56,12 +54,6 @@ internal class GetPerformancesCommand : DialogCommandBase
 
         switch (message)
         {
-            case DecreasePriceSubscription:
-                trackingChanges = (int)ReasonOfChanges.PriceDecreased;
-                break;
-            case NewInPlaybillSubscription:
-                trackingChanges = (int)(ReasonOfChanges.StartSales | ReasonOfChanges.Creation);
-                break;
             case CastSubscription:
                 trackingChanges = (int)(ReasonOfChanges.CastWasSet | ReasonOfChanges.CastWasChanged);
                 break;
@@ -85,7 +77,8 @@ internal class GetPerformancesCommand : DialogCommandBase
     {
         string[] commands =
         {
-            DecreasePriceSubscription, NewInPlaybillSubscription, CastSubscription, No
+            CastSubscription,
+            No
         };
 
         if (commands.Contains(message))
@@ -101,14 +94,11 @@ internal class GetPerformancesCommand : DialogCommandBase
         IPerformanceFilter filter = _filterService.GetFilter(chatInfo);
         var filteredPerformances = GetFilteredPerformances(chatInfo, filter);
 
-        List<KeyboardButton> buttons = new List<KeyboardButton> { new KeyboardButton(NewInPlaybillSubscription) };
-        if (filteredPerformances.Any())
+        List<KeyboardButton> buttons = new List<KeyboardButton> 
         {
-            buttons.Add(new KeyboardButton(DecreasePriceSubscription));
-            buttons.Add(new KeyboardButton(CastSubscription));
-        }
-
-        buttons.Add(new KeyboardButton(No));
+            new KeyboardButton(CastSubscription),
+            new KeyboardButton(No)
+        };
 
         var keys = new ReplyKeyboardMarkup(GroupKeyboardButtons(1, buttons))
         {
@@ -261,30 +251,14 @@ internal class GetPerformancesCommand : DialogCommandBase
     {
         using var playbillRepo = DbService.GetPlaybillRepository();
 
-        PlaybillEntity[] performances;
-        if (!string.IsNullOrEmpty(chatInfo.PerformanceName))
+        PlaybillEntity[] performances = Array.Empty<PlaybillEntity>();
+        if (!string.IsNullOrEmpty(chatInfo.Actor))
         {
-            performances = playbillRepo.GetListByName(chatInfo.PerformanceName).ToArray();
-        }
-        else
-        {
-            performances = playbillRepo.GetList(filter.StartDate, filter.EndDate).ToArray();
+            performances = playbillRepo.GetListByActor(chatInfo.Actor).ToArray();
         }
 
         return performances.Where(x =>
         {
-            if (!_filterService.IsDataSuitable(
-                x.PerformanceId,
-                x.Performance.Name,
-                x.Cast != null ? string.Join(',', x.Cast.Select(c => c.Actor.Name)) : null,
-                x.Performance.Location.Id,
-                x.Performance.Type.TypeName,
-                x.When,
-                filter))
-            {
-                return false;
-            }
-
             if (!x.Changes.Any())
                 return true;
 
@@ -370,13 +344,44 @@ internal class GetPerformancesCommand : DialogCommandBase
             savedInfo.Append($"{item.Id},");
             string subscriptionIndexPart = $"Индекс для подписки {++i}";
 
+            StringBuilder cast = new();
+            if (item.Cast != null)
+            {
+                IDictionary<string, IList<ActorEntity>> actorsDictionary = new Dictionary<string, IList<ActorEntity>>();
+                foreach (var actor in item.Cast)
+                {
+                    if (!actorsDictionary.ContainsKey(actor.Role.CharacterName))
+                        actorsDictionary[actor.Role.CharacterName] = new List<ActorEntity>();
+
+                    actorsDictionary[actor.Role.CharacterName].Add(actor.Actor);
+                }
+
+                foreach (var group in actorsDictionary.OrderBy(kp => kp.Key, CharactersComparer.Create()))
+                {
+                    string actorsList = string.Join(", ", group.Value.Select(item =>
+                        item.Url == CommonTags.NotDefinedTag || string.IsNullOrEmpty(item.Url)
+                            ? item.Name.EscapeMessageForMarkupV2()
+                            : $"[{item.Name.EscapeMessageForMarkupV2()}]({item.Url.EscapeMessageForMarkupV2()})"));
+
+                    bool isPhonogram = group.Key == CommonTags.Conductor && group.Value.First().Name == CommonTags.Phonogram;
+
+                    string characterPart = group.Key == CommonTags.Actor || isPhonogram
+                        ? string.Empty
+                        : $"{group.Key} - ".EscapeMessageForMarkupV2();
+
+                    cast.AppendLine($"{characterPart}{actorsList}");
+                }
+            }
+
             stringBuilder.AppendLine($"{firstPart} {performanceString}{description} {lastPart}");
+            if (!string.IsNullOrEmpty(cast.ToString()))
+                stringBuilder.AppendLine(cast.ToString());
             stringBuilder.AppendLine(subscriptionIndexPart);
             stringBuilder.AppendLine();
         }
 
         if (!performances.Any())
-            return Task.FromResult("Увы, я ничего не нашел. Попробуем поискать еще?".EscapeMessageForMarkupV2());
+            return Task.FromResult("Увы, я ничего не нашел. Можете подписаться и я пришлю Вам сообщение про новые спектакли с этим исполнителем.".EscapeMessageForMarkupV2());
 
         stringBuilder.AppendLine("Для подписки на конкретный спектакль напишите индекс подписки-код подписки, например: 5-1".EscapeMessageForMarkupV2());
         stringBuilder.AppendLine("Или сразу несколько кодов и подписок например: 5-1 6-4 10-2".EscapeMessageForMarkupV2());

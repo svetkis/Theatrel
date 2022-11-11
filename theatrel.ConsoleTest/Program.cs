@@ -16,7 +16,7 @@ internal static class Program
     {
         Trace.Listeners.Add(new Trace2StdoutLogger());
 
-        var listener = new GarbageCollectorEventListener();
+        //var listener = new GarbageCollectorEventListener();
 
         Bootstrapper.Start();
 
@@ -36,7 +36,7 @@ internal static class Program
 
         tLBotProcessor.Start(tlBotService, cts.Token);
 
-        for (int i = 0; i < 5; ++i)
+       /* for (int i = 0; i < 5; ++i)
         {
             Trace.TraceInformation("Before UpdateMariinskiPlaybill");
             //MemoryProfiler.GetSnapshot("Before UpdateMariinskiPlaybill");
@@ -69,11 +69,11 @@ internal static class Program
                 return;
 
             MemoryProfiler.GetSnapshot("Update finished");
-        }
+        }*/
 
         while (true)
         {
-            await Task.Delay(100000, cts.Token);
+            await Task.Delay(1000000, cts.Token);
             MemoryProfiler.GetSnapshot("");
         }
     }

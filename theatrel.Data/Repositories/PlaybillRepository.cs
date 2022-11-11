@@ -420,7 +420,7 @@ internal class PlaybillRepository : IPlaybillRepository
         {
             string lowerName = name.ToLower();
             return _dbContext.Playbill
-                .Where(x => x.Performance.Name.ToLower().Contains(lowerName))
+                .Where(x => EF.Functions.Like(x.Performance.Name, $"%{lowerName}%"))
                 .Include(x => x.Performance)
                 .ThenInclude(x => x.Location)
                 .Include(x => x.Performance)
@@ -436,18 +436,35 @@ internal class PlaybillRepository : IPlaybillRepository
         return Array.Empty<PlaybillEntity>();
     }
 
+    public ActorEntity[] GetActorsByNameFilter(string actor)
+    {
+        string[] filters = actor
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => $"%{x.ToLower()}%")
+            .ToArray();
+
+        return _dbContext.Actors
+            .Where(a => filters.All(x => EF.Functions.Like(a.Name.ToLower(), x)))
+            .AsNoTracking()
+            .ToArray();
+    }
+
     public IEnumerable<PlaybillEntity> GetListByActor(string actor)
     {
         try
         {
-            string lowerActor = actor.ToLower();
+            var actorIds = GetActorsByNameFilter(actor).Select(a => a.Id).ToArray();
+
             return _dbContext.Playbill
-                .Where(x => x.Cast.Any(actor => actor.Actor.Name.ToLower().Contains(lowerActor)))
+                .Include(x => x.Cast)
                 .Include(x => x.Cast).ThenInclude(x => x.Actor)
+                .Include(x => x.Cast).ThenInclude(x => x.Role)
                 .Include(x => x.Performance).ThenInclude(x => x.Location)
                 .Include(x => x.Performance).ThenInclude(x => x.Type)
                 .Include(x => x.Changes)
-                .AsNoTracking().ToArray();
+                .Where(x => x.Cast.Any(a => actorIds.Contains(a.ActorId)))
+                .AsNoTracking()
+                .ToArray();
         }
         catch (Exception ex)
         {
@@ -469,8 +486,7 @@ internal class PlaybillRepository : IPlaybillRepository
                 .Where(x => x.When == data.DateTime && x.PerformanceId == performanceId)
                 .Include(x => x.Performance)
                 .Include(x => x.Changes)
-                .Include(x => x.Cast)
-                .ThenInclude(c => c.Actor)
+                .Include(x => x.Cast).ThenInclude(c => c.Actor)
                 .Include(x => x.Cast)
                 .ThenInclude(c => c.Role)
                 .AsNoTracking()

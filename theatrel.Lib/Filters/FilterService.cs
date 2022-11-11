@@ -97,15 +97,10 @@ internal class FilterService : IFilterService
         if (filter.PlaybillId != -1 && playbillEntryId != -1)
             return filter.PlaybillId == playbillEntryId;
 
-        //check by actor
-        if (!string.IsNullOrEmpty(filter.Actor))
-        {
-            return cast.ToLower().Contains(filter.Actor.ToLower());
-        }
-
         if (!string.IsNullOrEmpty(filter.PerformanceName))
         {
-            return name.ToLower().Contains(filter.PerformanceName.ToLower()) && CheckLocation(filter.LocationIds, locationId);
+            return name.ToLower().Contains(filter.PerformanceName.ToLower())
+                && CheckLocation(filter.LocationIds, locationId);
         }
 
         if (!CheckLocation(filter.LocationIds, locationId))

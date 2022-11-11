@@ -43,4 +43,5 @@ public interface IPlaybillRepository : IDisposable, IDIRegistrable
     IEnumerable<TheatreEntity> GetTheatres();
 
     void EnsureCreateTheatre(int theatreId, string theatreName);
+    ActorEntity[] GetActorsByNameFilter(string actor);
 }

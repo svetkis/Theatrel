@@ -13,7 +13,7 @@ internal class StartSubscriptionsManagingCommand : DialogCommandBase
 {
     private const string MainCommandKey = "/subscriptions";
     private static readonly string[] StartCommandVariants
-        = { "подписк", "редактировать", "unsubscribe", "отписаться" };
+        = { "unsubscribe", "отписаться" };
 
     protected override string ReturnCommandMessage { get; set; } = string.Empty;
 
