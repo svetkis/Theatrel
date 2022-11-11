@@ -404,6 +404,7 @@ internal class PlaybillRepository : IPlaybillRepository
                 .ThenInclude(x => x.Type)
                 .Include(x => x.Changes)
                 .Include(x => x.Cast)
+                .ThenInclude(x => x.Actor)
                 .AsNoTracking().ToArray();
         }
         catch (Exception ex)
