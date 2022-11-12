@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.Common.FormatHelper;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
+using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.TgBot;
 using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Interfaces;
@@ -150,41 +152,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
 
         for (int i = 0; i < subscriptions.Length; ++i)
         {
-            var filter = subscriptions[i].PerformanceFilter;
-            var changesDescription = subscriptions[i].TrackingChanges.GetTrackingChangesDescription().ToLower();
-
-            string locationsString = filter.LocationIds == null || !filter.LocationIds.Any()
-                ? "все площадки"
-                : string.Join(" или ", filter.LocationIds.Where(id => id > 0).Select(id => locationEntities.First(x => x.Id == id)).Select(GetLocationButtonName));
-
-            if (!string.IsNullOrEmpty(filter.PerformanceName))
-            {
-                stringBuilder.AppendLine($" {i + 1}. Название содержит \"{filter.PerformanceName}\", место проведения: {locationsString} отслеживаемые события: {changesDescription}");
-            }
-            else if (filter.PlaybillId == -1)
-            {
-                string monthName = culture.DateTimeFormat.GetMonthName(filter.StartDate.Month);
-
-                string days = DaysOfWeekHelper.GetDaysDescription(filter.DaysOfWeek, culture);
-
-                string types = filter.PerformanceTypes == null || !filter.PerformanceTypes.Any()
-                    ? "все представления"
-                    : string.Join("или ", filter.PerformanceTypes);
-
-                stringBuilder.AppendLine($" {i + 1}. {monthName} {filter.StartDate.Year}, место проведения: {locationsString}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
-            }
-            else
-            {
-                var playbillEntry = playbillRepository.GetPlaybillEntryWithPerformanceData(filter.PlaybillId);
-
-                if (playbillEntry == null)
-                    stringBuilder.AppendLine($" {i + 1}. Подписка на уже прошедший спектакль, отслеживаемые события: {changesDescription}");
-                else
-                {
-                    var date = _timeZoneService.GetLocalTime(playbillEntry.When).ToString("ddMMM HH:mm", culture);
-                    stringBuilder.AppendLine($" {i + 1}. {playbillEntry.Performance.Name} {date}, отслеживаемые события: {changesDescription}");
-                }
-            }
+            AddSubscriptionDescription(i+1, stringBuilder, subscriptions[i], culture, locationEntities, playbillRepository);
 
             buttons.Add(new KeyboardButton($"Удалить {i + 1}"));
         }
@@ -198,5 +166,50 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
                     OneTimeKeyboard = true,
                     ResizeKeyboard = true
                 }));
+    }
+
+    private void AddSubscriptionDescription(int idx, StringBuilder stringBuilder, SubscriptionEntity subscription, CultureInfo culture, LocationsEntity[] locationEntities, IPlaybillRepository playbillRepository)
+    {
+        var filter = subscription.PerformanceFilter;
+        if (!string.IsNullOrEmpty(filter.Actor))
+        {
+            stringBuilder.AppendLine($" {idx}.Исполнитель: {filter.Actor}");
+            return;
+        }
+
+        var changesDescription = subscription.TrackingChanges.GetTrackingChangesDescription().ToLower();
+
+        string locationsString = filter.LocationIds == null || !filter.LocationIds.Any()
+            ? "все площадки"
+            : string.Join(" или ", filter.LocationIds.Where(id => id > 0).Select(id => locationEntities.First(x => x.Id == id)).Select(GetLocationButtonName));
+
+        if (!string.IsNullOrEmpty(filter.PerformanceName))
+        {
+            stringBuilder.AppendLine($" {idx}. Название содержит \"{filter.PerformanceName}\", место проведения: {locationsString} отслеживаемые события: {changesDescription}");
+        }
+        else if (filter.PlaybillId == -1)
+        {
+            string monthName = culture.DateTimeFormat.GetMonthName(filter.StartDate.Month);
+
+            string days = DaysOfWeekHelper.GetDaysDescription(filter.DaysOfWeek, culture);
+
+            string types = filter.PerformanceTypes == null || !filter.PerformanceTypes.Any()
+                ? "все представления"
+                : string.Join("или ", filter.PerformanceTypes);
+
+            stringBuilder.AppendLine($" {idx}. {monthName} {filter.StartDate.Year}, место проведения: {locationsString}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
+        }
+        else
+        {
+            var playbillEntry = playbillRepository.GetPlaybillEntryWithPerformanceData(filter.PlaybillId);
+
+            if (playbillEntry == null)
+                stringBuilder.AppendLine($" {idx}. Подписка на уже прошедший спектакль, отслеживаемые события: {changesDescription}");
+            else
+            {
+                var date = _timeZoneService.GetLocalTime(playbillEntry.When).ToString("ddMMM HH:mm", culture);
+                stringBuilder.AppendLine($" {idx}. {playbillEntry.Performance.Name} {date}, отслеживаемые события: {changesDescription}");
+            }
+        }
     }
 }
