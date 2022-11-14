@@ -70,7 +70,10 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
     public IEnumerable<SubscriptionEntity> GetOutdatedList()
     {
         SubscriptionEntity[] outdatedByDate = _dbContext.Subscriptions.Where(s =>
-                s.PerformanceFilter.PlaybillId == -1 && null == s.PerformanceFilter.PerformanceName && s.PerformanceFilter.EndDate < DateTime.UtcNow && s.AutoProlongation == 0)
+                string.IsNullOrEmpty(s.PerformanceFilter.Actor) &&
+                s.PerformanceFilter.PlaybillId == -1 &&
+                null == s.PerformanceFilter.PerformanceName &&
+                s.PerformanceFilter.EndDate < DateTime.UtcNow)
             .Include(s => s.PerformanceFilter)
             .AsNoTracking().ToArray();
 
