@@ -272,7 +272,8 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                     sb.AppendLine($"{character}{actors}{addedPart}");
                 }
 
-                sb.AppendLine($"Были удалены: {change.CastRemoved}".EscapeMessageForMarkupV2());
+                if (!string.IsNullOrEmpty(change.CastRemoved))
+                    sb.AppendLine($"Были удалены: {change.CastRemoved}".EscapeMessageForMarkupV2());
             }
 
             sb.AppendLine();
