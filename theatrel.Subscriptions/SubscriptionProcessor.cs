@@ -62,9 +62,11 @@ public class SubscriptionProcessor : ISubscriptionProcessor
 
             PerformanceFilterEntity filter = subscription.PerformanceFilter;
 
-            var changesToSubscription = changes.Where(x =>
-                x.LastUpdate > subscription.LastUpdate && (subscription.TrackingChanges & x.ReasonOfChanges) != 0)
-                .OrderBy(p => p.LastUpdate);
+            var changesToSubscription = changes
+                .Where(x =>
+                    x.LastUpdate > subscription.LastUpdate && (subscription.TrackingChanges & x.ReasonOfChanges) != 0)
+                .OrderBy(p => p.LastUpdate)
+                .ToArray();
 
             PlaybillChangeEntity[] performanceChanges;
 
@@ -78,7 +80,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             {
                 string[] filterActors = playbillRepository
                     .GetActorsByNameFilter(subscription.PerformanceFilter.Actor)
-                    .Select(x => x.Name)
+                    .Select(x => x.Name.ToLower())
                     .ToArray();
 
                 performanceChanges = !filterActors.Any()
@@ -265,12 +267,12 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                         ? string.Empty
                         : $"{group.Key} - ".EscapeMessageForMarkupV2();
 
-                    string addedPart = wasAdded ? " (добавлен):" : string.Empty;
+                    string addedPart = wasAdded ? " (добавлен):".EscapeMessageForMarkupV2() : string.Empty;
 
                     sb.AppendLine($"{character}{actors}{addedPart}");
                 }
 
-                sb.AppendLine($"Были удалены: {change.CastRemoved}");
+                sb.AppendLine($"Были удалены: {change.CastRemoved}".EscapeMessageForMarkupV2());
             }
 
             sb.AppendLine();
