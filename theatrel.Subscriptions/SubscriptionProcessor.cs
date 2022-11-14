@@ -12,7 +12,6 @@ using theatrel.Common.FormatHelper;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
-using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
 using theatrel.Interfaces.TimeZoneService;
@@ -136,8 +135,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             //if message was sent we should update LastUpdate for users subscriptions
             foreach (var subscription in subscriptions.Where(s => s.TelegramUserId == userData.Key))
             {
-                subscription.LastUpdate = DateTime.UtcNow;
-                await subscriptionRepository.Update(subscription);
+                await subscriptionRepository.UpdateDate(subscription.Id);
             }
         }
 
@@ -285,6 +283,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
     {
         var groups = changes.GroupBy(change => change.ReasonOfChanges).Select(group => group.ToArray());
         string message = string.Join(Environment.NewLine, groups.Select(GetChangesDescription));
+
         return await _telegramService.SendEscapedMessageAsync(tgUserId, message, CancellationToken.None);
     }
 }

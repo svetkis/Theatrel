@@ -173,7 +173,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
         var filter = subscription.PerformanceFilter;
         if (!string.IsNullOrEmpty(filter.Actor))
         {
-            stringBuilder.AppendLine($" {idx}.Исполнитель: {filter.Actor}");
+            stringBuilder.AppendLine($" {idx}. Исполнитель: {filter.Actor}");
             return;
         }
 

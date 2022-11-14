@@ -13,8 +13,6 @@ public class SubscriptionEntity
 
     public int TrackingChanges { get; set; }
 
-    public int AutoProlongation { get; set; }
-
     public int PerformanceFilterId { get; set; }
     public PerformanceFilterEntity PerformanceFilter { get; set; }
 }

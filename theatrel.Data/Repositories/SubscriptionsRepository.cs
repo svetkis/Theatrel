@@ -39,7 +39,8 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
         {
             return _dbContext.Subscriptions
                 .Include(s => s.PerformanceFilter)
-                .AsNoTracking().ToArray();
+                .AsNoTracking()
+                .ToArray();
         }
         catch (Exception ex)
         {
@@ -50,7 +51,9 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
     }
 
     private Task<SubscriptionEntity> GetById(int id)
-        => _dbContext.Subscriptions.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
+        => _dbContext.Subscriptions
+        .AsNoTracking()
+        .SingleOrDefaultAsync(u => u.Id == id);
 
     public SubscriptionEntity[] GetUserSubscriptions(long userId)
     {
@@ -69,13 +72,15 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
 
     public IEnumerable<SubscriptionEntity> GetOutdatedList()
     {
-        SubscriptionEntity[] outdatedByDate = _dbContext.Subscriptions.Where(s =>
+        SubscriptionEntity[] outdatedByDate = _dbContext.Subscriptions
+            .Where(s =>
                 string.IsNullOrEmpty(s.PerformanceFilter.Actor) &&
                 s.PerformanceFilter.PlaybillId == -1 &&
                 null == s.PerformanceFilter.PerformanceName &&
                 s.PerformanceFilter.EndDate < DateTime.UtcNow)
             .Include(s => s.PerformanceFilter)
-            .AsNoTracking().ToArray();
+            .AsNoTracking()
+            .ToArray();
 
         SubscriptionEntity[] byPlaybillId = _dbContext.Subscriptions.Where(s =>
                 s.PerformanceFilter.PlaybillId != -1).Include(s => s.PerformanceFilter).AsNoTracking()
@@ -87,8 +92,10 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
         List<SubscriptionEntity> outdatedList = new (outdatedByDate);
         foreach (var subscription in byPlaybillId)
         {
-            var pb = _dbContext.Playbill.Where(p => p.Id == subscription.PerformanceFilter.PlaybillId)
-                .AsNoTracking().FirstOrDefault();
+            var pb = _dbContext.Playbill
+                .Where(p => p.Id == subscription.PerformanceFilter.PlaybillId)
+                .AsNoTracking()
+                .FirstOrDefault();
 
             if (pb == null || pb.When < DateTime.UtcNow)
                 outdatedList.Add(subscription);
@@ -119,8 +126,9 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
             //check if playbillEntry exists
             if (filter.PlaybillId != -1)
             {
-                var pbEntity = 
-                    _dbContext.Playbill.AsNoTracking().FirstOrDefault(u => u.Id == filter.PlaybillId);
+                var pbEntity = _dbContext.Playbill
+                    .AsNoTracking()
+                    .FirstOrDefault(u => u.Id == filter.PlaybillId);
 
                 if (pbEntity == null)
                     return null;
@@ -215,14 +223,16 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
         }
     }
 
-    public async Task<bool> Update(SubscriptionEntity newValue)
+    public async Task<bool> UpdateDate(int id)
     {
-        SubscriptionEntity oldValue = await GetById(newValue.Id);
+        SubscriptionEntity subscription = await GetById(id);
 
-        if (oldValue == null)
+        if (subscription == null)
             return false;
 
-        _dbContext.Entry(newValue).State = EntityState.Modified;
+        subscription.LastUpdate = DateTime.Now;
+
+        _dbContext.Entry(subscription).State = EntityState.Modified;
 
         try
         {
