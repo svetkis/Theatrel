@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ internal class SelectLocationCommand : DialogCommandBase
 
         var selected = chatInfo.LocationIds != null && chatInfo.LocationIds.Any() ? string.Join(" или ", chatInfo.LocationIds.Select(id => locations.First(x => x.Id == id )).Select(GetLocationButtonName)) : "любую площадку";
         return Task.FromResult<ITgCommandResponse>(
-            new TgCommandResponse($"{YouSelected} {selected}. {ReturnMsg}", ReturnCommandMessage));
+            new TgCommandResponse($"{YouSelected} {selected}. {ReturnMsg}"));
     }
 
     public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => SplitMessage(message).Any();
@@ -55,14 +56,7 @@ internal class SelectLocationCommand : DialogCommandBase
 
     public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
     {
-        var locations = GetLocations(chatInfo);
-        var buttonNames = GetLocationButtonNames(locations);
-
-        var buttons = new[] { new KeyboardButton(_every.First()) }
-            .Concat(buttonNames.Select(m => new KeyboardButton(m)))
-            .ToArray();
-
-        CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
+        CommandKeyboardMarkup = new ReplyKeyboardMarkup(GetKeyboardButtons(chatInfo))
         {
             OneTimeKeyboard = true,
             ResizeKeyboard = true
@@ -76,6 +70,22 @@ internal class SelectLocationCommand : DialogCommandBase
                 new TgCommandResponse($"{Msg}", CommandKeyboardMarkup)),
             _ => throw new NotImplementedException()
         };
+    }
+
+    private KeyboardButton[][] GetKeyboardButtons(IChatDataInfo chatInfo)
+    {
+        List<KeyboardButton[]> groupedButtons = new();
+
+        var locations = GetLocations(chatInfo);
+        var buttonNames = GetLocationButtonNames(locations);
+
+        groupedButtons.Add(new KeyboardButton[] { new KeyboardButton(_every.First()) });
+        foreach (KeyboardButton[] line in GroupKeyboardButtons(ButtonsInLine, buttonNames.Select(m => new KeyboardButton(m))))
+        {
+            groupedButtons.Add(line);
+        }
+
+        return groupedButtons.ToArray();
     }
 
     private int[] ParseMessage(string message, LocationsEntity[] locations)

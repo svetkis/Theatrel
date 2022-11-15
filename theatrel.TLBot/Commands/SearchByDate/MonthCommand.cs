@@ -69,7 +69,7 @@ internal class MonthCommand : DialogCommandBase
 
         var userMsg = $"{YouSelected} {culture.DateTimeFormat.GetMonthName(month)} {year}. {ReturnMsg}";
 
-        return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(userMsg, ReturnKeyboardMarkup));
+        return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(userMsg));
     }
 
     public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,15 +31,25 @@ internal class SelectTheatreCommand : DialogCommandBase
         using var repo = dbService.GetPlaybillRepository();
         _theatres = repo.GetTheatres().ToArray();
         _theatreNames = _theatres.Select(x => x.Name).ToArray();
-
-        var buttons = _theatreNames.Select(m => new KeyboardButton(m)).Concat(new[] { new KeyboardButton(_every.First()) })
-            .ToArray();
-
-        CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
+        
+        CommandKeyboardMarkup = new ReplyKeyboardMarkup(GetKeyboardButtons())
         {
             OneTimeKeyboard = true,
             ResizeKeyboard = true
         };
+    }
+
+    private KeyboardButton[][] GetKeyboardButtons()
+    {
+        List<KeyboardButton[]> groupedButtons = new();
+
+        groupedButtons.Add(new KeyboardButton[] { new KeyboardButton(_every.First()) });
+        foreach (KeyboardButton[] line in GroupKeyboardButtons(ButtonsInLine, _theatreNames.Select(m => new KeyboardButton(m))))
+        {
+            groupedButtons.Add(line);
+        }
+
+        return groupedButtons.ToArray();
     }
 
     public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message,
@@ -51,7 +62,7 @@ internal class SelectTheatreCommand : DialogCommandBase
             : "любой театр";
 
         return Task.FromResult<ITgCommandResponse>(
-            new TgCommandResponse($"{YouSelected} {selected}. {ReturnMsg}", ReturnCommandMessage));
+            new TgCommandResponse($"{YouSelected} {selected}. {ReturnMsg}"));
     }
 
     public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => SplitMessage(message).Any();
