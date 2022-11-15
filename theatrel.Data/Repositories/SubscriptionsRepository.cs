@@ -254,6 +254,7 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
             .Include(c => c.PlaybillEntity)
             .ThenInclude(p => p.Performance)
             .ThenInclude(p => p.Location)
+            .ThenInclude(p => p.Theatre)
             .Include(c => c.PlaybillEntity)
             .ThenInclude(p => p.Cast)
             .ThenInclude(p => p.Actor)
