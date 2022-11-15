@@ -34,7 +34,8 @@ internal class FilterService : IFilterService
             return new PerformanceFilter
             {
                 PerformanceName = chatInfo.PerformanceName,
-                LocationIds = chatInfo.LocationIds
+                LocationIds = chatInfo.LocationIds,
+                TheatreIds = chatInfo.TheatreIds,
             };
         }
 

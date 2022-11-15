@@ -35,6 +35,11 @@ internal class BaseFilterProcessor : IFilterProcessor
         if (filter == null)
             return true;
 
+        if (!CheckTheatres(filter.TheatreIds, playbillEntity.Performance.Location.Theatre.Id))
+        {
+            return false;
+        }
+
         if (!CheckLocation(filter.LocationIds, playbillEntity.Performance.LocationId))
         {
             return false;
@@ -79,5 +84,13 @@ internal class BaseFilterProcessor : IFilterProcessor
             return true;
 
         return filterLocations.Contains(locationId);
+    }
+
+    protected static bool CheckTheatres(int[] filterTheatres, int theatreId)
+    {
+        if (filterTheatres == null || !filterTheatres.Any())
+            return true;
+
+        return filterTheatres.Contains(theatreId);
     }
 }

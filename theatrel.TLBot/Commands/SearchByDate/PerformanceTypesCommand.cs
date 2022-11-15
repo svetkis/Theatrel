@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -21,15 +22,23 @@ internal class PerformanceTypesCommand : DialogCommandBase
     public override string Name => "Выбрать тип представления";
     public PerformanceTypesCommand(IDbService dbService) : base(dbService)
     {
-        var buttons = new[] { new KeyboardButton(_every.First()) }
-        .Concat(_types.Select(m => new KeyboardButton(m)))
-        .ToArray();
-
-        CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
+        CommandKeyboardMarkup = new ReplyKeyboardMarkup(GetKeyboardButtons())
         {
             OneTimeKeyboard = true,
             ResizeKeyboard = true
         };
+    }
+
+    private KeyboardButton[][] GetKeyboardButtons()
+    {
+        List<KeyboardButton[]> groupedButtons = new() { new[] { new KeyboardButton(_every.First()) } };
+
+        var typeButtons = _types.Select(m => new KeyboardButton(m));
+        var groupedTypeButtons = GroupKeyboardButtons(ButtonsInLine, typeButtons);
+
+        groupedButtons.AddRange(groupedTypeButtons);
+
+        return groupedButtons.ToArray();
     }
 
     public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)

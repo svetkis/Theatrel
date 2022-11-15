@@ -20,6 +20,9 @@ internal class PerformanceNameFilterProcessor : BaseFilterProcessor
         if (!playbillEntity.Performance.Name.ToLower().Contains(filter.PerformanceName.ToLower()))
             return false;
 
+        if (!CheckLocation(filter.TheatreIds, playbillEntity.Performance.Location.Theatre.Id))
+            return false;
+
         if (!CheckLocation(filter.LocationIds, playbillEntity.Performance.LocationId))
             return false;
 
