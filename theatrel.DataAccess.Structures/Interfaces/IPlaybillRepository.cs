@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using theatrel.Common.Enums;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Autofac;
 using theatrel.Interfaces.Playbill;
@@ -30,7 +31,7 @@ public interface IPlaybillRepository : IDisposable, IDIRegistrable
     Task<bool> UpdateTicketsUrl(int playbillEntityId, string url);
 
     Task<bool> UpdateCast(PlaybillEntity playbillEntry, IPerformanceData data);
-    bool IsCastEqual(PlaybillEntity playbillEntry, IPerformanceData data, out string[] added, out string[] removed);
+    ReasonOfChanges CompareCast(PlaybillEntity playbillEntry, IPerformanceData data, out string[] added, out string[] removed);
 
     Task<bool> RemovePlaybillEntry(PlaybillEntity entity);
 

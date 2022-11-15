@@ -237,9 +237,26 @@ internal class PlaybillRepository : IPlaybillRepository
         public ActorInRoleEntity ActorInRole { get; set; }
     }
 
-    public bool IsCastEqual(PlaybillEntity playbillEntry, IPerformanceData freshData, out string[] added, out string[] removed)
+    public ReasonOfChanges CompareCast(PlaybillEntity playbillEntry, IPerformanceData freshData, out string[] added, out string[] removed)
     {
-        CheckData[] checkList = playbillEntry.Cast.Select(a => new CheckData { Exists = false, ActorInRole = a }).ToArray();
+        var oldCast = playbillEntry.Cast;
+
+        bool castWasEmpty = !oldCast.Any();
+
+        if (castWasEmpty)
+        {
+            added = Array.Empty<string>();
+            removed = Array.Empty<string>();
+
+            return freshData.Cast.Cast == null || !freshData.Cast.Cast.Any()
+                ? ReasonOfChanges.None
+                : ReasonOfChanges.CastWasSet;
+        }
+
+        CheckData[] checkList = oldCast
+            .Select(a => new CheckData { Exists = false, ActorInRole = a })
+            .ToArray();
+
         List<string> addedActors = new();
 
         foreach (KeyValuePair<string, IList<IActor>> castDataFresh in freshData.Cast.Cast)
@@ -251,7 +268,7 @@ internal class PlaybillRepository : IPlaybillRepository
                     ? checkList.FirstOrDefault(item =>
                         item.ActorInRole.Role.CharacterName == character &&
                         item.ActorInRole.Actor.Name == actorFresh.Name)
-                    : checkList.FirstOrDefault(item =>
+                    : checkList.FirstOrDefault(item => 
                         item.ActorInRole.Role.CharacterName == character &&
                         item.ActorInRole.Actor.Url == actorFresh.Url);
 
@@ -267,24 +284,14 @@ internal class PlaybillRepository : IPlaybillRepository
             }
         }
 
-        bool result = checkList.All(item => item.Exists);
-        if (!result)
-        {
-            var removedActorInRole = checkList.Where(item => !item.Exists).Select(item => item.ActorInRole).ToArray();
-            if (removedActorInRole.Any())
-            {
-                Trace.TraceInformation($"Cast is not equal {playbillEntry.Id}.");
-                foreach (var actorInRole in removedActorInRole)
-                {
-                    Trace.TraceInformation($"Actor was removed from cast: {actorInRole.Role.CharacterName} - {actorInRole.Actor.Name}");
-                }
-            }
-        }
-
+ 
         added = addedActors.ToArray();
         removed = checkList.Where(x => !x.Exists).Select(x => x.ActorInRole.Actor.Name).ToArray();
 
-        return !addedActors.Any() && checkList.All(item => item.Exists);
+        if (added.Any() && removed.Any() && added.OrderBy(x => x).SequenceEqual(removed.OrderBy(x => x)))
+            return ReasonOfChanges.CastOnlyUrlChanged;
+
+        return added.Any() || removed.Any() ? ReasonOfChanges.CastWasChanged : ReasonOfChanges.None;
     }
 
     public async Task<PlaybillEntity> AddPlaybill(IPerformanceData data)

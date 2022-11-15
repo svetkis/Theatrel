@@ -38,4 +38,7 @@ public enum ReasonOfChanges
 
     [Description("Состав исполнителей был изменен")]
     CastWasChanged = 512,
+
+    [Description("Состав исполнителей был изменен")]
+    CastOnlyUrlChanged = 1024,
 }

@@ -219,7 +219,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
                 ? "все представления"
                 : string.Join("или ", filter.PerformanceTypes);
 
-            stringBuilder.AppendLine($" {idx}. {monthName} {filter.StartDate.Year}, театр {theatreString}, место проведения: {locationsString}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
+            stringBuilder.AppendLine($" {idx}. {monthName} {filter.StartDate.Year}, театр: {theatreString}, место проведения: {locationsString}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
         }
         else
         {

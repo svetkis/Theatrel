@@ -86,17 +86,21 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
         }
 
         ReasonOfChanges compareCastResult = CompareCast(playbillRepository, playbillEntry, data, out string[] added, out string[] removed);
-        if (data.State == TicketsState.Ok && (compareCastResult == ReasonOfChanges.CastWasSet || compareCastResult == ReasonOfChanges.CastWasChanged) 
-                                          && await playbillRepository.UpdateCast(playbillEntry, data))
+
+        if (_castChangedReasons.Contains(compareCastResult))
         {
-            await playbillRepository.AddChange(playbillEntry.Id, new PlaybillChangeEntity
+            bool result = await playbillRepository.UpdateCast(playbillEntry, data);
+            if (result && compareCastResult != ReasonOfChanges.CastOnlyUrlChanged)
             {
-                CastAdded = string.Join(',', added),
-                CastRemoved = string.Join(',', removed),
-                LastUpdate = DateTime.UtcNow,
-                MinPrice = data.MinPrice,
-                ReasonOfChanges = (int)compareCastResult
-            });
+                await playbillRepository.AddChange(playbillEntry.Id, new PlaybillChangeEntity
+                {
+                    CastAdded = string.Join(',', added),
+                    CastRemoved = string.Join(',', removed),
+                    LastUpdate = DateTime.UtcNow,
+                    MinPrice = data.MinPrice,
+                    ReasonOfChanges = (int)compareCastResult
+                });
+            }
         }
 
         var compareResult = ComparePerformanceData(lastChange, data);
@@ -159,6 +163,13 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
         return ReasonOfChanges.None;
     }
 
+    private ReasonOfChanges[] _castChangedReasons = new ReasonOfChanges[]
+    {
+        ReasonOfChanges.CastWasSet,
+        ReasonOfChanges.CastWasChanged,
+        ReasonOfChanges.CastOnlyUrlChanged
+    };
+
     private ReasonOfChanges CompareCast(IPlaybillRepository playbillRepository, PlaybillEntity playbillEntity, IPerformanceData freshData, out string[] added, out string[] removed)
     {
         added = Array.Empty<string>();
@@ -174,18 +185,7 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
                 return playbillEntity.Cast.Any() ? ReasonOfChanges.CastWasChanged : ReasonOfChanges.None;
 
             case CastState.Ok:
-                bool wasEmpty = !playbillEntity.Cast.Any();
-                bool nowEmpty = freshData.Cast.Cast == null || !freshData.Cast.Cast.Any();
-
-                if (wasEmpty && nowEmpty)
-                    return ReasonOfChanges.None;
-
-                if (wasEmpty)
-                    return ReasonOfChanges.CastWasSet;
-
-                return playbillRepository.IsCastEqual(playbillEntity, freshData, out added, out removed)
-                    ? ReasonOfChanges.None
-                    : ReasonOfChanges.CastWasChanged;
+                return playbillRepository.CompareCast(playbillEntity, freshData, out added, out removed);
         }
 
         return ReasonOfChanges.None;
