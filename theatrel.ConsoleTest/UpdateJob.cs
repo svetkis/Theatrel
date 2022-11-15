@@ -48,14 +48,14 @@ public class UpdateJob : IJob
             IPerformanceFilter[] filters = subscriptionServices.GetUpdateFilters();
 
             var culture = CultureInfo.CreateSpecificCulture("ru");
-            foreach (var filter in AddFiltersForNearestMonths(filters, 3))
+            foreach (var range in GetDateRanges(6))
             {
                 await using (var scope = Bootstrapper.RootScope.BeginLifetimeScope())
                 {
                     IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
-                    Trace.TraceInformation($"Update playbill Mariinski for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
-                    await updater.Update(1, filter.StartDate, filter.EndDate, cToken);
+                    Trace.TraceInformation($"Update playbill Mariinski for interval {range.Item1.ToString("d", culture)} {range.Item2.ToString("d", culture)}");
+                    await updater.Update(1, range.Item1, range.Item2, cToken);
                 }
 
                 MemoryHelper.Collect(true);
@@ -80,14 +80,14 @@ public class UpdateJob : IJob
             IPerformanceFilter[] filters = subscriptionServices.GetUpdateFilters();
 
             var culture = CultureInfo.CreateSpecificCulture("ru");
-            foreach (var filter in AddFiltersForNearestMonths(filters, 3))
+            foreach (var range in GetDateRanges(6))
             {
                 await using (var scope = Bootstrapper.RootScope.BeginLifetimeScope())
                 {
                     IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
-                    Trace.TraceInformation($"Update Michailovsky playbill for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
-                    await updater.Update(2, filter.StartDate, filter.EndDate, cToken);
+                    Trace.TraceInformation($"Update Michailovsky playbill for interval {range.Item1.ToString("d", culture)} {range.Item2.ToString("d", culture)}");
+                    await updater.Update(2, range.Item1, range.Item2, cToken);
 
                 }
 
@@ -105,43 +105,23 @@ public class UpdateJob : IJob
         }
     }
 
-    private static IPerformanceFilter[] AddFiltersForNearestMonths(IEnumerable<IPerformanceFilter> filters, int monthsCount)
+    private static Tuple<DateTime, DateTime>[] GetDateRanges(int monthsCount)
     {
-        IFilterService filterService = Bootstrapper.Resolve<IFilterService>();
+        List<Tuple<DateTime, DateTime>> dates = new List<Tuple<DateTime, DateTime>>();
+        int currentMonth = DateTime.Now.Month;
 
-        List<int> addedMonths = new List<int>();
-        var performanceFilters = filters as IPerformanceFilter[] ?? filters.ToArray();
-        foreach (var month in Enumerable.Range(0, monthsCount).Select(n => DateTime.UtcNow.Month + n))
+
+        for (int month = currentMonth; month < currentMonth + monthsCount; ++month)
         {
-            int m = NormalizeMonth(month);
-            int y = month > 12 ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
-            var date = new DateTime(y, m, 1, 0, 0,0, DateTimeKind.Utc);
-            if (performanceFilters.All(f => f.StartDate != date))
-                addedMonths.Add(month);
-        }
+            int m = month > 12 ? month % 12 : month;
+            int y = month > 12 ? DateTime.UtcNow.Year + month / 12 : DateTime.UtcNow.Year;
 
-        if (!addedMonths.Any())
-            return performanceFilters.ToArray();
-
-        List<IPerformanceFilter> newFilters = new List<IPerformanceFilter>(performanceFilters);
-
-        foreach (var month in addedMonths)
-        {
-            int m = NormalizeMonth(month);
-
-            int y = month > 12 ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
             var date = new DateTime(y, m, 1, 0, 0, 0, DateTimeKind.Utc);
 
-            newFilters.Add(filterService.GetFilter(date, date.AddMonths(1)));
+            dates.Add(Tuple.Create(date, date.AddMonths(1)));
         }
 
-        return newFilters.ToArray();
-    }
-
-    private static int NormalizeMonth(int month)
-    {
-        int m = month % 12;
-        return m == 0 ? 12 : m;
+        return dates.ToArray();
     }
 
     public async Task<bool> PlaybillCleanup(CancellationToken cToken)

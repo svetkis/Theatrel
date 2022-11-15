@@ -120,7 +120,6 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
                 TheatreIds = filter.TheatreIds,
                 LocationIds = filter.LocationIds,
                 PerformanceTypes = filter.PerformanceTypes,
-                PartOfDay = filter.PartOfDay
             };
 
             //check if playbillEntry exists

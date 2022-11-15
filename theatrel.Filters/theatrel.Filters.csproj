@@ -2,14 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\theatrel.Common\theatrel.Common.csproj" />
     <ProjectReference Include="..\theatrel.Data\theatrel.DataAccess.csproj" />
     <ProjectReference Include="..\theatrel.Filters.Interfaces\theatrel.Filters.Interfaces.csproj" />
-    <ProjectReference Include="..\theatrel.Lib\theatrel.Lib.csproj" />
-    <ProjectReference Include="..\theatrel.TLBot.Interfaces\theatrel.TLBot.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

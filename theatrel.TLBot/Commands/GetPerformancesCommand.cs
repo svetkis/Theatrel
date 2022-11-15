@@ -99,7 +99,7 @@ internal class GetPerformancesCommand : DialogCommandBase
     public override async Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
     {
         IPerformanceFilter filter = _filterService.GetFilter(chatInfo);
-        var filteredPerformances = GetFilteredPerformances(chatInfo, filter);
+        var filteredPerformances = _filterService.GetFilteredPerformances(filter);
 
         List<KeyboardButton> buttons = new List<KeyboardButton> { new KeyboardButton(NewInPlaybillSubscription) };
         if (filteredPerformances.Any())
@@ -255,42 +255,6 @@ internal class GetPerformancesCommand : DialogCommandBase
             entry.Name = pbEntity?.Performance.Name;
             entry.When = pbEntity?.When ?? DateTime.UtcNow;
         }
-    }
-
-    private PlaybillEntity[] GetFilteredPerformances(IChatDataInfo chatInfo, IPerformanceFilter filter)
-    {
-        using var playbillRepo = DbService.GetPlaybillRepository();
-
-        PlaybillEntity[] performances;
-        if (!string.IsNullOrEmpty(chatInfo.PerformanceName))
-        {
-            performances = playbillRepo.GetListByName(chatInfo.PerformanceName).ToArray();
-        }
-        else
-        {
-            performances = playbillRepo.GetList(filter.StartDate, filter.EndDate).ToArray();
-        }
-
-        return performances.Where(x =>
-        {
-            if (!_filterService.IsDataSuitable(
-                x.PerformanceId,
-                x.Performance.Name,
-                x.Cast != null ? string.Join(',', x.Cast.Select(c => c.Actor.Name)) : null,
-                x.Performance.Location.Id,
-                x.Performance.Type.TypeName,
-                x.When,
-                filter))
-            {
-                return false;
-            }
-
-            if (!x.Changes.Any())
-                return true;
-
-            var lastChange = x.Changes.OrderBy(ch => ch.LastUpdate).Last();
-            return lastChange.ReasonOfChanges != (int)ReasonOfChanges.WasMoved;
-        }).ToArray();
     }
 
     private Task<string> CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)

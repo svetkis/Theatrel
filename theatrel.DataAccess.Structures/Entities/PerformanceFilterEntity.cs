@@ -77,7 +77,6 @@ public class PerformanceFilterEntity : IPerformanceFilter
     [EditorBrowsable(EditorBrowsableState.Never)]
     public string DbTheatres { get; set; }
 
-    public int PartOfDay { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
 

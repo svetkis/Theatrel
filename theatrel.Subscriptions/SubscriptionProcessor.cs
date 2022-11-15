@@ -23,14 +23,14 @@ public class SubscriptionProcessor : ISubscriptionProcessor
 {
     private readonly ITgBotService _telegramService;
     private readonly IDbService _dbService;
-    private readonly IFilterService _filterChecker;
+    private readonly IFilterService _filterService;
     private readonly ITimeZoneService _timeZoneService;
 
-    public SubscriptionProcessor(ITgBotService telegramService, IFilterService filterChecker, ITimeZoneService timeZoneService, IDbService dbService)
+    public SubscriptionProcessor(ITgBotService telegramService, IFilterService filterService, ITimeZoneService timeZoneService, IDbService dbService)
     {
         _telegramService = telegramService;
         _dbService = dbService;
-        _filterChecker = filterChecker;
+        _filterService = filterService;
         _timeZoneService = timeZoneService;
     }
 
@@ -57,74 +57,27 @@ public class SubscriptionProcessor : ISubscriptionProcessor
 
         foreach (SubscriptionEntity subscription in subscriptions)
         {
-            if (subscription.TrackingChanges == 0)
-                continue;
-
-            PerformanceFilterEntity filter = subscription.PerformanceFilter;
-
-            var changesToSubscription = changes
-                .Where(x =>
-                    x.LastUpdate > subscription.LastUpdate && (subscription.TrackingChanges & x.ReasonOfChanges) != 0)
-                .OrderBy(p => p.LastUpdate)
-                .ToArray();
-
-            PlaybillChangeEntity[] performanceChanges;
-
-            if (!string.IsNullOrEmpty(filter.PerformanceName))
-            {
-                performanceChanges = changesToSubscription
-                    .Where(change => FilterByPerformanceName(change, filter))
-                    .ToArray();
-            }
-            else if (!string.IsNullOrEmpty(filter.Actor))
-            {
-                string[] filterActors = playbillRepository
-                    .GetActorsByNameFilter(subscription.PerformanceFilter.Actor)
-                    .Select(x => x.Name.ToLower())
+            PlaybillChangeEntity[] subscriptionChanges = _filterService
+                    .GetFilteredChanges(changes, subscription)
+                    .OrderBy(p => p.LastUpdate)
                     .ToArray();
 
-                performanceChanges = !filterActors.Any()
-                    ? Array.Empty<PlaybillChangeEntity>()
-                    : changesToSubscription.Where(change => FilterByActor(change, filterActors)).ToArray();
-            }
-            else if (filter.PlaybillId > 0)
-            {
-                performanceChanges = changesToSubscription
-                    .Where(p => p.PlaybillEntity.Id == filter.PlaybillId)
-                    .ToArray();
-            }
-            else
-            {
-                performanceChanges = changesToSubscription
-                    .Where(p => _filterChecker.IsDataSuitable(
-                        p.PlaybillEntityId,
-                        p.PlaybillEntity.Performance.Name,
-                        p.PlaybillEntity.Cast != null ? string.Join(',', p.PlaybillEntity.Cast.Select(c => c.Actor)) : null,
-                        p.PlaybillEntity.Performance.Location.Id,
-                        p.PlaybillEntity.Performance.Type.TypeName,
-                        p.PlaybillEntity.When, filter)
-                                && p.LastUpdate > subscription.LastUpdate
-                                && (subscription.TrackingChanges & p.ReasonOfChanges) != 0
-                                && subscription.TrackingChanges != 0)
-                    .ToArray();
-            }
-
-            if (!performanceChanges.Any())
+            if (!subscriptionChanges.Any())
                 continue;
 
             if (!messagesDictionary.ContainsKey(subscription.TelegramUserId))
                 messagesDictionary.Add(subscription.TelegramUserId, new Dictionary<int, List<PlaybillChangeEntity>>());
 
-            Dictionary<int, List<PlaybillChangeEntity>> changesDictionary = messagesDictionary[subscription.TelegramUserId];
-            foreach (var change in performanceChanges)
+            Dictionary<int, List<PlaybillChangeEntity>> changesToUser = messagesDictionary[subscription.TelegramUserId];
+            foreach (var change in subscriptionChanges)
             {
-                if (!changesDictionary.ContainsKey(change.PlaybillEntityId))
+                if (!changesToUser.ContainsKey(change.PlaybillEntityId))
                 {
-                    changesDictionary[change.PlaybillEntityId] = new List<PlaybillChangeEntity> {change};
+                    changesToUser[change.PlaybillEntityId] = new List<PlaybillChangeEntity> {change};
                     continue;
                 }
 
-                changesDictionary[change.PlaybillEntityId].Add(change);
+                changesToUser[change.PlaybillEntityId].Add(change);
             }
         }
 
@@ -143,33 +96,6 @@ public class SubscriptionProcessor : ISubscriptionProcessor
 
         Trace.TraceInformation("Process subscription finished");
         return true;
-    }
-
-    private bool FilterByPerformanceName(PlaybillChangeEntity change, PerformanceFilterEntity filter)
-    {
-        var playbillEntry = change.PlaybillEntity;
-
-        return _filterChecker.IsDataSuitable(
-            playbillEntry.Id,
-            playbillEntry.Performance.Name,
-            playbillEntry.Cast != null ? string.Join(',', playbillEntry.Cast.Select(c => c.Actor)) : null,
-            playbillEntry.Performance.Location.Id,
-            playbillEntry.Performance.Type.TypeName,
-            playbillEntry.When, filter);
-    }
-
-    private bool FilterByActor(PlaybillChangeEntity change, string[] filterActors)
-    {
-        if (change.ReasonOfChanges != (int)ReasonOfChanges.CastWasChanged && change.ReasonOfChanges != (int)ReasonOfChanges.CastWasSet)
-            return false;
-
-        var addedList = change.CastAdded?.ToLower().Split(",", StringSplitOptions.RemoveEmptyEntries).ToArray();
-        var removedList = change.CastRemoved?.ToLower().Split(",", StringSplitOptions.RemoveEmptyEntries).ToArray();
-
-        bool added = addedList != null && addedList.Any(actor => filterActors.Contains(actor));
-        bool removed = removedList != null && removedList.Any(actor => filterActors.Contains(actor));
-
-        return added || removed;
     }
 
     private static readonly ReasonOfChanges[] ReasonToShowCast = {ReasonOfChanges.CastWasChanged, ReasonOfChanges.CastWasSet, ReasonOfChanges.Creation, ReasonOfChanges.StartSales};
@@ -216,7 +142,6 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         {
             PlaybillEntity playbillEntity = change.PlaybillEntity;
             string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When).ToString("ddMMM HH:mm", cultureRu);
-
 
             string firstPart = $"{formattedDate} {playbillEntity.Performance.Location.Name} {playbillEntity.Performance.Type.TypeName}"
                 .EscapeMessageForMarkupV2();

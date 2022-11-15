@@ -19,7 +19,6 @@ namespace theatrel.Lib.Playbill;
 
 internal class PlayBillResolver : IPlayBillDataResolver
 {
-    private readonly IFilterService _filterChecker;
     private readonly IEncodingService _encodingService;
 
     private readonly Func<Theatre, IPlaybillParser> _playbillParserFactory;
@@ -31,7 +30,6 @@ internal class PlayBillResolver : IPlayBillDataResolver
         Func<Theatre, ITicketsParser> ticketsParserFactory,
         Func<Theatre, IPerformanceCastParser> castParserFactory,
         Func<Theatre, IPerformanceParser> performanceParserFactory,
-        IFilterService filterChecker,
         IEncodingService encodingService)
     {
         _playbillParserFactory = playbillParserFactory;
@@ -39,7 +37,6 @@ internal class PlayBillResolver : IPlayBillDataResolver
         _performanceParserFactory = performanceParserFactory;
         _castParserFactory = castParserFactory;
 
-        _filterChecker = filterChecker;
         _encodingService = encodingService;
     }
 
@@ -72,10 +69,18 @@ internal class PlayBillResolver : IPlayBillDataResolver
         cancellationToken.ThrowIfCancellationRequested();
 
         IEnumerable<IPerformanceData> filtered = performances
-            .Where(item => item != null && _filterChecker.CheckOnlyDate(item.DateTime, filter)).ToArray();
+            .Where(item => item != null && CheckOnlyDate(item.DateTime, filter)).ToArray();
 
         Trace.TraceInformation("PlayBillResolver.RequestProcess finished");
         return filtered.ToArray();
+    }
+
+    private bool CheckOnlyDate(DateTime when, IPerformanceFilter filter)
+    {
+        if (filter == null)
+            return true;
+
+        return filter.StartDate <= when && filter.EndDate >= when;
     }
 
     public async Task AdditionalProcess(int theatre, IPerformanceData[] performances, CancellationToken cancellationToken)

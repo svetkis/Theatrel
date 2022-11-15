@@ -38,8 +38,8 @@ internal static class BotTest
         var performanceFilterMock = new Mock<IPerformanceFilter>();
 
         var filterServiceMock = new Mock<IFilterService>();
-        filterServiceMock.Setup(h => h.IsDataSuitable(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<IPerformanceFilter>()))
-            .Returns(() => true);
+        /*filterServiceMock.Setup(h => h.(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<IPerformanceFilter>()))
+            .Returns(() => true);*/
 
         filterServiceMock.Setup(h => h.GetFilter(It.IsAny<IChatDataInfo>()))
             .Returns(() => performanceFilterMock.Object);

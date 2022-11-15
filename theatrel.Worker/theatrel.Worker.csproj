@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\theatrel.DataUpdater\theatrel.DataUpdater.csproj" />
+    <ProjectReference Include="..\theatrel.Filters\theatrel.Filters.csproj" />
     <ProjectReference Include="..\theatrel.Lib\theatrel.Lib.csproj" />
     <ProjectReference Include="..\theatrel.Subscriptions\theatrel.Subscriptions.csproj" />
     <ProjectReference Include="..\theatrel.TLBot\theatrel.TLBot.csproj" />

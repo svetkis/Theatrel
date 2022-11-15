@@ -92,7 +92,7 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
     public override async Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
     {
         IPerformanceFilter filter = _filterService.GetFilter(chatInfo);
-        var filteredPerformances = GetFilteredPerformances(chatInfo, filter);
+        var filteredPerformances = _filterService.GetFilteredPerformances(filter);
 
         List<KeyboardButton> buttons = new List<KeyboardButton> 
         {
@@ -245,26 +245,6 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
             entry.Name = pbEntity?.Performance.Name;
             entry.When = pbEntity?.When ?? DateTime.UtcNow;
         }
-    }
-
-    private PlaybillEntity[] GetFilteredPerformances(IChatDataInfo chatInfo, IPerformanceFilter filter)
-    {
-        using var playbillRepo = DbService.GetPlaybillRepository();
-
-        PlaybillEntity[] performances = Array.Empty<PlaybillEntity>();
-        if (!string.IsNullOrEmpty(chatInfo.Actor))
-        {
-            performances = playbillRepo.GetListByActor(chatInfo.Actor).ToArray();
-        }
-
-        return performances.Where(x =>
-        {
-            if (!x.Changes.Any())
-                return true;
-
-            var lastChange = x.Changes.OrderBy(ch => ch.LastUpdate).Last();
-            return lastChange.ReasonOfChanges != (int)ReasonOfChanges.WasMoved;
-        }).ToArray();
     }
 
     private Task<string> CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)

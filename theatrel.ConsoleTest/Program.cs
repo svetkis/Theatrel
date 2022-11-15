@@ -37,43 +37,34 @@ internal static class Program
 
         tLBotProcessor.Start(tlBotService, cts.Token);
 
-        var subscriptionProcessor = Bootstrapper.Resolve<ISubscriptionProcessor>();
-        await subscriptionProcessor.ProcessSubscriptions();
+        var job = new UpdateJob();
 
-        /* for (int i = 0; i < 5; ++i)
-         {
-             Trace.TraceInformation("Before UpdateMariinskiPlaybill");
-             //MemoryProfiler.GetSnapshot("Before UpdateMariinskiPlaybill");
+        if (!await job.UpdateMariinskiPlaybill(cts.Token))
+            return;
 
-             var job = new UpdateJob();
+        MemoryProfiler.GetSnapshot("");
 
-             if (!await job.UpdateMariinskiPlaybill(cts.Token))
-                 return;
+        if (!await job.UpdateMichailovskyPlaybill(cts.Token))
+            return;
 
-             MemoryProfiler.GetSnapshot("");
+        Trace.TraceInformation("Before ProcessSubscriptions");
+        //MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
 
-             if (!await job.UpdateMichailovskyPlaybill(cts.Token))
-                 return;
+        if (!await job.ProcessSubscriptions(cts.Token))
+            return;
 
-             Trace.TraceInformation("Before ProcessSubscriptions");
-             //MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
+        Trace.TraceInformation("Before SubscriptionsCleanup");
+        //MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
 
-             if (!await job.ProcessSubscriptions(cts.Token))
-                 return;
+        if (!await job.SubscriptionsCleanup(cts.Token))
+            return;
 
-             Trace.TraceInformation("Before SubscriptionsCleanup");
-             //MemoryProfiler.GetSnapshot("Before SubscriptionsCleanup");
+        Trace.TraceInformation("Before PlaybillCleanup");
+        //MemoryProfiler.GetSnapshot("Before PlaybillCleanup");
+        if (!await job.PlaybillCleanup(cts.Token))
+            return;
 
-             if (!await job.SubscriptionsCleanup(cts.Token))
-                 return;
-
-             Trace.TraceInformation("Before PlaybillCleanup");
-             //MemoryProfiler.GetSnapshot("Before PlaybillCleanup");
-             if (!await job.PlaybillCleanup(cts.Token))
-                 return;
-
-             MemoryProfiler.GetSnapshot("Update finished");
-         }*/
+        MemoryProfiler.GetSnapshot("Update finished");
 
         while (true)
         {

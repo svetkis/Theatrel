@@ -52,7 +52,7 @@ internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
             if (null == prolongFor || !prolongFor.Any())
                 return true;
         }
-        catch(Exception ex)
+        catch(Exception)
         {
             return true;
         }

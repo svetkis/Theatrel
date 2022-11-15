@@ -21,6 +21,7 @@ public static class Bootstrapper
         ContainerBuilder builder = new ContainerBuilder();
 
         builder.RegisterModule<TheatrelLibModule>();
+        builder.RegisterModule<FiltersLibModule>();
         builder.RegisterModule<TlBotModule>();
         builder.RegisterModule<TheatrelDataAccessModule>();
         builder.RegisterModule<DataUpdaterModule>();

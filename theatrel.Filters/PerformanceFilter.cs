@@ -1,5 +1,4 @@
-﻿using System;
-using theatrel.Interfaces.Filters;
+﻿using theatrel.Interfaces.Filters;
 
 namespace theatrel.Lib.Filters;
 
