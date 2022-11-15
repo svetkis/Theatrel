@@ -62,14 +62,7 @@ internal class SelectLocationCommand : DialogCommandBase
             ResizeKeyboard = true
         };
 
-        return chatInfo.DialogState switch
-        {
-            DialogState.DialogReturned => Task.FromResult<ITgCommandResponse>(
-                new TgCommandResponse(Msg, CommandKeyboardMarkup)),
-            DialogState.DialogStarted => Task.FromResult<ITgCommandResponse>(
-                new TgCommandResponse($"{Msg}", CommandKeyboardMarkup)),
-            _ => throw new NotImplementedException()
-        };
+        return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(Msg, CommandKeyboardMarkup));
     }
 
     private KeyboardButton[][] GetKeyboardButtons(IChatDataInfo chatInfo)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -27,13 +28,6 @@ internal class MonthCommand : DialogCommandBase
 
         _monthNames = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetMonthName(num)).ToArray();
         _monthNamesAbbreviated = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetAbbreviatedMonthName(num)).ToArray();
-
-        var buttons = _monthNames.Select(m => new KeyboardButton(m)).ToArray();
-        CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
-        {
-            OneTimeKeyboard = true,
-            ResizeKeyboard = true
-        };
     }
 
     public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message) => 0 != GetMonth(message.Trim().ToLower());
@@ -74,7 +68,29 @@ internal class MonthCommand : DialogCommandBase
 
     public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
     {
+        CommandKeyboardMarkup = new ReplyKeyboardMarkup(GetKeyboardButtons(chatInfo))
+        {
+            OneTimeKeyboard = true,
+            ResizeKeyboard = true
+        };
+
         return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(Msg, CommandKeyboardMarkup));
+    }
+
+    private KeyboardButton[][] GetKeyboardButtons(IChatDataInfo chatInfo)
+    {
+        var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
+
+        List<KeyboardButton[]> groupedButtons = new();
+
+        int currentMonth = DateTime.Now.Month;
+        var monthsButtons = Enumerable
+            .Range(currentMonth, 12)
+            .Select(num => culture.DateTimeFormat.GetMonthName(num > 12 ? num % 12 : num))
+            .Select(m => new KeyboardButton(m))
+            .ToArray();
+
+        return GroupKeyboardButtons(ButtonsInLine, monthsButtons);
     }
 
     private int CheckEnumerable(string[] checkedData, string msg)

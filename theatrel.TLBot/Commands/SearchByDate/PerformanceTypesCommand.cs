@@ -21,7 +21,9 @@ internal class PerformanceTypesCommand : DialogCommandBase
     public override string Name => "Выбрать тип представления";
     public PerformanceTypesCommand(IDbService dbService) : base(dbService)
     {
-        var buttons = _types.Select(m => new KeyboardButton(m)).Concat(new[] { new KeyboardButton(_every.First()) }).ToArray();
+        var buttons = new[] { new KeyboardButton(_every.First()) }
+        .Concat(_types.Select(m => new KeyboardButton(m)))
+        .ToArray();
 
         CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
         {
