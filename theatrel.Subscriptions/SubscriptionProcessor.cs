@@ -192,7 +192,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                         ? string.Empty
                         : $"{group.Key} - ".EscapeMessageForMarkupV2();
 
-                    string addedPart = wasAdded ? " (добавлен):".EscapeMessageForMarkupV2() : string.Empty;
+                    string addedPart = wasAdded ? " (+)".EscapeMessageForMarkupV2() : string.Empty;
 
                     sb.AppendLine($"{character}{actors}{addedPart}");
                 }
