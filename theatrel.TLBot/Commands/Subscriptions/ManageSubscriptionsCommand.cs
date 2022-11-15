@@ -127,6 +127,18 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
         return theatreIds.SelectMany(theatreId => repo.GetLocationsList(theatreId).OrderBy(x => x.Id)).ToArray();
     }
 
+    private string[] GetTheatres(IChatDataInfo chatInfo)
+    {
+        using var repo = DbService.GetPlaybillRepository();
+
+        var theatres = repo.GetTheatres();
+
+        bool theatresWereSelected = chatInfo.TheatreIds != null && chatInfo.TheatreIds.Any();
+        var theatreIds = theatresWereSelected ? chatInfo.TheatreIds : repo.GetTheatres().OrderBy(x => x.Id).Select(x => x.Id).ToArray();
+
+        return theatreIds.Select(theatreId => theatres.FirstOrDefault(x => x.Id == theatreId).Name).ToArray();
+    }
+
     private string GetLocationButtonName(LocationsEntity location) => string.IsNullOrEmpty(location.Description) ? location.Name : location.Description;
 
     public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
@@ -149,9 +161,11 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
 
         LocationsEntity[] locationEntities = GetLocations(chatInfo);
 
+        var theatres = GetTheatres(chatInfo);
+
         for (int i = 0; i < subscriptions.Length; ++i)
         {
-            AddSubscriptionDescription(i+1, stringBuilder, subscriptions[i], culture, locationEntities, playbillRepository);
+            AddSubscriptionDescription(i+1, stringBuilder, subscriptions[i], culture, locationEntities, theatres, playbillRepository);
 
             buttons.Add(new KeyboardButton($"Удалить {i + 1}"));
         }
@@ -167,24 +181,33 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
                 }));
     }
 
-    private void AddSubscriptionDescription(int idx, StringBuilder stringBuilder, SubscriptionEntity subscription, CultureInfo culture, LocationsEntity[] locationEntities, IPlaybillRepository playbillRepository)
+    private void AddSubscriptionDescription(int idx, StringBuilder stringBuilder, SubscriptionEntity subscription, CultureInfo culture, LocationsEntity[] locationEntities, string[] theatres, IPlaybillRepository playbillRepository)
     {
         var filter = subscription.PerformanceFilter;
+
         if (!string.IsNullOrEmpty(filter.Actor))
         {
-            stringBuilder.AppendLine($" {idx}. Исполнитель: {filter.Actor}");
+            stringBuilder.AppendLine($" {idx}. Имя исполнителя: {filter.Actor}");
             return;
         }
 
         var changesDescription = subscription.TrackingChanges.GetTrackingChangesDescription().ToLower();
 
+        string theatreString = theatres == null || !theatres.Any()
+            ? "любой театр"
+            : string.Join(" или ", theatres);
+
+
         string locationsString = filter.LocationIds == null || !filter.LocationIds.Any()
             ? "все площадки"
-            : string.Join(" или ", filter.LocationIds.Where(id => id > 0).Select(id => locationEntities.First(x => x.Id == id)).Select(GetLocationButtonName));
+            : string.Join(" или ", filter.LocationIds
+                    .Where(id => id > 0)
+                    .Select(id => locationEntities.First(x => x.Id == id))
+                    .Select(GetLocationButtonName));
 
         if (!string.IsNullOrEmpty(filter.PerformanceName))
         {
-            stringBuilder.AppendLine($" {idx}. Название содержит \"{filter.PerformanceName}\", место проведения: {locationsString} отслеживаемые события: {changesDescription}");
+            stringBuilder.AppendLine($" {idx}. Название содержит \"{filter.PerformanceName}\", театр {theatreString}, место проведения: {locationsString} отслеживаемые события: {changesDescription}");
         }
         else if (filter.PlaybillId == -1)
         {
@@ -196,7 +219,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
                 ? "все представления"
                 : string.Join("или ", filter.PerformanceTypes);
 
-            stringBuilder.AppendLine($" {idx}. {monthName} {filter.StartDate.Year}, место проведения: {locationsString}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
+            stringBuilder.AppendLine($" {idx}. {monthName} {filter.StartDate.Year}, театр {theatreString}, место проведения: {locationsString}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
         }
         else
         {
