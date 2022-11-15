@@ -23,7 +23,7 @@ internal class MonthCommand : DialogCommandBase
 
     public MonthCommand(IDbService dbService) : base(dbService)
     {
-        var cultureRu = CultureInfo.CreateSpecificCulture("ru");
+        CultureInfo cultureRu = CultureInfo.CreateSpecificCulture("ru");
 
         _monthNames = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetMonthName(num)).ToArray();
         _monthNamesAbbreviated = Enumerable.Range(1, 12).Select(num => cultureRu.DateTimeFormat.GetAbbreviatedMonthName(num)).ToArray();

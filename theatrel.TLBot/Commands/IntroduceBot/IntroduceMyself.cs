@@ -16,7 +16,8 @@ internal class IntroduceMyself : DialogCommandBase
                                                $" Список команда бота:{Environment.NewLine}" +
                                                $" /help - показать справку{Environment.NewLine}" +
                                                $" /search - искать с фильтром по дате и типу представления или просто напишите мне Привет!{Environment.NewLine}"+
-                                               $" /search2 - искать по имени{Environment.NewLine}" +
+                                               $" /name - искать по имени{Environment.NewLine}" +
+                                               $" /actor - искать по исполнителю{Environment.NewLine}" +
                                                $" /subscriptions  управление подписками";
 
     public override string Name => "IntroduceMyself";
@@ -27,7 +28,8 @@ internal class IntroduceMyself : DialogCommandBase
         var buttonsLine1 = new[]
         {
             new KeyboardButton("/search"),
-            new KeyboardButton("/search2"),
+            new KeyboardButton("/name"),
+            new KeyboardButton("/actor"),
         };
 
         var buttonsLine2 = new[]

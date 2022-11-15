@@ -42,7 +42,9 @@ internal class SelectLocationCommand : DialogCommandBase
         using var repo = DbService.GetPlaybillRepository();
 
         bool theatresWereSelected = chatInfo.TheatreIds != null && chatInfo.TheatreIds.Any();
-        var theatreIds = theatresWereSelected ? chatInfo.TheatreIds : repo.GetTheatres().OrderBy(x => x.Id).Select(x => x.Id).ToArray();
+        var theatreIds = theatresWereSelected
+            ? chatInfo.TheatreIds
+            : repo.GetTheatres().OrderBy(x => x.Id).Select(x => x.Id).ToArray();
 
         return theatreIds.SelectMany(theatreId => repo.GetLocationsList(theatreId).OrderBy(x => x.Id)).ToArray();
     }
@@ -56,7 +58,9 @@ internal class SelectLocationCommand : DialogCommandBase
         var locations = GetLocations(chatInfo);
         var buttonNames = GetLocationButtonNames(locations);
 
-        var buttons = buttonNames.Select(m => new KeyboardButton(m)).Concat(new[] { new KeyboardButton(_every.First()) }).ToArray();
+        var buttons = new[] { new KeyboardButton(_every.First()) }
+            .Concat(buttonNames.Select(m => new KeyboardButton(m)))
+            .ToArray();
 
         CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(ButtonsInLine, buttons))
         {

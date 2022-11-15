@@ -421,13 +421,14 @@ internal class PlaybillRepository : IPlaybillRepository
         {
             string lowerName = name.ToLower();
             return _dbContext.Playbill
-                .Where(x => EF.Functions.Like(x.Performance.Name, $"%{lowerName}%"))
+                .Where(x => EF.Functions.Like(x.Performance.Name.ToLower(), $"%{lowerName}%"))
                 .Include(x => x.Performance)
                 .ThenInclude(x => x.Location)
                 .Include(x => x.Performance)
                 .ThenInclude(x => x.Type)
                 .Include(x => x.Changes)
-                .AsNoTracking().ToArray();
+                .AsNoTracking()
+                .ToArray();
         }
         catch (Exception ex)
         {

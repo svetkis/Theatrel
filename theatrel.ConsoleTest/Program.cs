@@ -37,7 +37,7 @@ internal static class Program
 
         tLBotProcessor.Start(tlBotService, cts.Token);
 
-        var job = new UpdateJob();
+      /*  var job = new UpdateJob();
 
         if (!await job.UpdateMariinskiPlaybill(cts.Token))
             return;
@@ -64,7 +64,7 @@ internal static class Program
         if (!await job.PlaybillCleanup(cts.Token))
             return;
 
-        MemoryProfiler.GetSnapshot("Update finished");
+        MemoryProfiler.GetSnapshot("Update finished");*/
 
         while (true)
         {
