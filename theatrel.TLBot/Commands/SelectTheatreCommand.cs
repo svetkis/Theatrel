@@ -41,13 +41,12 @@ internal class SelectTheatreCommand : DialogCommandBase
 
     private KeyboardButton[][] GetKeyboardButtons()
     {
-        List<KeyboardButton[]> groupedButtons = new();
+        List<KeyboardButton[]> groupedButtons = new() { new KeyboardButton[] { new KeyboardButton(_every.First()) } };
 
-        groupedButtons.Add(new KeyboardButton[] { new KeyboardButton(_every.First()) });
-        foreach (KeyboardButton[] line in GroupKeyboardButtons(ButtonsInLine, _theatreNames.Select(m => new KeyboardButton(m))))
-        {
-            groupedButtons.Add(line);
-        }
+        var theatreButtons = _theatreNames.Select(m => new KeyboardButton(m));
+        var theatreButtonLines = GroupKeyboardButtons(ButtonsInLine, theatreButtons);
+
+        groupedButtons.AddRange(theatreButtonLines);
 
         return groupedButtons.ToArray();
     }

@@ -51,7 +51,7 @@ internal class DaysOfWeekCommand : DialogCommandBase
         string responseDays = DaysOfWeekHelper.GetDaysDescription(chatInfo.Days, culture);
 
         return Task.FromResult<ITgCommandResponse>(
-            new TgCommandResponse($"{YouSelected} {responseDays}. {ReturnMsg}", ReturnCommandMessage));
+            new TgCommandResponse($"{YouSelected} {responseDays}. {ReturnMsg}"));
     }
 
     public override bool IsMessageCorrect(IChatDataInfo chatInfo, string message)
