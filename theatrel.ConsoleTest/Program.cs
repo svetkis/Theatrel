@@ -37,9 +37,12 @@ internal static class Program
 
         tLBotProcessor.Start(tlBotService, cts.Token);
 
-      /*  var job = new UpdateJob();
+        var job = new UpdateJob();
 
-        if (!await job.UpdateMariinskiPlaybill(cts.Token))
+        if (!await job.ProcessSubscriptions(cts.Token))
+            return;
+
+        /*if (!await job.UpdateMariinskiPlaybill(cts.Token))
             return;
 
         MemoryProfiler.GetSnapshot("");

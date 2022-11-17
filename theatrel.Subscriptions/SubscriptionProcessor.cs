@@ -184,7 +184,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                             ? item.Name.EscapeMessageForMarkupV2()
                             : $"[{item.Name.EscapeMessageForMarkupV2()}]({item.Url.EscapeMessageForMarkupV2()})"));
 
-                    bool wasAdded = group.Value.Any(item => change.CastAdded.Contains(item.Name));
+                    bool wasAdded = group.Value.Any(item => change.CastAdded?.Contains(item.Name) ?? false);
 
                     bool isPhonogram = group.Key == CommonTags.Conductor && group.Value.First().Name == CommonTags.Phonogram;
 
