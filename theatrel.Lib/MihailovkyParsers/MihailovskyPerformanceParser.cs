@@ -34,7 +34,11 @@ internal class MihailovskyPerformanceParser : IPerformanceParser
 
             var locationElement = details.GetChildByPropPath(e => e.ClassName, "place");
             if (locationElement != null)
-                location = locationElement.TextContent.Trim();
+            {
+                var tempLocation = locationElement.TextContent.Trim();
+                if (!string.IsNullOrEmpty(tempLocation) && 0 != string.Compare(tempLocation, "Сцена"))
+                    location = tempLocation;
+            }
 
             var info = details.Children.First(c => c.ClassName == "info");
             if (info.Children.Any())

@@ -143,7 +143,11 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             PlaybillEntity playbillEntity = change.PlaybillEntity;
             string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When).ToString("ddMMM HH:mm", cultureRu);
 
-            string firstPart = $"{formattedDate} {playbillEntity.Performance.Location.Name} {playbillEntity.Performance.Type.TypeName}"
+            string location = string.IsNullOrEmpty(playbillEntity.Performance.Location.Description)
+                ? playbillEntity.Performance.Location.Name
+                : playbillEntity.Performance.Location.Description;
+
+            string firstPart = $"{formattedDate} {location} {playbillEntity.Performance.Type.TypeName}"
                 .EscapeMessageForMarkupV2();
 
             string description = !string.IsNullOrEmpty(playbillEntity.Description)
