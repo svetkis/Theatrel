@@ -33,7 +33,7 @@ internal class SelectLocationCommand : DialogCommandBase
         chatInfo.LocationIds = ParseMessage(message, groupedLocation);
 
         var selected = chatInfo.LocationIds != null && chatInfo.LocationIds.Any()
-            ? string.Join(" или ", chatInfo.LocationIds.Select(id => locations.First(x => x.Id == id )).Select(x => x.ShortDescription))
+            ? string.Join(" или ", chatInfo.LocationIds.Select(id => locations.First(x => x.Id == id )).Select(x => x.ShortDescription).Distinct())
             : "любую площадку";
 
         return Task.FromResult<ITgCommandResponse>(
