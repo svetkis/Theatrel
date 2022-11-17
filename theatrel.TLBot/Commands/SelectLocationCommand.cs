@@ -50,9 +50,13 @@ internal class SelectLocationCommand : DialogCommandBase
         return theatreIds.SelectMany(theatreId => repo.GetLocationsList(theatreId).OrderBy(x => x.Id)).ToArray();
     }
 
-    private string[] GetLocationButtonNames(LocationsEntity[] locations) => locations.Select(GetLocationButtonName).ToArray();
+    private string[] GetLocationButtonNames(LocationsEntity[] locations)
+        => locations.Select(GetLocationButtonName).ToArray();
 
-    private string GetLocationButtonName(LocationsEntity location) => string.IsNullOrEmpty(location.Description) ? location.Name : location.Description;
+    private string GetLocationButtonName(LocationsEntity location)
+        => string.IsNullOrEmpty(location.Description)
+            ? location.Name
+            : location.Description;
 
     public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
     {
