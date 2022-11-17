@@ -283,8 +283,8 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
 
         stringBuilder.AppendLine(
             string.IsNullOrEmpty(filter.PerformanceName)
-                ? $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}. Театр: {theatres}. Площадка: {locations}.".EscapeMessageForMarkupV2()
-                : $"Я искал для Вас билеты на \"{filter.PerformanceName}\". Театр: {theatres}. Площадка: {locations}.".EscapeMessageForMarkupV2());
+                ? $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}. Площадка: {locations}.".EscapeMessageForMarkupV2()
+                : $"Я искал для Вас билеты на \"{filter.PerformanceName}\". Площадка: {locations}.".EscapeMessageForMarkupV2());
 
         stringBuilder.AppendLine();
 

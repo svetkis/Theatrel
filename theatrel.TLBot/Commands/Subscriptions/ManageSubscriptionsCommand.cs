@@ -207,7 +207,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
 
         if (!string.IsNullOrEmpty(filter.PerformanceName))
         {
-            stringBuilder.AppendLine($" {idx}. Название содержит \"{filter.PerformanceName}\", театр {theatreString}, место проведения: {locationsString} отслеживаемые события: {changesDescription}");
+            stringBuilder.AppendLine($" {idx}. Название содержит \"{filter.PerformanceName}\", место проведения: {locationsString} отслеживаемые события: {changesDescription}");
         }
         else if (filter.PlaybillId == -1)
         {
@@ -219,7 +219,7 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
                 ? "все представления"
                 : string.Join("или ", filter.PerformanceTypes);
 
-            stringBuilder.AppendLine($" {idx}. {monthName} {filter.StartDate.Year}, театр: {theatreString}, место проведения: {locationsString}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
+            stringBuilder.AppendLine($" {idx}. {monthName} {filter.StartDate.Year}, место проведения: {locationsString}, тип представления: {types}, дни недели: {days} отслеживаемые события: {changesDescription}");
         }
         else
         {
