@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using AngleSharp.Dom;
+using Telegram.Bot.Types;
 using theatrel.Common;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
@@ -29,16 +30,10 @@ internal class MihailovskyPerformanceParser : IPerformanceParser
                 ?.TextContent.Trim();
 
             string ticketsUrl = null;
-            string location = "Михайловский театр";
             string type = "Неопределено";
 
             var locationElement = details.GetChildByPropPath(e => e.ClassName, "place");
-            if (locationElement != null)
-            {
-                var tempLocation = locationElement.TextContent.Trim();
-                if (!string.IsNullOrEmpty(tempLocation) && 0 != string.Compare(tempLocation, "Сцена"))
-                    location = tempLocation;
-            }
+            string location = GetLocation(locationElement) ?? "Михайловский театр";
 
             var info = details.Children.First(c => c.ClassName == "info");
             if (info.Children.Any())
@@ -91,6 +86,14 @@ internal class MihailovskyPerformanceParser : IPerformanceParser
             Trace.TraceError(ex.Message);
             return null;
         }
+    }
+
+    private string GetLocation(IElement locationElement)
+    {
+        string location = locationElement?.TextContent?.Trim();
+        return string.IsNullOrEmpty(location) || string.Equals(location, "Сцена", StringComparison.OrdinalIgnoreCase)
+            ? null 
+            : location;
     }
 
     private string GetTicketsUrl(IElement ticketsTButton)

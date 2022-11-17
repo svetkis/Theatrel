@@ -11,5 +11,7 @@ public class LocationsEntity
 
     public string Description { get; set; }
 
+    public string ShortDescription { get; set; }
+
     public TheatreEntity Theatre { get; set; }
 }

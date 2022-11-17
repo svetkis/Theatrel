@@ -105,7 +105,13 @@ internal class PlaybillRepository : IPlaybillRepository
         {
             LocationsEntity location = locationId != -1
                 ? _dbContext.PerformanceLocations.FirstOrDefault(l => l.Id == locationId)
-                : new LocationsEntity { Name = data.Location, Theatre = _theatre };
+                : new LocationsEntity
+                {
+                    Name = data.Location,
+                    Theatre = _theatre,
+                    Description = data.Location,
+                    ShortDescription = data.Location
+                };
 
             PerformanceTypeEntity type = typeId != -1
                 ? _dbContext.PerformanceTypes.FirstOrDefault(t => t.Id == typeId)
