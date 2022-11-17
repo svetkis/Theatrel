@@ -117,29 +117,37 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
         };
     }
 
-    private LocationsEntity[] GetLocations(IChatDataInfo chatInfo)
+    private LocationsEntity[] GetLocations()
     {
         using var repo = DbService.GetPlaybillRepository();
+       
+        var theatreIds = repo.GetTheatres().OrderBy(x => x.Id).Select(x => x.Id).ToArray();
 
-        bool theatresWereSelected = chatInfo.TheatreIds != null && chatInfo.TheatreIds.Any();
-        var theatreIds = theatresWereSelected ? chatInfo.TheatreIds : repo.GetTheatres().OrderBy(x => x.Id).Select(x => x.Id).ToArray();
-
-        return theatreIds.SelectMany(theatreId => repo.GetLocationsList(theatreId).OrderBy(x => x.Id)).ToArray();
+        return theatreIds
+            .SelectMany(theatreId => repo.GetLocationsList(theatreId).OrderBy(x => x.Id))
+            .ToArray();
     }
 
-    private string[] GetTheatres(IChatDataInfo chatInfo)
+    private string[] GetTheatres(int[] ids)
     {
         using var repo = DbService.GetPlaybillRepository();
 
         var theatres = repo.GetTheatres();
 
-        bool theatresWereSelected = chatInfo.TheatreIds != null && chatInfo.TheatreIds.Any();
-        var theatreIds = theatresWereSelected ? chatInfo.TheatreIds : repo.GetTheatres().OrderBy(x => x.Id).Select(x => x.Id).ToArray();
+        bool theatresWereSelected = ids != null && ids.Any();
+        var theatreIds = theatresWereSelected
+            ? ids
+            : repo.GetTheatres().OrderBy(x => x.Id).Select(x => x.Id).ToArray();
 
-        return theatreIds.Select(theatreId => theatres.FirstOrDefault(x => x.Id == theatreId).Name).ToArray();
+        return theatreIds
+                .Select(theatreId => theatres.FirstOrDefault(x => x.Id == theatreId).Name)
+                .ToArray();
     }
 
-    private string GetLocationButtonName(LocationsEntity location) => string.IsNullOrEmpty(location.Description) ? location.Name : location.Description;
+    private string GetLocationDescription(LocationsEntity location)
+    {
+        return string.IsNullOrEmpty(location.Description) ? location.Name : location.Description;
+    } 
 
     public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
     {
@@ -159,13 +167,23 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
 
         stringBuilder.AppendLine("Ваши подписки:");
 
-        LocationsEntity[] locationEntities = GetLocations(chatInfo);
-
-        var theatres = GetTheatres(chatInfo);
+        var allLocations = GetLocations();
 
         for (int i = 0; i < subscriptions.Length; ++i)
         {
-            AddSubscriptionDescription(i+1, stringBuilder, subscriptions[i], culture, locationEntities, theatres, playbillRepository);
+            var subscription = subscriptions[i];
+            var filter = subscription.PerformanceFilter;
+
+            var selectedTheatres = GetTheatres(filter.TheatreIds);
+
+            AddSubscriptionDescription(
+                i+1,
+                stringBuilder,
+                subscription,
+                culture,
+                allLocations,
+                selectedTheatres,
+                playbillRepository);
 
             buttons.Add(new KeyboardButton($"Удалить {i + 1}"));
         }
@@ -197,13 +215,14 @@ internal class ManageSubscriptionsCommand : DialogCommandBase
             ? "любой театр"
             : string.Join(" или ", theatres);
 
+        bool anyLocation = filter.LocationIds == null || !filter.LocationIds.Any();
 
-        string locationsString = filter.LocationIds == null || !filter.LocationIds.Any()
+        string locationsString = anyLocation
             ? "все площадки"
             : string.Join(" или ", filter.LocationIds
                     .Where(id => id > 0)
                     .Select(id => locationEntities.First(x => x.Id == id))
-                    .Select(GetLocationButtonName));
+                    .Select(GetLocationDescription));
 
         if (!string.IsNullOrEmpty(filter.PerformanceName))
         {

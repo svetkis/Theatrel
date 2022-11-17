@@ -99,6 +99,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
     }
 
     private static readonly ReasonOfChanges[] ReasonToShowCast = {ReasonOfChanges.CastWasChanged, ReasonOfChanges.CastWasSet, ReasonOfChanges.Creation, ReasonOfChanges.StartSales};
+
     private string GetChangesDescription(PlaybillChangeEntity[] changes)
     {
         StringBuilder sb = new StringBuilder();
@@ -213,7 +214,10 @@ public class SubscriptionProcessor : ISubscriptionProcessor
 
     private async Task<bool> SendMessages(long tgUserId, PlaybillChangeEntity[] changes)
     {
-        var groups = changes.GroupBy(change => change.ReasonOfChanges).Select(group => group.ToArray());
+        var groups = changes
+            .GroupBy(change => change.ReasonOfChanges)
+            .Select(group => group.OrderBy(x => x.PlaybillEntity.When).ToArray());
+
         string message = string.Join(Environment.NewLine, groups.Select(GetChangesDescription));
 
         return await _telegramService.SendEscapedMessageAsync(tgUserId, message, CancellationToken.None);
