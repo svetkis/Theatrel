@@ -28,10 +28,14 @@ internal class SelectLocationCommand : DialogCommandBase
     public override Task<ITgCommandResponse> ApplyResult(IChatDataInfo chatInfo, string message, CancellationToken cancellationToken)
     {
         LocationsEntity[] locations = GetLocations(chatInfo);
+        var groupedLocation = GroupLocation(locations);
 
-        chatInfo.LocationIds = ParseMessage(message, locations);
+        chatInfo.LocationIds = ParseMessage(message, groupedLocation);
 
-        var selected = chatInfo.LocationIds != null && chatInfo.LocationIds.Any() ? string.Join(" или ", chatInfo.LocationIds.Select(id => locations.First(x => x.Id == id )).Select(GetLocationButtonName)) : "любую площадку";
+        var selected = chatInfo.LocationIds != null && chatInfo.LocationIds.Any()
+            ? string.Join(" или ", chatInfo.LocationIds.Select(id => locations.First(x => x.Id == id )).Select(x => x.ShortDescription))
+            : "любую площадку";
+
         return Task.FromResult<ITgCommandResponse>(
             new TgCommandResponse($"{YouSelected} {selected}. {ReturnMsg}"));
     }
@@ -47,16 +51,30 @@ internal class SelectLocationCommand : DialogCommandBase
             ? chatInfo.TheatreIds
             : repo.GetTheatres().OrderBy(x => x.Id).Select(x => x.Id).ToArray();
 
-        return theatreIds.SelectMany(theatreId => repo.GetLocationsList(theatreId).OrderBy(x => x.Id)).ToArray();
+        return theatreIds
+            .SelectMany(theatreId => repo.GetLocationsList(theatreId)
+            .OrderBy(x => x.Id))
+            .ToArray();
     }
 
-    private string[] GetLocationButtonNames(LocationsEntity[] locations)
-        => locations.Select(GetLocationButtonName).ToArray();
+    private Dictionary<string, List<LocationsEntity>> GroupLocation(LocationsEntity[] locations)
+    {
+        Dictionary<string, List<LocationsEntity>> groupedLocations = new();
 
-    private string GetLocationButtonName(LocationsEntity location)
-        => string.IsNullOrEmpty(location.Description)
-            ? location.Name
-            : location.Description;
+        foreach (var location in locations)
+        {
+            string button = location.ShortDescription;
+            if (string.IsNullOrEmpty(button))
+                continue;
+
+            if (!groupedLocations.ContainsKey(button))
+                groupedLocations.Add(button, new List<LocationsEntity>());
+
+            groupedLocations[button].Add(location);
+        }
+
+        return groupedLocations;
+    }
 
     public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
     {
@@ -73,8 +91,12 @@ internal class SelectLocationCommand : DialogCommandBase
     {
         List<KeyboardButton[]> groupedButtons = new();
 
-        var locations = GetLocations(chatInfo);
-        var buttonNames = GetLocationButtonNames(locations);
+        var buttonNames = GetLocations(chatInfo)
+            .Select(x => x.ShortDescription)
+            .Where(s => !string.IsNullOrEmpty(s))
+            .Distinct()
+            .OrderBy(x => x)
+            .ToArray();
 
         groupedButtons.Add(new KeyboardButton[] { new KeyboardButton(_every.First()) });
         foreach (KeyboardButton[] line in GroupKeyboardButtons(ButtonsInLine, buttonNames.Select(m => new KeyboardButton(m))))
@@ -85,21 +107,27 @@ internal class SelectLocationCommand : DialogCommandBase
         return groupedButtons.ToArray();
     }
 
-    private int[] ParseMessage(string message, LocationsEntity[] locations)
+    private int[] ParseMessage(string message, Dictionary<string, List<LocationsEntity>> groupedLocation)
     {
         string[] parts = SplitMessage(message).ToArray();
 
-        if (parts.Any(p => int.TryParse(p, out int idx) && idx < locations.Length))
+        var buttons = groupedLocation.Keys.OrderBy(x => x).ToArray();
+
+        if (parts.Any(p => int.TryParse(p, out int idx) && idx < groupedLocation.Count))
         {
-            return parts.Where(p => int.TryParse(p, out int idx) && idx < locations.Length && idx > 0)
-                .Select(p => locations[int.Parse(p) - 1].Id).ToArray();
+            return parts
+                .Where(p => int.TryParse(p, out int idx) && idx < groupedLocation.Count && idx > 0)
+                .SelectMany(p => groupedLocation[buttons[int.Parse(p) - 1]].Select(x => x.Id))
+                .ToArray();
         }
 
         if (parts.Any(p => _every.Any(e => e.ToLower().Contains(p.ToLower()))))
             return Array.Empty<int>();
 
-        var buttonNames = GetLocationButtonNames(locations);
-        return parts.Select(x => ParseMessagePart(x, buttonNames)).Where(idx => idx > -1).Select(idx => locations[idx].Id).ToArray();
+        return parts
+            .Where(x => buttons.Contains(x))
+            .SelectMany(x => groupedLocation[x].Select(x => x.Id))
+            .ToArray();
     }
 
     private static string[] SplitMessage(string message)
@@ -107,14 +135,6 @@ internal class SelectLocationCommand : DialogCommandBase
             .Where(p => !string.IsNullOrWhiteSpace(p))
             .Select(s => s.Trim())
             .ToArray();
-
-    private int ParseMessagePart(string messagePart, string[] locations)
-    {
-        if (string.IsNullOrWhiteSpace(messagePart))
-            return -1;
-
-        return CheckEnumerable(locations, messagePart);
-    }
 
     private static int CheckEnumerable(string[] checkedData, string msg)
     {
