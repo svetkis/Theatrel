@@ -29,7 +29,7 @@ internal class SelectTheatreCommand : DialogCommandBase
     public SelectTheatreCommand(IDbService dbService) : base(dbService)
     {
         using var repo = dbService.GetPlaybillRepository();
-        _theatres = repo.GetTheatres().ToArray();
+        _theatres = repo.GetTheatres().OrderBy(x => x.Id).ToArray();
         _theatreNames = _theatres.Select(x => x.Name).ToArray();
         
         CommandKeyboardMarkup = new ReplyKeyboardMarkup(GetKeyboardButtons())
