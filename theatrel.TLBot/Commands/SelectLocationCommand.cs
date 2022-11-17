@@ -122,7 +122,7 @@ internal class SelectLocationCommand : DialogCommandBase
         }
 
         if (parts.Any(p => _every.Any(e => e.ToLower().Contains(p.ToLower()))))
-            return Array.Empty<int>();
+            return groupedLocation.SelectMany(x => x.Value.Select(s => s.Id)).ToArray();
 
         return parts
             .Where(x => buttons.Contains(x))
