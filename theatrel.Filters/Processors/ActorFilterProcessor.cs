@@ -8,6 +8,9 @@ namespace theatrel.Filters.Processors;
 internal class ActorFilterProcessor : BaseFilterProcessor
 {
     private readonly Dictionary<string, string[]> _filterToActorNames = new ();
+    private readonly ReasonOfChanges[] _suitableReasons
+        = { ReasonOfChanges.CastWasChanged, ReasonOfChanges.CastWasSet };
+
     public ActorFilterProcessor(IDbService dbService) : base(dbService)
     {
     }
@@ -24,8 +27,15 @@ internal class ActorFilterProcessor : BaseFilterProcessor
 
     public override bool IsChangeSuitable(PlaybillChangeEntity change, IPerformanceFilter filter)
     {
-        if (change.ReasonOfChanges != (int)ReasonOfChanges.CastWasChanged && change.ReasonOfChanges != (int)ReasonOfChanges.CastWasSet)
+        if (!_suitableReasons.Contains((ReasonOfChanges)change.ReasonOfChanges))
             return false;
+
+        //simple check
+        if (change.CastAdded.Contains(filter.Actor, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (change.CastRemoved.Contains(filter.Actor, StringComparison.OrdinalIgnoreCase))
+            return true;
 
         if (!_filterToActorNames.ContainsKey(filter.Actor))
         {
@@ -44,8 +54,11 @@ internal class ActorFilterProcessor : BaseFilterProcessor
         var addedList = change.CastAdded?.ToLower().Split(",", StringSplitOptions.RemoveEmptyEntries).ToArray();
         var removedList = change.CastRemoved?.ToLower().Split(",", StringSplitOptions.RemoveEmptyEntries).ToArray();
 
-        bool added = addedList != null && addedList.Any(actor => filterActors.Contains(actor));
-        bool removed = removedList != null && removedList.Any(actor => filterActors.Contains(actor));
+        bool added = addedList != null &&
+                    addedList.Any(actor => filterActors.Any(x => string.Equals(x, actor)));
+
+        bool removed = removedList != null &&
+                    removedList.Any(actor => filterActors.Any(x => string.Equals(x, actor)));
 
         return added || removed;
     }

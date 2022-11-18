@@ -202,9 +202,9 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             ? string.Empty
             : $"от [{change.MinPrice}]({playbillEntity.TicketsUrl.EscapeMessageForMarkupV2()})";
 
-        string emojie = GetEmojieReasonDescription((ReasonOfChanges)change.ReasonOfChanges);
+        string emojie = string.Empty;//GetEmojieReasonDescription((ReasonOfChanges)change.ReasonOfChanges);
 
-        sb.AppendLine($"{emojie} {firstPart} {performanceString}{description} {lastPart}");
+        sb.AppendLine($"{emojie}{firstPart} {performanceString}{description} {lastPart}");
         if (playbillEntity.Cast != null && ReasonToShowCast.Contains((ReasonOfChanges)change.ReasonOfChanges))
         {
             IDictionary<string, IList<ActorEntity>> actorsDictionary = new Dictionary<string, IList<ActorEntity>>();

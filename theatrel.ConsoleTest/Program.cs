@@ -17,8 +17,6 @@ internal static class Program
     {
         Trace.Listeners.Add(new Trace2StdoutLogger());
 
-        //var listener = new GarbageCollectorEventListener();
-
         Bootstrapper.Start();
 
         var timeZoneService = Bootstrapper.Resolve<ITimeZoneService>();
@@ -28,9 +26,6 @@ internal static class Program
         CancellationTokenSource cts = new CancellationTokenSource();
 
         await Bootstrapper.Resolve<IDbService>().MigrateDb(cts.Token);
-
-        MemoryProfiler.CollectAllocations(true);
-        MemoryProfiler.GetSnapshot("1");
 
         var tLBotProcessor = Bootstrapper.Resolve<ITgBotProcessor>();
         var tlBotService = Bootstrapper.Resolve<ITgBotService>();
