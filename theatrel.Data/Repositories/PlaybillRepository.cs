@@ -251,7 +251,7 @@ internal class PlaybillRepository : IPlaybillRepository
 
         if (castWasEmpty)
         {
-            added = Array.Empty<string>();
+            added = freshData.Cast.Cast.SelectMany(x => x.Value.Select(a => a.Name)).ToArray();
             removed = Array.Empty<string>();
 
             return freshData.Cast.Cast == null || !freshData.Cast.Cast.Any()
