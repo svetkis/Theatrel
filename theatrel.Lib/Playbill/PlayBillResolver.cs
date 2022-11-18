@@ -63,15 +63,11 @@ internal class PlayBillResolver : IPlayBillDataResolver
             performances.AddRange(await playbillParser.Parse(content, performanceParser, dateTime.Year, dateTime.Month, cancellationToken));
         }
 
-        MemoryHelper.Collect(true);
-        Trace.TraceInformation("PlayBillResolver performances resolved");
-
         cancellationToken.ThrowIfCancellationRequested();
 
         IEnumerable<IPerformanceData> filtered = performances
             .Where(item => item != null && CheckOnlyDate(item.DateTime, filter)).ToArray();
 
-        Trace.TraceInformation("PlayBillResolver.RequestProcess finished");
         return filtered.ToArray();
     }
 
@@ -98,10 +94,6 @@ internal class PlayBillResolver : IPlayBillDataResolver
                 performance.MinPrice = tickets.MinTicketPrice;
             });
 
-
-        MemoryHelper.Collect(true);
-        Trace.TraceInformation("PlayBillResolver prices resolved");
-
         if (theatre == (int)Theatre.Mariinsky)
         {
             await Parallel.ForEachAsync(
@@ -112,8 +104,6 @@ internal class PlayBillResolver : IPlayBillDataResolver
                     performance.Cast = await performanceCastParser.ParseFromUrl(performance.Url, performance.State == TicketsState.PerformanceWasMoved, ctx);
                 });
         }
-
-        Trace.TraceInformation("PlayBillResolver casts resolved");
     }
 
     private async Task<byte[]> Request(Theatre id, DateTime date, CancellationToken cancellationToken)

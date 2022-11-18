@@ -29,15 +29,13 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
 
     public async Task<bool> Update(int theaterId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken)
     {
-        Trace.TraceInformation("PlaybillUpdater started.");
+        Trace.TraceInformation($"PlaybillUpdater started. {theaterId}");
 
         using var dbRepository = _dbService.GetPlaybillRepository();
 
-        var dateFilter = _filterService.GetFilter(startDate, endDate);
+        var dateFilter = _filterService.GetOneMonthFilter(startDate);
 
         IPerformanceData[] performances = await _dataResolver.RequestProcess(theaterId, dateFilter, cancellationToken);
-
-        MemoryHelper.Collect(true);
 
         await _dataResolver.AdditionalProcess(theaterId, performances, cancellationToken);
 

@@ -7,7 +7,7 @@ namespace theatrel.Interfaces.Filters;
 public interface IFilterService : IDIRegistrable
 {
     IPerformanceFilter GetFilter(IChatDataInfo chatInfo);
-    IPerformanceFilter GetFilter(DateTime start, DateTime end);
+    IPerformanceFilter GetOneMonthFilter(DateTime start);
     IPerformanceFilter GetFilter(int playbillEntryId);
 
     public PlaybillEntity[] GetFilteredPerformances(IPerformanceFilter filter);

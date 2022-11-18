@@ -72,11 +72,11 @@ internal class FilterService : IFilterService
         return filter;
     }
 
-    public IPerformanceFilter GetFilter(DateTime start, DateTime end) =>
+    public IPerformanceFilter GetOneMonthFilter(DateTime start) =>
         new PerformanceFilter
         {
             StartDate = start,
-            EndDate = end
+            EndDate = start.AddMonths(1)
         };
 
     public IPerformanceFilter GetFilter(int playbillEntryId) =>

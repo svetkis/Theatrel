@@ -127,41 +127,29 @@ public abstract class UpdateJobBase : IJob
 
     private static IPerformanceFilter[] AddFiltersForNearestMonths(IEnumerable<IPerformanceFilter> filters, int monthsCount)
     {
+        var validDateRangeFilters = filters.Where(x => x.StartDate > DateTime.MinValue).ToArray();
+
+        var additionalRanges = Enumerable
+            .Range(0, monthsCount)
+            .Select(n => GetDate(DateTime.UtcNow.Month + n))
+            .Where(d => !validDateRangeFilters.Any(f => f.StartDate == d))
+            .ToArray();
+
+        if (!additionalRanges.Any())
+            return validDateRangeFilters;
+
         IFilterService filterService = Bootstrapper.Resolve<IFilterService>();
+        var additonalFilters = additionalRanges.Select(d => filterService.GetOneMonthFilter(d));
 
-        List<int> addedMonths = new List<int>();
-        var performanceFilters = filters as IPerformanceFilter[] ?? filters.ToArray();
-        foreach (var month in Enumerable.Range(0, monthsCount).Select(n => DateTime.UtcNow.Month + n))
-        {
-            int m = NormalizeMonth(month);
-            int y = month > 12 ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
-            var date = new DateTime(y, m, 1, 0, 0, 0, DateTimeKind.Utc);
-            if (performanceFilters.All(f => f.StartDate != date))
-                addedMonths.Add(month);
-        }
-
-        if (!addedMonths.Any())
-            return performanceFilters.ToArray();
-
-        List<IPerformanceFilter> newFilters = new List<IPerformanceFilter>(performanceFilters);
-
-        foreach (var month in addedMonths)
-        {
-            int m = NormalizeMonth(month);
-
-            int y = month > 12 ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
-            var date = new DateTime(y, m, 1, 0, 0, 0, DateTimeKind.Utc);
-
-            newFilters.Add(filterService.GetFilter(date, date.AddMonths(1)));
-        }
-
-        return newFilters.ToArray();
+        return validDateRangeFilters.Concat(additonalFilters).ToArray();
     }
 
-    private static int NormalizeMonth(int month)
+    private static DateTime GetDate(int addedMonth)
     {
-        int m = month % 12;
-        return m == 0 ? 12 : m;
+        int month = addedMonth > 12 ? addedMonth % 12 : addedMonth;
+        int year = addedMonth > 12 ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
+
+        return new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
     }
 
     public async Task<bool> PlaybillCleanup(CancellationToken cToken)
