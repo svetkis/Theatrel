@@ -153,8 +153,8 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         { ReasonOfChanges.StopSales, Encoding.UTF8.GetString(new byte[] { 0xE2, 0x9D, 0x8C })},
         { ReasonOfChanges.WasMoved, Encoding.UTF8.GetString(new byte[] { 0xE2, 0x9D, 0x97 })},
         { ReasonOfChanges.StopSale, Encoding.UTF8.GetString(new byte[] { 0xE2, 0x9D, 0x8C })},
-        { ReasonOfChanges.CastWasSet, Encoding.UTF8.GetString(new byte[] { 0xF0, 0x9F, 0x94, 0x81 })},
-        { ReasonOfChanges.CastWasChanged, Encoding.UTF8.GetString(new byte[] { 0xF0, 0x9F, 0x94, 0x81 })},
+        { ReasonOfChanges.CastWasSet, Encoding.UTF8.GetString(new byte[] { 0xF0, 0x9F, 0x94, 0x84 })},
+        { ReasonOfChanges.CastWasChanged, Encoding.UTF8.GetString(new byte[] { 0xF0, 0x9F, 0x94, 0x84 })},
     };
 
     private void GetChangeDescription(PlaybillChangeEntity change, StringBuilder sb, CultureInfo culture)
@@ -163,11 +163,8 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When).ToString("ddMMM HH:mm", culture);
 
         string location = string.IsNullOrEmpty(playbillEntity.Performance.Location.Description)
-            ? playbillEntity.Performance.Location.Name
-            : playbillEntity.Performance.Location.Description;
-
-        string firstPart = $"{formattedDate} {location} {playbillEntity.Performance.Type.TypeName}"
-            .EscapeMessageForMarkupV2();
+            ? playbillEntity.Performance.Location.Name.EscapeMessageForMarkupV2()
+            : playbillEntity.Performance.Location.Description.EscapeMessageForMarkupV2();
 
         string description = !string.IsNullOrEmpty(playbillEntity.Description)
             ? $" ({playbillEntity.Description})".EscapeMessageForMarkupV2()
@@ -184,13 +181,16 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         if (noTicketsUrl && change.MinPrice > 0)
             Trace.TraceInformation($"noTicketsUrl {playbillEntity.TicketsUrl} {playbillEntity.Performance.Name} {playbillEntity.When} {change.MinPrice}");
 
-        string lastPart = change.MinPrice == 0 || noTicketsUrl
+        string pricePart = change.MinPrice == 0 || noTicketsUrl
             ? string.Empty
             : $"от [{change.MinPrice}]({playbillEntity.TicketsUrl.EscapeMessageForMarkupV2()})";
 
+        string typeEscaped = playbillEntity.Performance.Type.TypeName.EscapeMessageForMarkupV2();
         string emojie = _reasonToEmoji[(ReasonOfChanges)change.ReasonOfChanges];
 
-        sb.AppendLine($"{emojie}{firstPart} {performanceString}{description} {lastPart}");
+        string escapedDate = formattedDate.EscapeMessageForMarkupV2();
+        sb.AppendLine($"{emojie} {escapedDate} {typeEscaped} {performanceString}{description} {location} {pricePart}");
+
         if (playbillEntity.Cast != null && ReasonToShowCast.Contains((ReasonOfChanges)change.ReasonOfChanges))
         {
             IDictionary<string, IList<ActorEntity>> actorsDictionary = new Dictionary<string, IList<ActorEntity>>();

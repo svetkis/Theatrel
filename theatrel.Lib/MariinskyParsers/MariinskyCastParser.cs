@@ -9,6 +9,7 @@ using AngleSharp;
 using AngleSharp.Dom;
 using theatrel.Common;
 using theatrel.Common.Enums;
+using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Helpers;
 using theatrel.Lib.Cast;
@@ -48,6 +49,8 @@ internal class MariinskyCastParser : IPerformanceCastParser
     public async Task<IPerformanceCast> Parse(byte[] data, CancellationToken cancellationToken)
         => await PrivateParse(data, cancellationToken);
 
+    private string[] technicalActorStrings = { "будет обьявлено позднее", "будет объявлено позднее" };
+
     private async Task<IPerformanceCast> PrivateParse(byte[] data, CancellationToken cancellationToken)
     {
         if (data == null || !data.Any())
@@ -81,7 +84,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
                 return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
 
             string text = paragraph.InnerHtml.Trim();
-            var lines = text.Split(new[] { "<br/>", "<br>", "</p>", "<p>" }, StringSplitOptions.RemoveEmptyEntries);
+            var lines = text.Split(new[] { "<br/>", "<br>", "</p>", "<p>", "<br />" }, StringSplitOptions.RemoveEmptyEntries);
 
             foreach (string line in lines)
             {
@@ -96,9 +99,21 @@ internal class MariinskyCastParser : IPerformanceCastParser
                 if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
                     continue;
 
-                using IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
+                IList<IActor> actors;
+                if (line.Contains("<a"))
+                {
+                    using IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
+                    actors = GetCastInfo(parsedLine.QuerySelectorAll("a").ToArray());
+                }
+                else
+                {
+                    var name = line.GetActorName();
+                    if (string.IsNullOrEmpty(name) || technicalActorStrings.Any(x => name.Contains(x, StringComparison.OrdinalIgnoreCase)))
+                        continue;
 
-                IList<IActor> actors = GetCastInfo(parsedLine.QuerySelectorAll("a").ToArray());
+                    actors = new List<IActor>() { new PerformanceActor { Name = name } };
+                }
+
                 if (null == actors || !actors.Any())
                     continue;
 

@@ -25,10 +25,38 @@ internal static class ParsingExtensions
 
     public static IElement GetBody(this IDocument document) => document.ChildNodes.OfType<IElement>().First();
 
+    static char[] Splitters = { '—', ':', '–' };
     public static string GetCharacterName(this string actorLine)
     {
-        return actorLine.Contains('—') || actorLine.Contains(':') || actorLine.Contains('–')
-            ? actorLine.Split('—', ':', '–').First().Replace("&nbsp;", " ").Trim()
-            : CommonTags.Actor;
+        string current = actorLine.Replace("&ndash;", "-").Replace("&nbsp;", " ");
+
+        if (Splitters.Any(splitter => current.Contains(splitter)))
+        {
+            return current.Split(Splitters).First().Trim();
+        }
+
+        if (current.Contains('('))
+        {
+            int posStart = current.IndexOf('(');
+            int posEnd = current.IndexOf(')');
+
+            return posEnd > -1
+                ? current.Substring(posStart + 1, posEnd - posStart - 1).Trim()
+                : current.Substring(posStart + 1);
+        }
+
+        return CommonTags.Actor;
+    }
+
+    public static string GetActorName(this string actorLine)
+    {
+        string current = actorLine.Replace("&nbsp;", " ");
+
+        if (Splitters.Any(splitter => current.Contains(splitter)))
+        {
+            return current.Split(Splitters).Last().Trim();
+        }
+
+        return null;
     }
 }

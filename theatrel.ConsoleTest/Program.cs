@@ -1,6 +1,7 @@
 ﻿using JetBrains.Profiler.Api;
 using System;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Common;
@@ -15,6 +16,10 @@ internal static class Program
 {
     public static async Task Main()
     {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        Encoding encoding = Encoding.GetEncoding("windows-1251");
+        Console.OutputEncoding = encoding;
+
         Trace.Listeners.Add(new Trace2StdoutLogger());
 
         Bootstrapper.Start();
@@ -37,16 +42,12 @@ internal static class Program
         if (!await job.ProcessSubscriptions(cts.Token))
             return;
 
-        /*if (!await job.UpdateMariinskiPlaybill(cts.Token))
+        if (!await job.UpdateMariinskiPlaybill(cts.Token))
             return;
 
-        MemoryProfiler.GetSnapshot("");
-
-        if (!await job.UpdateMichailovskyPlaybill(cts.Token))
+ /*       if (!await job.UpdateMichailovskyPlaybill(cts.Token))
             return;
 
-        Trace.TraceInformation("Before ProcessSubscriptions");
-        //MemoryProfiler.GetSnapshot("Before ProcessSubscriptions");
 
         if (!await job.ProcessSubscriptions(cts.Token))
             return;
@@ -61,8 +62,7 @@ internal static class Program
         //MemoryProfiler.GetSnapshot("Before PlaybillCleanup");
         if (!await job.PlaybillCleanup(cts.Token))
             return;
-
-        MemoryProfiler.GetSnapshot("Update finished");*/
+*/
 
         while (true)
         {

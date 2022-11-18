@@ -290,7 +290,6 @@ internal class PlaybillRepository : IPlaybillRepository
             }
         }
 
- 
         added = addedActors.ToArray();
         removed = checkList.Where(x => !x.Exists).Select(x => x.ActorInRole.Actor.Name).ToArray();
 
