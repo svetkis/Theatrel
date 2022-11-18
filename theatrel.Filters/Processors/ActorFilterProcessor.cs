@@ -31,10 +31,10 @@ internal class ActorFilterProcessor : BaseFilterProcessor
             return false;
 
         //simple check
-        if (change.CastAdded.Contains(filter.Actor, StringComparison.OrdinalIgnoreCase))
+        if (change.CastAdded != null && change.CastAdded.Contains(filter.Actor, StringComparison.OrdinalIgnoreCase))
             return true;
 
-        if (change.CastRemoved.Contains(filter.Actor, StringComparison.OrdinalIgnoreCase))
+        if (change.CastRemoved != null && change.CastRemoved.Contains(filter.Actor, StringComparison.OrdinalIgnoreCase))
             return true;
 
         if (!_filterToActorNames.ContainsKey(filter.Actor))
