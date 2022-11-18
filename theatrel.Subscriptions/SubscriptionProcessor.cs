@@ -107,109 +107,140 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         var cultureRu = CultureInfo.CreateSpecificCulture("ru");
 
         ReasonOfChanges reason = (ReasonOfChanges) changes.First().ReasonOfChanges;
+        sb.AppendLine(GetReasonDescription(reason));
 
-        switch (reason)
+        foreach (PlaybillChangeEntity change in changes)
         {
-            case ReasonOfChanges.Creation:
-                sb.AppendLine("Новое в афише:");
-                break;
-            case ReasonOfChanges.PriceDecreased:
-                sb.AppendLine("Снижена цена:");
-                break;
-            case ReasonOfChanges.PriceIncreased:
-                sb.AppendLine("Билеты подорожали:");
-                break;
-            case ReasonOfChanges.StartSales:
-                sb.AppendLine("Появились в продаже билеты:");
-                break;
-            case ReasonOfChanges.StopSales:
-                sb.AppendLine("Стоп продаж:");
-                break;
-            case ReasonOfChanges.WasMoved:
-                sb.AppendLine("Перенесены на другую дату:");
-                break;
-            case ReasonOfChanges.StopSale:
-                sb.AppendLine("Закончились билеты:");
-                break;
-            case ReasonOfChanges.CastWasSet:
-                sb.AppendLine("Объявлен состав исполнителей:");
-                break;
-            case ReasonOfChanges.CastWasChanged:
-                sb.AppendLine("Состав исполнителей изменен:");
-                break;
-        }
-
-        foreach (var change in changes)
-        {
-            PlaybillEntity playbillEntity = change.PlaybillEntity;
-            string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When).ToString("ddMMM HH:mm", cultureRu);
-
-            string location = string.IsNullOrEmpty(playbillEntity.Performance.Location.Description)
-                ? playbillEntity.Performance.Location.Name
-                : playbillEntity.Performance.Location.Description;
-
-            string firstPart = $"{formattedDate} {location} {playbillEntity.Performance.Type.TypeName}"
-                .EscapeMessageForMarkupV2();
-
-            string description = !string.IsNullOrEmpty(playbillEntity.Description)
-                ? $" ({playbillEntity.Description})".EscapeMessageForMarkupV2()
-                : string.Empty;
-
-            string escapedName = $"\"{playbillEntity.Performance.Name}\"".EscapeMessageForMarkupV2();
-            string performanceString = string.IsNullOrWhiteSpace(playbillEntity.Url) || CommonTags.TechnicalStateTags.Contains(playbillEntity.Url)
-                ? escapedName
-                : $"[{escapedName}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
-
-            bool noTicketsUrl = string.IsNullOrWhiteSpace(playbillEntity.TicketsUrl) ||
-                                CommonTags.TechnicalStateTags.Contains(playbillEntity.TicketsUrl);
-
-            if (noTicketsUrl && change.MinPrice > 0)
-                Trace.TraceInformation($"noTicketsUrl {playbillEntity.TicketsUrl} {playbillEntity.Performance.Name} {playbillEntity.When} {change.MinPrice}");
-
-            string lastPart = change.MinPrice == 0 || noTicketsUrl
-                ? string.Empty
-                : $"от [{change.MinPrice}]({playbillEntity.TicketsUrl.EscapeMessageForMarkupV2()})";
-
-            sb.AppendLine($"{firstPart} {performanceString}{description} {lastPart}");
-            if (playbillEntity.Cast != null && ReasonToShowCast.Contains(reason))
-            {
-                IDictionary<string, IList<ActorEntity>> actorsDictionary = new Dictionary<string, IList<ActorEntity>>();
-                foreach (var item in playbillEntity.Cast)
-                {
-                    if (!actorsDictionary.ContainsKey(item.Role.CharacterName))
-                        actorsDictionary[item.Role.CharacterName] = new List<ActorEntity>();
-
-                    actorsDictionary[item.Role.CharacterName].Add(item.Actor);
-                }
-
-                foreach (var group in actorsDictionary.OrderBy(kp => kp.Key, CharactersComparer.Create()))
-                {
-                    string actors = string.Join(", ", group.Value.Select(item =>
-                        item.Url == CommonTags.NotDefinedTag || string.IsNullOrEmpty(item.Url)
-                            ? item.Name.EscapeMessageForMarkupV2()
-                            : $"[{item.Name.EscapeMessageForMarkupV2()}]({item.Url.EscapeMessageForMarkupV2()})"));
-
-                    bool wasAdded = group.Value.Any(item => change.CastAdded?.Contains(item.Name) ?? false);
-
-                    bool isPhonogram = group.Key == CommonTags.Conductor && group.Value.First().Name == CommonTags.Phonogram;
-
-                    string character = group.Key == CommonTags.Actor || isPhonogram
-                        ? string.Empty
-                        : $"{group.Key} - ".EscapeMessageForMarkupV2();
-
-                    string addedPart = wasAdded ? " (+)".EscapeMessageForMarkupV2() : string.Empty;
-
-                    sb.AppendLine($"{character}{actors}{addedPart}");
-                }
-
-                if (!string.IsNullOrEmpty(change.CastRemoved))
-                    sb.AppendLine($"Были удалены: {change.CastRemoved}".EscapeMessageForMarkupV2());
-            }
-
-            sb.AppendLine();
+            GetChangeDescription(change, sb, cultureRu);
         }
 
         return sb.ToString();
+    }
+
+    private string GetReasonDescription(ReasonOfChanges reason)
+    {
+        switch (reason)
+        {
+            case ReasonOfChanges.Creation: 
+                return "Новое в афише:";
+            case ReasonOfChanges.PriceDecreased:
+                return "Снижена цена:";
+            case ReasonOfChanges.PriceIncreased:
+                return "Билеты подорожали:";
+            case ReasonOfChanges.StartSales:
+                return "Появились в продаже билеты:";
+            case ReasonOfChanges.StopSales:
+                return "Стоп продаж:";
+            case ReasonOfChanges.WasMoved:
+                return "Перенесены на другую дату:";
+            case ReasonOfChanges.StopSale:
+                return "Закончились билеты:";
+            case ReasonOfChanges.CastWasSet:
+                return "Объявлен состав исполнителей:";
+            case ReasonOfChanges.CastWasChanged:
+                return "Состав исполнителей изменен:";
+            default:
+                return string.Empty;
+        }
+    }
+
+    private string GetEmojieReasonDescription(ReasonOfChanges reason)
+    {
+        switch (reason)
+        {
+            case ReasonOfChanges.Creation:
+                return ":new:";
+            case ReasonOfChanges.PriceDecreased:
+                return ":arrow_down:";
+            case ReasonOfChanges.PriceIncreased:
+                return ":arrow_up:";
+            case ReasonOfChanges.StartSales:
+                return ":bell:";
+            case ReasonOfChanges.StopSales:
+                return ":x:";
+            case ReasonOfChanges.WasMoved:
+                return ":exclamation:";
+            case ReasonOfChanges.StopSale:
+                return ":exclamation:";
+            case ReasonOfChanges.CastWasSet:
+                return ":arrows_counterclockwise:";
+            case ReasonOfChanges.CastWasChanged:
+                return ":arrows_counterclockwise:";
+            default:
+                return string.Empty;
+        }
+    }
+
+    private void GetChangeDescription(PlaybillChangeEntity change, StringBuilder sb, CultureInfo culture)
+    {
+        PlaybillEntity playbillEntity = change.PlaybillEntity;
+        string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When).ToString("ddMMM HH:mm", culture);
+
+        string location = string.IsNullOrEmpty(playbillEntity.Performance.Location.Description)
+            ? playbillEntity.Performance.Location.Name
+            : playbillEntity.Performance.Location.Description;
+
+        string firstPart = $"{formattedDate} {location} {playbillEntity.Performance.Type.TypeName}"
+            .EscapeMessageForMarkupV2();
+
+        string description = !string.IsNullOrEmpty(playbillEntity.Description)
+            ? $" ({playbillEntity.Description})".EscapeMessageForMarkupV2()
+            : string.Empty;
+
+        string escapedName = $"\"{playbillEntity.Performance.Name}\"".EscapeMessageForMarkupV2();
+        string performanceString = string.IsNullOrWhiteSpace(playbillEntity.Url) || CommonTags.TechnicalStateTags.Contains(playbillEntity.Url)
+            ? escapedName
+            : $"[{escapedName}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
+
+        bool noTicketsUrl = string.IsNullOrWhiteSpace(playbillEntity.TicketsUrl) ||
+                            CommonTags.TechnicalStateTags.Contains(playbillEntity.TicketsUrl);
+
+        if (noTicketsUrl && change.MinPrice > 0)
+            Trace.TraceInformation($"noTicketsUrl {playbillEntity.TicketsUrl} {playbillEntity.Performance.Name} {playbillEntity.When} {change.MinPrice}");
+
+        string lastPart = change.MinPrice == 0 || noTicketsUrl
+            ? string.Empty
+            : $"от [{change.MinPrice}]({playbillEntity.TicketsUrl.EscapeMessageForMarkupV2()})";
+
+        string emojie = GetEmojieReasonDescription((ReasonOfChanges)change.ReasonOfChanges);
+
+        sb.AppendLine($"{emojie} {firstPart} {performanceString}{description} {lastPart}");
+        if (playbillEntity.Cast != null && ReasonToShowCast.Contains((ReasonOfChanges)change.ReasonOfChanges))
+        {
+            IDictionary<string, IList<ActorEntity>> actorsDictionary = new Dictionary<string, IList<ActorEntity>>();
+            foreach (var item in playbillEntity.Cast)
+            {
+                if (!actorsDictionary.ContainsKey(item.Role.CharacterName))
+                    actorsDictionary[item.Role.CharacterName] = new List<ActorEntity>();
+
+                actorsDictionary[item.Role.CharacterName].Add(item.Actor);
+            }
+
+            foreach (var group in actorsDictionary.OrderBy(kp => kp.Key, CharactersComparer.Create()))
+            {
+                string actors = string.Join(", ", group.Value.Select(item =>
+                    item.Url == CommonTags.NotDefinedTag || string.IsNullOrEmpty(item.Url)
+                        ? item.Name.EscapeMessageForMarkupV2()
+                        : $"[{item.Name.EscapeMessageForMarkupV2()}]({item.Url.EscapeMessageForMarkupV2()})"));
+
+                bool wasAdded = group.Value.Any(item => change.CastAdded?.Contains(item.Name) ?? false);
+
+                bool isPhonogram = group.Key == CommonTags.Conductor && group.Value.First().Name == CommonTags.Phonogram;
+
+                string character = group.Key == CommonTags.Actor || isPhonogram
+                    ? string.Empty
+                    : $"{group.Key} - ".EscapeMessageForMarkupV2();
+
+                string addedPart = wasAdded ? " (+)".EscapeMessageForMarkupV2() : string.Empty;
+
+                sb.AppendLine($"{character}{actors}{addedPart}");
+            }
+
+            if (!string.IsNullOrEmpty(change.CastRemoved))
+                sb.AppendLine($"Были удалены: {change.CastRemoved}".EscapeMessageForMarkupV2());
+        }
+
+        sb.AppendLine();
     }
 
     private async Task<bool> SendMessages(long tgUserId, PlaybillChangeEntity[] changes)
