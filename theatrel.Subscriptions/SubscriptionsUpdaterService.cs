@@ -91,7 +91,7 @@ internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
                 SubscriptionEntity subscription = await subscriptionRepository.Create(
                         userId,
                         trackIt,
-                        _filterService.GetFilter(startDate, startDate.AddMonths(1)), cancellationToken);
+                        _filterService.GetOneMonthFilter(startDate), cancellationToken);
             }
         }
 

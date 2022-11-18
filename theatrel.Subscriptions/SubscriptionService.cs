@@ -58,7 +58,7 @@ public class SubscriptionService : ISubscriptionService
                 endDate = startDate.AddMonths(1);
             }
 
-            MergeFilters(mergedFilters, _filterService.GetFilter(startDate, endDate));
+            MergeFilters(mergedFilters, _filterService.GetOneMonthFilter(startDate));
         }
 
         Trace.TraceInformation("Get updated filter finished");
