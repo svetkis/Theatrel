@@ -144,32 +144,18 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         }
     }
 
-    private string GetEmojieReasonDescription(ReasonOfChanges reason)
+    private Dictionary<ReasonOfChanges, string> _reasonToEmoji = new Dictionary<ReasonOfChanges, string>() 
     {
-        switch (reason)
-        {
-            case ReasonOfChanges.Creation:
-                return ":new:";
-            case ReasonOfChanges.PriceDecreased:
-                return ":arrow_down:";
-            case ReasonOfChanges.PriceIncreased:
-                return ":arrow_up:";
-            case ReasonOfChanges.StartSales:
-                return ":bell:";
-            case ReasonOfChanges.StopSales:
-                return ":x:";
-            case ReasonOfChanges.WasMoved:
-                return ":exclamation:";
-            case ReasonOfChanges.StopSale:
-                return ":exclamation:";
-            case ReasonOfChanges.CastWasSet:
-                return ":arrows_counterclockwise:";
-            case ReasonOfChanges.CastWasChanged:
-                return ":arrows_counterclockwise:";
-            default:
-                return string.Empty;
-        }
-    }
+        { ReasonOfChanges.Creation, Encoding.UTF8.GetString(new byte[] { 0xF0, 0x9F, 0x86, 0x95 })},
+        { ReasonOfChanges.PriceDecreased, Encoding.UTF8.GetString(new byte[] { 0xE2, 0xAC, 0x87 })},
+        { ReasonOfChanges.PriceIncreased, Encoding.UTF8.GetString(new byte[] { 0xE2, 0xAC, 0x86 })},
+        { ReasonOfChanges.StartSales, Encoding.UTF8.GetString(new byte[] { 0xF0, 0x9F, 0x94, 0x94 })},
+        { ReasonOfChanges.StopSales, Encoding.UTF8.GetString(new byte[] { 0xE2, 0x9D, 0x8C })},
+        { ReasonOfChanges.WasMoved, Encoding.UTF8.GetString(new byte[] { 0xE2, 0x9D, 0x97 })},
+        { ReasonOfChanges.StopSale, Encoding.UTF8.GetString(new byte[] { 0xE2, 0x9D, 0x8C })},
+        { ReasonOfChanges.CastWasSet, Encoding.UTF8.GetString(new byte[] { 0xF0, 0x9F, 0x94, 0x81 })},
+        { ReasonOfChanges.CastWasChanged, Encoding.UTF8.GetString(new byte[] { 0xF0, 0x9F, 0x94, 0x81 })},
+    };
 
     private void GetChangeDescription(PlaybillChangeEntity change, StringBuilder sb, CultureInfo culture)
     {
@@ -202,7 +188,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             ? string.Empty
             : $"от [{change.MinPrice}]({playbillEntity.TicketsUrl.EscapeMessageForMarkupV2()})";
 
-        string emojie = string.Empty;//GetEmojieReasonDescription((ReasonOfChanges)change.ReasonOfChanges);
+        string emojie = _reasonToEmoji[(ReasonOfChanges)change.ReasonOfChanges];
 
         sb.AppendLine($"{emojie}{firstPart} {performanceString}{description} {lastPart}");
         if (playbillEntity.Cast != null && ReasonToShowCast.Contains((ReasonOfChanges)change.ReasonOfChanges))
