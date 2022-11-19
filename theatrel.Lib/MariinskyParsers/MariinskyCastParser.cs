@@ -99,11 +99,14 @@ internal class MariinskyCastParser : IPerformanceCastParser
                 if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
                     continue;
 
+                using IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
+                var aTags = parsedLine.QuerySelectorAll("a").ToArray();
+
                 IList<IActor> actors;
-                if (line.Contains("<a"))
+                if (aTags.Any())
                 {
-                    using IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
-                    actors = GetCastInfo(parsedLine.QuerySelectorAll("a").ToArray());
+                    
+                    actors = GetCastInfo(aTags);
                 }
                 else
                 {
