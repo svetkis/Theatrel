@@ -14,6 +14,7 @@ using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.TgBot;
 using theatrel.Interfaces.TimeZoneService;
+using theatrel.Lib.Interfaces;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
@@ -23,6 +24,7 @@ internal class GetPerformancesCommand : DialogCommandBase
 {
     private readonly IFilterService _filterService;
     private readonly ITimeZoneService _timeZoneService;
+    private readonly IDescriptionService _descriptionService;
 
     private const string DecreasePriceSubscription = "Подписаться на снижение цены на билеты";
     private const string NewInPlaybillSubscription = "Подписаться на новые спектакли и появление билетов в продаже";
@@ -34,11 +36,16 @@ internal class GetPerformancesCommand : DialogCommandBase
 
     public override string Name => "Искать";
 
-    public GetPerformancesCommand(IFilterService filterService, ITimeZoneService timeZoneService, IDbService dbService)
+    public GetPerformancesCommand(
+        IFilterService filterService,
+        ITimeZoneService timeZoneService,
+        IDescriptionService descriptionService, 
+        IDbService dbService)
         : base(dbService)
     {
         _filterService = filterService;
         _timeZoneService = timeZoneService;
+        _descriptionService = descriptionService;
 
         CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(1, new[] {
             new KeyboardButton(DecreasePriceSubscription),
@@ -311,30 +318,12 @@ internal class GetPerformancesCommand : DialogCommandBase
 
             int minPrice = lastChange.MinPrice;
 
-            DateTime dt = _timeZoneService.GetLocalTime(item.When);
-
-            string firstPart = $"{dt.ToString("ddMMM HH:mm", cultureRu)} {item.Performance.Location.Name} {item.Performance.Type.TypeName}"
-                .EscapeMessageForMarkupV2();
-
-            string escapedName = $"\"{item.Performance.Name}\"".EscapeMessageForMarkupV2();
-            string performanceString = string.IsNullOrWhiteSpace(item.Url) || item.Url == CommonTags.NotDefinedTag
-                ? escapedName
-                : $"[{escapedName}]({item.Url.EscapeMessageForMarkupV2()})";
-
-            string description = !string.IsNullOrEmpty(item.Description)
-                ? $" ({item.Description})".EscapeMessageForMarkupV2()
-                : string.Empty;
-
-            string lastPart = minPrice > 0
-                ? string.IsNullOrWhiteSpace(item.TicketsUrl) || item.TicketsUrl == CommonTags.NotDefinedTag
-                    ? $"от {minPrice}"
-                    : $"от [{minPrice}]({item.TicketsUrl.EscapeMessageForMarkupV2()})"
-                : "Нет билетов в продаже";
+            string performanceDescription = _descriptionService.GetPerformanceDescription(item, minPrice, cultureRu);
 
             savedInfo.Append($"{item.Id},");
             string subscriptionIndexPart = $"Индекс для подписки {++i}";
 
-            stringBuilder.AppendLine($"{firstPart} {performanceString}{description} {lastPart}");
+            stringBuilder.AppendLine(performanceDescription);
             stringBuilder.AppendLine(subscriptionIndexPart);
             stringBuilder.AppendLine();
         }

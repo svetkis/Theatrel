@@ -114,7 +114,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
                     if (string.IsNullOrEmpty(name) || technicalActorStrings.Any(x => name.Contains(x, StringComparison.OrdinalIgnoreCase)))
                         continue;
 
-                    actors = new List<IActor>() { new PerformanceActor { Name = name } };
+                    actors = new List<IActor>() { new PerformanceActor { Name = name, Url = CommonTags.NotDefinedTag} };
                 }
 
                 if (null == actors || !actors.Any())

@@ -1,6 +1,7 @@
 ﻿using theatrel.DataAccess.DbService;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.TimeZoneService;
+using theatrel.Lib.Interfaces;
 using theatrel.TLBot.Commands;
 using theatrel.TLBot.Commands.IntroduceBot;
 using theatrel.TLBot.Commands.SearchByActor;
@@ -16,12 +17,18 @@ internal class TgCommandsConfigurator : ITgCommandsConfigurator
     private readonly IDbService _dbService;
     private readonly IFilterService _filterService;
     private readonly ITimeZoneService _timeZoneService;
+    private readonly IDescriptionService _descriptionService;
 
-    public TgCommandsConfigurator(IDbService dbService, IFilterService filterService, ITimeZoneService timeZoneService)
+    public TgCommandsConfigurator(
+        IDbService dbService,
+        IFilterService filterService,
+        ITimeZoneService timeZoneService,
+        IDescriptionService descriptionService)
     {
         _dbService = dbService;
         _filterService = filterService;
         _timeZoneService = timeZoneService;
+        _descriptionService = descriptionService;
     }
 
     public IDialogCommand[][] GetDialogCommands()
@@ -41,7 +48,7 @@ internal class TgCommandsConfigurator : ITgCommandsConfigurator
                 new MonthCommand(_dbService),
                 new DaysOfWeekCommand(_dbService),
                 new PerformanceTypesCommand(_dbService),
-                new GetPerformancesCommand(_filterService, _timeZoneService, _dbService)
+                new GetPerformancesCommand(_filterService, _timeZoneService, _descriptionService, _dbService)
             },
             new IDialogCommand[]
             {
@@ -49,13 +56,13 @@ internal class TgCommandsConfigurator : ITgCommandsConfigurator
                 new SelectTheatreCommand(_dbService),
                 new SelectLocationCommand(_dbService),
                 new AscNameCommand(_dbService),
-                new GetPerformancesCommand(_filterService, _timeZoneService, _dbService)
+                new GetPerformancesCommand(_filterService, _timeZoneService, _descriptionService, _dbService)
             },
             new IDialogCommand[]
             {
                 new StartSearchByActorCommand(_dbService),
                 new AcsActorCommand(_dbService),
-                new GetPerformancesByActorCommand(_filterService, _timeZoneService, _dbService)
+                new GetPerformancesByActorCommand(_filterService, _timeZoneService, _descriptionService, _dbService)
             },
             new IDialogCommand[]
             {

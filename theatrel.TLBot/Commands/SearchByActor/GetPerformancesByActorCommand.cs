@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
-using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.Common.FormatHelper;
 using theatrel.DataAccess.DbService;
@@ -14,6 +13,7 @@ using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.TgBot;
 using theatrel.Interfaces.TimeZoneService;
+using theatrel.Lib.Interfaces;
 using theatrel.TLBot.Interfaces;
 using theatrel.TLBot.Messages;
 
@@ -23,6 +23,7 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
 {
     private readonly IFilterService _filterService;
     private readonly ITimeZoneService _timeZoneService;
+    private readonly IDescriptionService _descriptionService;
 
     private const string CastSubscription = "Подписка на изменения в афише с выбранным исполнителем";
 
@@ -32,11 +33,16 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
 
     public override string Name => "Искать";
 
-    public GetPerformancesByActorCommand(IFilterService filterService, ITimeZoneService timeZoneService, IDbService dbService)
+    public GetPerformancesByActorCommand(
+        IFilterService filterService,
+        ITimeZoneService timeZoneService,
+        IDescriptionService descriptionService,
+        IDbService dbService)
         : base(dbService)
     {
         _filterService = filterService;
         _timeZoneService = timeZoneService;
+        _descriptionService = descriptionService;
 
         CommandKeyboardMarkup = new ReplyKeyboardMarkup(GroupKeyboardButtons(1, new[] {
             new KeyboardButton(CastSubscription),
@@ -251,42 +257,11 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
     {
         var cultureRu = CultureInfo.CreateSpecificCulture(culture);
 
-        var stringBuilder = new StringBuilder();
+        var sb = new StringBuilder();
 
-        string days = filter.DaysOfWeek != null
-            ? filter.DaysOfWeek.Length == 1
-                ? $"день недели: {cultureRu.DateTimeFormat.GetDayName(filter.DaysOfWeek.First())}"
-                : "дни недели: " + string.Join(" или ", filter.DaysOfWeek
-                    .OrderBy(d => (int)d, DaysOfWeekComparer.Create())
-                    .Select(d => cultureRu.DateTimeFormat.GetDayName(d)))
-            : string.Empty;
+        sb.AppendLine($"Я искал для Вас представления с участием {filter.Actor}".EscapeMessageForMarkupV2());
 
-        string types = filter.PerformanceTypes == null || !filter.PerformanceTypes.Any()
-            ? "все представления"
-            : string.Join(", ", filter.PerformanceTypes);
-
-        using var playbillRepo = DbService.GetPlaybillRepository();
-
-        bool theatresWereSelected = filter.TheatreIds != null && filter.TheatreIds.Any();
-
-        var theatres = theatresWereSelected
-            ? string.Join(", ", playbillRepo.GetTheatres().Where(x => filter.TheatreIds.Contains(x.Id)).Select(x => x.Name))
-            : string.Join(", ", playbillRepo.GetTheatres().Select(x => x.Name).ToArray());
-
-        string locations = filter.LocationIds == null || !filter.LocationIds.Any()
-            ? "любая площадка"
-            : string.Join(", ", filter.LocationIds.Select(x =>
-            {
-                var location = playbillRepo.GetLocation(x);
-                return string.IsNullOrEmpty(location.Description) ? location.Name : location.Description;
-            }));
-
-        stringBuilder.AppendLine(
-            string.IsNullOrEmpty(filter.PerformanceName)
-                ? $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}. Площадка: {locations}.".EscapeMessageForMarkupV2()
-                : $"Я искал для Вас билеты на \"{filter.PerformanceName}\". Площадка: {locations}.".EscapeMessageForMarkupV2());
-
-        stringBuilder.AppendLine();
+        sb.AppendLine();
 
         int i = 0;
         StringBuilder savedInfo = new StringBuilder();
@@ -301,74 +276,29 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
 
             int minPrice = lastChange.MinPrice;
 
-            DateTime dt = _timeZoneService.GetLocalTime(item.When);
-
-            string firstPart = $"{dt.ToString("ddMMM HH:mm", cultureRu)} {item.Performance.Location.Name} {item.Performance.Type.TypeName}"
-                .EscapeMessageForMarkupV2();
-
-            string escapedName = $"\"{item.Performance.Name}\"".EscapeMessageForMarkupV2();
-            string performanceString = string.IsNullOrWhiteSpace(item.Url) || item.Url == CommonTags.NotDefinedTag
-                ? escapedName
-                : $"[{escapedName}]({item.Url.EscapeMessageForMarkupV2()})";
-
-            string description = !string.IsNullOrEmpty(item.Description)
-                ? $" ({item.Description})".EscapeMessageForMarkupV2()
-                : string.Empty;
-
-            string lastPart = minPrice > 0
-                ? string.IsNullOrWhiteSpace(item.TicketsUrl) || item.TicketsUrl == CommonTags.NotDefinedTag
-                    ? $"от {minPrice}"
-                    : $"от [{minPrice}]({item.TicketsUrl.EscapeMessageForMarkupV2()})"
-                : "Нет билетов в продаже";
+            sb.AppendLine(_descriptionService.GetPerformanceDescription(item, minPrice, cultureRu));
 
             savedInfo.Append($"{item.Id},");
             string subscriptionIndexPart = $"Индекс для подписки {++i}";
 
-            StringBuilder cast = new();
-            if (item.Cast != null)
-            {
-                IDictionary<string, IList<ActorEntity>> actorsDictionary = new Dictionary<string, IList<ActorEntity>>();
-                foreach (var actor in item.Cast)
-                {
-                    if (!actorsDictionary.ContainsKey(actor.Role.CharacterName))
-                        actorsDictionary[actor.Role.CharacterName] = new List<ActorEntity>();
-
-                    actorsDictionary[actor.Role.CharacterName].Add(actor.Actor);
-                }
-
-                foreach (var group in actorsDictionary.OrderBy(kp => kp.Key, CharactersComparer.Create()))
-                {
-                    string actorsList = string.Join(", ", group.Value.Select(item =>
-                        item.Url == CommonTags.NotDefinedTag || string.IsNullOrEmpty(item.Url)
-                            ? item.Name.EscapeMessageForMarkupV2()
-                            : $"[{item.Name.EscapeMessageForMarkupV2()}]({item.Url.EscapeMessageForMarkupV2()})"));
-
-                    bool isPhonogram = group.Key == CommonTags.Conductor && group.Value.First().Name == CommonTags.Phonogram;
-
-                    string characterPart = group.Key == CommonTags.Actor || isPhonogram
-                        ? string.Empty
-                        : $"{group.Key} - ".EscapeMessageForMarkupV2();
-
-                    cast.AppendLine($"{characterPart}{actorsList}");
-                }
-            }
-
-            stringBuilder.AppendLine($"{firstPart} {performanceString}{description} {lastPart}");
+            string cast = _descriptionService.GetCastDescription(item, null, null);
+  
             if (!string.IsNullOrEmpty(cast.ToString()))
-                stringBuilder.AppendLine(cast.ToString());
-            stringBuilder.AppendLine(subscriptionIndexPart);
-            stringBuilder.AppendLine();
+                sb.AppendLine(cast.ToString());
+
+            sb.AppendLine(subscriptionIndexPart);
+            sb.AppendLine();
         }
 
         if (!performances.Any())
             return Task.FromResult("Увы, я ничего не нашел. Можете подписаться и я пришлю Вам сообщение про новые спектакли с этим исполнителем.".EscapeMessageForMarkupV2());
 
-        stringBuilder.AppendLine("Для подписки на конкретный спектакль напишите индекс подписки-код подписки, например: 5-1".EscapeMessageForMarkupV2());
-        stringBuilder.AppendLine("Или сразу несколько кодов и подписок например: 5-1 6-4 10-2".EscapeMessageForMarkupV2());
-        stringBuilder.AppendLine("Коды подписки: 1 появление билетов в продаже, 2 снижение цены, 3 изменения состава исполнителей, 4 все события".EscapeMessageForMarkupV2());
+        sb.AppendLine("Для подписки на конкретный спектакль напишите индекс подписки-код подписки, например: 5-1".EscapeMessageForMarkupV2());
+        sb.AppendLine("Или сразу несколько кодов и подписок например: 5-1 6-4 10-2".EscapeMessageForMarkupV2());
+        sb.AppendLine("Коды подписки: 1 появление билетов в продаже, 2 снижение цены, 3 изменения состава исполнителей, 4 все события".EscapeMessageForMarkupV2());
 
         chatInfo.Info = savedInfo.ToString();
 
-        return Task.FromResult(stringBuilder.ToString());
+        return Task.FromResult(sb.ToString());
     }
 }
