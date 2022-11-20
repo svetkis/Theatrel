@@ -260,7 +260,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
 
         CheckData[] checkList = oldCast
-            .Select(a => new CheckData { Exists = false, ActorInRole = a })
+            .Select(actorInRole => new CheckData { Exists = false, ActorInRole = actorInRole })
             .ToArray();
 
         List<string> addedActors = new();

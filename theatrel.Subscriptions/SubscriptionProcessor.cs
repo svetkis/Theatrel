@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Telegram.Bot.Types.Enums;
 using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.Common.FormatHelper;
@@ -114,14 +116,34 @@ public class SubscriptionProcessor : ISubscriptionProcessor
 
         var cultureRu = CultureInfo.CreateSpecificCulture("ru");
 
-        ReasonOfChanges reason = (ReasonOfChanges) changes.First().ReasonOfChanges;
-        sb.AppendLine(GetReasonDescription(reason));
+        var reasons = changes.Select(c => c.ReasonOfChanges).Distinct().OrderBy(x => x).ToArray();
+        var emojies = reasons.Select(x => _reasonToEmoji[(ReasonOfChanges)x]);
 
-        foreach (PlaybillChangeEntity change in changes)
+        PlaybillEntity playbillEntity = changes.First().PlaybillEntity;
+
+        int minPrice = changes
+            .OrderBy(x => x.LastUpdate)
+            .Last()
+            .MinPrice;
+
+        string performanceDescription = _descriptionSevice.GetPerformanceDescription(playbillEntity, minPrice, cultureRu);
+        sb.AppendLine($"{string.Join(string.Empty, emojies)} {performanceDescription}");
+
+        var lastCastUpdate = changes
+            .Where(x => ReasonToShowCast.Contains((ReasonOfChanges)x.ReasonOfChanges))
+            .OrderBy(x => x.LastUpdate)
+            .LastOrDefault();
+
+        if (lastCastUpdate != null)
         {
-            GetChangeDescription(change, sb, cultureRu);
+            string cast = _descriptionSevice.GetCastDescription(playbillEntity, lastCastUpdate.CastAdded, lastCastUpdate.CastRemoved);
+            if (!string.IsNullOrEmpty(cast))
+            {
+                sb.AppendLine(cast);
+            }
         }
 
+        sb.AppendLine();
         return sb.ToString();
     }
 
@@ -165,33 +187,13 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         { ReasonOfChanges.CastWasChanged, Encoding.UTF8.GetString(new byte[] { 0xF0, 0x9F, 0x94, 0x84 })},
     };
 
-    private void GetChangeDescription(PlaybillChangeEntity change, StringBuilder sb, CultureInfo culture)
-    {
-        PlaybillEntity playbillEntity = change.PlaybillEntity;
-
-        string performanceDescription = _descriptionSevice.GetPerformanceDescription(playbillEntity, change.MinPrice, culture);
-        
-        string emojie = _reasonToEmoji[(ReasonOfChanges)change.ReasonOfChanges];
-
-        sb.AppendLine($"{emojie} {performanceDescription}");
-
-        if (playbillEntity.Cast != null && ReasonToShowCast.Contains((ReasonOfChanges)change.ReasonOfChanges))
-        {
-            string cast = _descriptionSevice.GetCastDescription(playbillEntity, change.CastAdded, change.CastRemoved);
-            if (!string.IsNullOrEmpty(cast))
-            {
-                sb.AppendLine(cast);
-            }
-        }
-
-        sb.AppendLine();
-    }
-
     private async Task<bool> SendMessages(long tgUserId, PlaybillChangeEntity[] changes)
     {
         var groups = changes
-            .GroupBy(change => change.ReasonOfChanges)
-            .Select(group => group.OrderBy(x => x.PlaybillEntity.When).ToArray());
+            .GroupBy(change => change.PlaybillEntityId)
+            .OrderBy(group => group.First().PlaybillEntity.When)
+            .Select(x => x.ToArray())
+            .ToArray();
 
         string message = string.Join(Environment.NewLine, groups.Select(GetChangesDescription));
 
