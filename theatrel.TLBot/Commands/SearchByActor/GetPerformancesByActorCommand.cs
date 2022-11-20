@@ -259,16 +259,14 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
 
         var sb = new StringBuilder();
 
-        sb.AppendLine($"Я искал для Вас представления с участием {filter.Actor}".EscapeMessageForMarkupV2());
-
-        sb.AppendLine();
-
         int i = 0;
         StringBuilder savedInfo = new StringBuilder();
         foreach (PlaybillEntity item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.UtcNow))
         {
             if (!item.Changes.Any())
                 continue;
+
+            savedInfo.Append($"{item.Id},");
 
             var lastChange = item.Changes.OrderBy(ch => ch.LastUpdate).Last();
             if (lastChange.ReasonOfChanges == (int)ReasonOfChanges.WasMoved)
@@ -278,15 +276,14 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
 
             sb.AppendLine(_descriptionService.GetPerformanceDescription(item, minPrice, cultureRu));
 
-            savedInfo.Append($"{item.Id},");
             string subscriptionIndexPart = $"Индекс для подписки {++i}";
+            sb.AppendLine(subscriptionIndexPart);
 
             string cast = _descriptionService.GetCastDescription(item, null, null);
   
             if (!string.IsNullOrEmpty(cast.ToString()))
                 sb.AppendLine(cast.ToString());
 
-            sb.AppendLine(subscriptionIndexPart);
             sb.AppendLine();
         }
 

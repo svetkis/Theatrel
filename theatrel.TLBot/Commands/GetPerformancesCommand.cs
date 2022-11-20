@@ -312,6 +312,8 @@ internal class GetPerformancesCommand : DialogCommandBase
             if (!item.Changes.Any())
                 continue;
 
+            savedInfo.Append($"{item.Id},");
+
             var lastChange = item.Changes.OrderBy(ch => ch.LastUpdate).Last();
             if (lastChange.ReasonOfChanges == (int)ReasonOfChanges.WasMoved)
                 continue;
@@ -320,7 +322,6 @@ internal class GetPerformancesCommand : DialogCommandBase
 
             string performanceDescription = _descriptionService.GetPerformanceDescription(item, minPrice, cultureRu);
 
-            savedInfo.Append($"{item.Id},");
             string subscriptionIndexPart = $"Индекс для подписки {++i}";
 
             stringBuilder.AppendLine(performanceDescription);
