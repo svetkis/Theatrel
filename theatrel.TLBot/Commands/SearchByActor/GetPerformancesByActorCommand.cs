@@ -279,12 +279,12 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
             string subscriptionIndexPart = $"{indexEmoji}Индекс для подписки {++i}";
             sb.AppendLine(subscriptionIndexPart);
 
-            sb.AppendLine(_descriptionService.GetPerformanceDescription(item, minPrice, cultureRu));
+            sb.Append(_descriptionService.GetPerformanceDescription(item, minPrice, cultureRu));
 
             string cast = _descriptionService.GetCastDescription(item, null, null);
   
             if (!string.IsNullOrEmpty(cast.ToString()))
-                sb.AppendLine(cast.ToString());
+                sb.Append(cast.ToString());
 
             sb.AppendLine();
         }

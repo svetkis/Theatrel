@@ -30,10 +30,6 @@ internal class DescriptionService : IDescriptionService
             ? playbillEntity.Performance.Location.Name.EscapeMessageForMarkupV2()
             : playbillEntity.Performance.Location.Description.EscapeMessageForMarkupV2();
 
-        string description = !string.IsNullOrEmpty(playbillEntity.Description)
-            ? $" ({playbillEntity.Description})".EscapeMessageForMarkupV2()
-            : string.Empty;
-
         string escapedName = playbillEntity.Performance.Name.EscapeMessageForMarkupV2();
 
         bool noTicketsUrl = string.IsNullOrWhiteSpace(playbillEntity.TicketsUrl) ||
@@ -50,12 +46,17 @@ internal class DescriptionService : IDescriptionService
         string typeEscaped = playbillEntity.Performance.Type.TypeName.EscapeMessageForMarkupV2();
 
         string escapedDate = formattedDate.EscapeMessageForMarkupV2();
-        var sb = new StringBuilder();
-        sb.AppendLine($"{escapedDate} {performanceNameString} {pricePart}");
-        if (!string.IsNullOrEmpty(description))
-            sb.AppendLine(description);
 
-        sb.AppendLine($"{typeEscaped} {location}");
+        var sb = new StringBuilder();
+
+        sb.AppendLine($"{escapedDate} {typeEscaped} {performanceNameString} {pricePart}");
+
+        if (!string.IsNullOrEmpty(playbillEntity.Description))
+        {
+            sb.AppendLine(playbillEntity.Description.EscapeMessageForMarkupV2());
+        }
+
+        sb.AppendLine(location);
 
         return sb.ToString();
     }

@@ -327,7 +327,7 @@ internal class GetPerformancesCommand : DialogCommandBase
             string subscriptionIndexPart = $"Индекс для подписки {++i}";
 
             stringBuilder.AppendLine( $"{indexEmoji}{subscriptionIndexPart}");
-            stringBuilder.AppendLine(performanceDescription);
+            stringBuilder.Append(performanceDescription);
 
             stringBuilder.AppendLine();
         }
