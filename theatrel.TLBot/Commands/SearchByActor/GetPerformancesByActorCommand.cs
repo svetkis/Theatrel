@@ -253,7 +253,7 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
         }
     }
 
-    private readonly string envelopeEmoji = Encoding.UTF8.GetString(new byte[] { 0xE2, 0x9C, 0x89 });
+    private readonly string indexEmoji = Encoding.UTF8.GetString(new byte[] { 0xF0, 0x9F, 0x94, 0x94 });
 
     private Task<string> CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)
     {
@@ -276,7 +276,7 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
 
             int minPrice = lastChange.MinPrice;
 
-            string subscriptionIndexPart = $"{envelopeEmoji}Индекс для подписки {++i}";
+            string subscriptionIndexPart = $"{indexEmoji}Индекс для подписки {++i}";
             sb.AppendLine(subscriptionIndexPart);
 
             sb.AppendLine(_descriptionService.GetPerformanceDescription(item, minPrice, cultureRu));

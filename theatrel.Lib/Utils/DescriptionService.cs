@@ -83,7 +83,7 @@ internal class DescriptionService : IDescriptionService
 
             string addedPart = wasAdded ? " (+)".EscapeMessageForMarkupV2() : string.Empty;
 
-            sb.AppendLine($"  {character}{actors}{addedPart}");
+            sb.AppendLine($"    {character}{actors}{addedPart}");
         }
 
         if (!string.IsNullOrEmpty(castRemoved))
