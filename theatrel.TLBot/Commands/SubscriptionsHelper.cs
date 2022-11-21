@@ -19,6 +19,7 @@ namespace theatrel.TLBot.Commands
         {
             if (string.IsNullOrEmpty(chatInfo.Info))
                 return Array.Empty<SubscriptionEntry>();
+
             string[] performanceIds = chatInfo.Info.Split(',');
 
             List<SubscriptionEntry> entriesList = new List<SubscriptionEntry>();
@@ -28,7 +29,7 @@ namespace theatrel.TLBot.Commands
 
             foreach (string indexString in parsedIndexes)
             {
-                if (!int.TryParse(indexString, out int index) || performanceIds.Length >= index)
+                if (!int.TryParse(indexString, out int index) || performanceIds.Length <= index)
                 {
                     sb?.AppendLine($"Ошибка парсинга {indexString}");
                     continue;
