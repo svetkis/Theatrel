@@ -253,6 +253,8 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
         }
     }
 
+    private readonly string envelopeEmoji = Encoding.UTF8.GetString(new byte[] { 0xE2, 0x9C, 0x89 });
+
     private Task<string> CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)
     {
         var cultureRu = CultureInfo.CreateSpecificCulture(culture);
@@ -274,17 +276,15 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
 
             int minPrice = lastChange.MinPrice;
 
-            sb.AppendLine(_descriptionService.GetPerformanceDescription(item, minPrice, cultureRu));
-
-            string subscriptionIndexPart = $"Индекс для подписки {++i}";
+            string subscriptionIndexPart = $"{envelopeEmoji}Индекс для подписки {++i}";
             sb.AppendLine(subscriptionIndexPart);
+
+            sb.AppendLine(_descriptionService.GetPerformanceDescription(item, minPrice, cultureRu));
 
             string cast = _descriptionService.GetCastDescription(item, null, null);
   
             if (!string.IsNullOrEmpty(cast.ToString()))
                 sb.AppendLine(cast.ToString());
-
-            sb.AppendLine();
         }
 
         if (!performances.Any())

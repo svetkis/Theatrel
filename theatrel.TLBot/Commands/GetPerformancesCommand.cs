@@ -264,6 +264,8 @@ internal class GetPerformancesCommand : DialogCommandBase
         }
     }
 
+    private readonly string envelopeEmoji = Encoding.UTF8.GetString(new byte[] { 0xE2, 0x9C, 0x89 });
+
     private Task<string> CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)
     {
         var cultureRu = CultureInfo.CreateSpecificCulture(culture);
@@ -324,9 +326,8 @@ internal class GetPerformancesCommand : DialogCommandBase
 
             string subscriptionIndexPart = $"Индекс для подписки {++i}";
 
+            stringBuilder.AppendLine( $"{envelopeEmoji}{subscriptionIndexPart}");
             stringBuilder.AppendLine(performanceDescription);
-            stringBuilder.AppendLine(subscriptionIndexPart);
-            stringBuilder.AppendLine();
         }
 
         if (!performances.Any())
