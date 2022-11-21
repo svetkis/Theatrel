@@ -144,21 +144,24 @@ internal class TgBotService : ITgBotService
     private const int MaxMessageSize = 4096;
     private static string[] SplitMessage(string message)
     {
+        string splitterString = $"{Environment.NewLine}{Environment.NewLine}";
+        int lenghtOfSplitter = splitterString.Length;
+
         if (message.Length < MaxMessageSize || string.IsNullOrEmpty(message))
             return new[] { message };
 
-        string[] lines = message.Split(Environment.NewLine);
+        string[] lines = message.Split(splitterString);
         List<StringBuilder> messages = new List<StringBuilder> { new StringBuilder(lines.First()) };
 
         foreach (var line in lines.Skip(1))
         {
-            if (messages.Last().Length + line.Length >= MaxMessageSize - Environment.NewLine.Length)
+            if (messages.Last().Length + line.Length >= MaxMessageSize - lenghtOfSplitter)
             {
                 messages.Add(new StringBuilder(line));
                 continue;
             }
 
-            messages.Last().Append(Environment.NewLine);
+            messages.Last().Append(splitterString);
             messages.Last().Append(line);
         }
 

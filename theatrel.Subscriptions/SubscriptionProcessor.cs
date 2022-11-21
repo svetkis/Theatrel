@@ -189,13 +189,13 @@ public class SubscriptionProcessor : ISubscriptionProcessor
 
     private async Task<bool> SendMessages(long tgUserId, PlaybillChangeEntity[] changes)
     {
-        var groups = changes
+        var performanceChangesGroups = changes
             .GroupBy(change => change.PlaybillEntityId)
             .OrderBy(group => group.First().PlaybillEntity.When)
             .Select(x => x.ToArray())
             .ToArray();
 
-        string message = string.Join(Environment.NewLine, groups.Select(GetChangesDescription));
+        string message = string.Join(Environment.NewLine, performanceChangesGroups.Select(GetChangesDescription));
 
         return await _telegramService.SendEscapedMessageAsync(tgUserId, message, CancellationToken.None);
     }

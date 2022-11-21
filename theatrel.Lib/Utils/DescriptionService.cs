@@ -34,8 +34,9 @@ internal class DescriptionService : IDescriptionService
             ? $" ({playbillEntity.Description})".EscapeMessageForMarkupV2()
             : string.Empty;
 
-        string escapedName = $"\"{playbillEntity.Performance.Name}\"".EscapeMessageForMarkupV2();
-        string performanceString = string.IsNullOrWhiteSpace(playbillEntity.Url) || CommonTags.TechnicalStateTags.Contains(playbillEntity.Url)
+        string escapedName = playbillEntity.Performance.Name.EscapeMessageForMarkupV2();
+
+        string performanceNameString = HasUrl(playbillEntity.Url)
             ? escapedName
             : $"[{escapedName}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
 
@@ -50,8 +51,13 @@ internal class DescriptionService : IDescriptionService
 
         string escapedDate = formattedDate.EscapeMessageForMarkupV2();
         
-        return $"{escapedDate} {typeEscaped} {performanceString}{description} {location} {pricePart}";
+        return $"{escapedDate} {performanceNameString}{description}{Environment.NewLine}{typeEscaped} {location} {pricePart}";
     }
+
+   private bool HasUrl(string url)
+   {
+        return string.IsNullOrWhiteSpace(url) || CommonTags.TechnicalStateTags.Contains(url);
+   }
 
     public string GetCastDescription(PlaybillEntity playbillEntity, string castAdded, string castRemoved)
     {
@@ -83,7 +89,7 @@ internal class DescriptionService : IDescriptionService
 
             string addedPart = wasAdded ? " (+)".EscapeMessageForMarkupV2() : string.Empty;
 
-            sb.AppendLine($"    {character}{actors}{addedPart}");
+            sb.AppendLine($"{character}{actors}{addedPart}");
         }
 
         if (!string.IsNullOrEmpty(castRemoved))
