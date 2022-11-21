@@ -195,7 +195,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             .Select(x => x.ToArray())
             .ToArray();
 
-        string message = string.Join(Environment.NewLine, performanceChangesGroups.Select(GetChangesDescription));
+        string message = string.Join(string.Empty, performanceChangesGroups.Select(GetChangesDescription));
 
         return await _telegramService.SendEscapedMessageAsync(tgUserId, message, CancellationToken.None);
     }
