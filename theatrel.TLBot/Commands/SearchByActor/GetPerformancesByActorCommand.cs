@@ -285,6 +285,8 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
   
             if (!string.IsNullOrEmpty(cast.ToString()))
                 sb.AppendLine(cast.ToString());
+
+            sb.AppendLine();
         }
 
         if (!performances.Any())
