@@ -264,7 +264,7 @@ internal class GetPerformancesCommand : DialogCommandBase
         }
     }
 
-    private readonly string indexEmoji = Encoding.UTF8.GetString(new byte[] { 0xF0, 0x9F, 0x94, 0x94 });
+    private readonly string indexEmoji = "👉";
 
     private Task<string> CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)
     {
