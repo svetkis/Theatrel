@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Linq;
 using AngleSharp.Dom;
-using Telegram.Bot.Types;
 using theatrel.Common;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;

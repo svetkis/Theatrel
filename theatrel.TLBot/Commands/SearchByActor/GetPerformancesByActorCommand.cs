@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AngleSharp.Dom;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -66,7 +67,7 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
             case No:
                 return new TgCommandResponse("Приятно было пообщаться. Обращайтесь еще.");
             default:
-                return await AddOnePlaybillEntrySubscription(chatInfo, message, cancellationToken);
+                return await AddParticularPlaybillEntrySubscription(chatInfo, message, cancellationToken);
         }
 
         using var subscriptionRepository = DbService.GetSubscriptionRepository();
@@ -90,7 +91,7 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
         if (commands.Contains(message))
             return true;
 
-        var userCommands = ParseSubscriptionsCommandLine(chatInfo, message);
+        var userCommands = SubscriptionsHelper.ParseSubscriptionsCommandLine(chatInfo, message, DbService);
 
         return userCommands.Any();
     }
@@ -115,10 +116,10 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
         return new TgCommandResponse(await CreatePerformancesMessage(chatInfo, filteredPerformances, filter, chatInfo.When, chatInfo.Culture), keys) { IsEscaped = true };
     }
 
-    private async Task<TgCommandResponse> AddOnePlaybillEntrySubscription(IChatDataInfo chatInfo, string commandLine, CancellationToken cancellationToken)
+    private async Task<TgCommandResponse> AddParticularPlaybillEntrySubscription(IChatDataInfo chatInfo, string commandLine, CancellationToken cancellationToken)
     {
         StringBuilder sb = new StringBuilder();
-        SubscriptionEntry[] entries = ParseSubscriptionsCommandLine(chatInfo, commandLine, sb);
+        SubscriptionEntry[] entries = SubscriptionsHelper.ParseSubscriptionsCommandLine(chatInfo, commandLine, DbService, sb);
 
         if (!entries.Any())
             return new TgCommandResponse(sb.ToString());
@@ -127,25 +128,10 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
 
         foreach (var entry in entries)
         {
-            int trackingChanges = 0;
-
-            switch (entry.SubscriptionType)
-            {
-                case 1:
-                    trackingChanges = (int)ReasonOfChanges.StartSales;
-                    break;
-                case 2:
-                    trackingChanges = (int)ReasonOfChanges.PriceDecreased;
-                    break;
-                case 3:
-                    trackingChanges = (int)(ReasonOfChanges.CastWasSet | ReasonOfChanges.CastWasChanged);
-                    break;
-
-                case 4:
-                    trackingChanges = (int)(ReasonOfChanges.StartSales | ReasonOfChanges.PriceDecreased |
-                                            ReasonOfChanges.CastWasSet | ReasonOfChanges.CastWasChanged);
-                    break;
-            }
+            int trackingChanges = (int)(ReasonOfChanges.StartSales
+                                        | ReasonOfChanges.PriceDecreased
+                                        | ReasonOfChanges.CastWasSet
+                                        | ReasonOfChanges.CastWasChanged);
 
             SubscriptionEntity subscription = await subscriptionRepository.Create(chatInfo.UserId, trackingChanges,
                 _filterService.GetFilter(entry.PlaybillEntryId), cancellationToken);
@@ -158,99 +144,6 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
         }
 
         return new TgCommandResponse(sb.ToString());
-    }
-
-    private class SubscriptionEntry
-    {
-        public int PlaybillEntryId;
-        public int SubscriptionType;
-        public DateTime When;
-        public string Name;
-    }
-
-    private SubscriptionEntry[] ParseSubscriptionsCommandLine(IChatDataInfo chatInfo, string commandLine, StringBuilder sb = null)
-    {
-        if (string.IsNullOrEmpty(chatInfo.Info))
-            return Array.Empty<SubscriptionEntry>();
-
-        string[] splitIds = chatInfo.Info.Split(',');
-
-        List<SubscriptionEntry> entriesList = new List<SubscriptionEntry>();
-        string[] parsedCommands = commandLine.Split(' ');
-
-        foreach (var cmd in parsedCommands)
-        {
-            string[] split = cmd.Split('-');
-            if (split.Length != 2)
-            {
-                sb?.AppendLine($"Не распознанная команда {cmd}");
-                continue;
-            }
-
-            string playbillEntryIdIdx = split[0];
-            string subscriptionType = split[1];
-
-            if (!int.TryParse(playbillEntryIdIdx, out int entryIdIdx))
-            {
-                sb?.AppendLine($"Ошибка парсинга {cmd}");
-                continue;
-            }
-
-            int entryId = splitIds.Length >= entryIdIdx ? int.Parse(splitIds[entryIdIdx - 1]) : -1;
-
-            if (!int.TryParse(subscriptionType, out int subscriptionCode))
-            {
-                sb?.AppendLine($"Ошибка парсинга {cmd}");
-                continue;
-            }
-
-            entriesList.Add(new SubscriptionEntry { PlaybillEntryId = entryId, SubscriptionType = subscriptionCode });
-        }
-
-        ResolvePlaybillInfo(entriesList);
-        return RemoveWrongSubscriptionCommands(entriesList.ToArray(), sb);
-    }
-
-    private SubscriptionEntry[] RemoveWrongSubscriptionCommands(SubscriptionEntry[] entriesList, StringBuilder sb)
-    {
-        if (!entriesList.Any())
-            return Array.Empty<SubscriptionEntry>();
-
-        List<SubscriptionEntry> wrongList = new List<SubscriptionEntry>();
-        foreach (var entry in entriesList)
-        {
-            if (string.IsNullOrEmpty(entry.Name))
-            {
-                sb?.AppendLine("Не найден спектакль");
-                wrongList.Add(entry);
-                continue;
-            }
-
-            if (entry.SubscriptionType < 1 || entry.SubscriptionType > 4)
-            {
-                var when = _timeZoneService.GetLocalTime(entry.When);
-
-                sb?.AppendLine($"Неправильный код подписки {entry.SubscriptionType} для спектакля {when:ddMMM HH:mm} {entry.Name}");
-                wrongList.Add(entry);
-            }
-        }
-
-        return entriesList.Except(wrongList).ToArray();
-    }
-
-    private void ResolvePlaybillInfo(IList<SubscriptionEntry> entriesList)
-    {
-        if (!entriesList.Any())
-            return;
-
-        using var playbillRepository = DbService.GetPlaybillRepository();
-
-        foreach (var entry in entriesList)
-        {
-            var pbEntity = playbillRepository.GetPlaybillEntryWithPerformanceData(entry.PlaybillEntryId);
-            entry.Name = pbEntity?.Performance.Name;
-            entry.When = pbEntity?.When ?? DateTime.UtcNow;
-        }
     }
 
     private readonly string indexEmoji = "👉";
@@ -292,9 +185,8 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
         if (!performances.Any())
             return Task.FromResult("Увы, я ничего не нашел. Можете подписаться и я пришлю Вам сообщение про новые спектакли с этим исполнителем.".EscapeMessageForMarkupV2());
 
-        sb.AppendLine("Для подписки на конкретный спектакль напишите индекс подписки-код подписки, например: 5-1".EscapeMessageForMarkupV2());
-        sb.AppendLine("Или сразу несколько кодов и подписок например: 5-1 6-4 10-2".EscapeMessageForMarkupV2());
-        sb.AppendLine("Коды подписки: 1 появление билетов в продаже, 2 снижение цены, 3 изменения состава исполнителей, 4 все события".EscapeMessageForMarkupV2());
+        sb.AppendLine("Для подписки на конкретный спектакль напишите индекс подписки, например: 5".EscapeMessageForMarkupV2());
+        sb.AppendLine("Или сразу несколько индексов: 5, 6, 10".EscapeMessageForMarkupV2());
 
         chatInfo.Info = savedInfo.ToString();
 

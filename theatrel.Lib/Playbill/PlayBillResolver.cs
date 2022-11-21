@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using RestSharp;
-using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.EncodingService;

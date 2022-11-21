@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using theatrel.Common;
 using theatrel.DataAccess.DbService;
-using theatrel.Interfaces.Subscriptions;
 using theatrel.Interfaces.TimeZoneService;
 using theatrel.TLBot.Interfaces;
 

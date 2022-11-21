@@ -9,7 +9,6 @@ using AngleSharp;
 using AngleSharp.Dom;
 using theatrel.Common;
 using theatrel.Common.Enums;
-using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Helpers;
 using theatrel.Lib.Cast;
