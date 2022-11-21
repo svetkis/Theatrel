@@ -23,7 +23,8 @@ namespace theatrel.TLBot.Commands
             string[] performanceIds = chatInfo.Info.Split(',');
 
             List<SubscriptionEntry> entriesList = new List<SubscriptionEntry>();
-            string[] parsedIndexes = commandLine.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries);
+            string[] parsedIndexes = commandLine
+                .Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
 
             using var playbillRepository = dbService.GetPlaybillRepository();
 
