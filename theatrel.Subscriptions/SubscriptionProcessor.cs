@@ -122,7 +122,13 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             playbillEntity,
             minPrice,
             cultureRu,
-            changes.Select(x => (ReasonOfChanges)x.ReasonOfChanges).Distinct().ToArray());
+            changes
+                .Select(x => {
+                    return (ReasonOfChanges)x.ReasonOfChanges == ReasonOfChanges.CastWasSet
+                    ? ReasonOfChanges.CastWasChanged
+                    : (ReasonOfChanges)x.ReasonOfChanges; })
+                .Distinct()
+                .ToArray());
 
         sb.AppendLine(performanceDescription);
 

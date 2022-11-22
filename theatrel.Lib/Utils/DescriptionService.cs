@@ -67,19 +67,20 @@ internal class DescriptionService : IDescriptionService
 
         var sb = new StringBuilder();
 
-        sb.Append($"{escapedDate} {typeEscaped} {performanceNameString} {pricePart}");
+        sb.Append($"{escapedDate} {typeEscaped} {performanceNameString} {pricePart} ");
 
         if (reasonOfChanges.Any())
         {
-            foreach(var change in reasonOfChanges )
+            foreach(var change in reasonOfChanges)
                 sb.Append(_reasonToEmoji[change]);
-        }
 
-        sb.Append(" ");
+            sb.Append(" ");
+        }
 
         if (!string.IsNullOrEmpty(playbillEntity.Description))
         {
             sb.Append(playbillEntity.Description.EscapeMessageForMarkupV2());
+            sb.Append(" ");
         }
 
         sb.Append(location);
