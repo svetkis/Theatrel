@@ -116,7 +116,7 @@ internal class DescriptionService : IDescriptionService
         if (!performances.Any())
         {
             performanceIdsList = null;
-            return "Увы, я ничего не нашел. Можете подписаться и я пришлю Вам сообщение про новые спектакли с этим исполнителем.".EscapeMessageForMarkupV2();
+            return "Увы, я ничего не нашел. Подпишитесь и я пришлю Вам сообщение про новые спектакли по этому фильтру.".EscapeMessageForMarkupV2();
         }
 
         performanceIdsList = string.Join(",", performances.Select(x => x.Id));
@@ -128,17 +128,17 @@ internal class DescriptionService : IDescriptionService
         {
             var lastChange = item.Changes.OrderBy(ch => ch.LastUpdate).Last();
 
-            sb.AppendLine($"👇Индекс для подписки {++i}");
             sb.Append(GetPerformanceDescription(item, lastChange.MinPrice, culture));
 
-            if (!includeCast)
-                continue;
+            if (includeCast)
+            {
+                string cast = GetCastDescription(item, null, null);
 
-            string cast = GetCastDescription(item, null, null);
+                if (!string.IsNullOrEmpty(cast.ToString()))
+                    sb.Append(cast.ToString());
+            }
 
-            if (!string.IsNullOrEmpty(cast.ToString()))
-                sb.Append(cast.ToString());
-
+            sb.AppendLine($"☝️Индекс для подписки {++i}");
             sb.AppendLine();
         }
 
