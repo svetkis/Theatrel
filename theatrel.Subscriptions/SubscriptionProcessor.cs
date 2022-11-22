@@ -143,33 +143,6 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         return sb.ToString();
     }
 
-    private string GetReasonDescription(ReasonOfChanges reason)
-    {
-        switch (reason)
-        {
-            case ReasonOfChanges.Creation: 
-                return "Новое в афише:";
-            case ReasonOfChanges.PriceDecreased:
-                return "Снижена цена:";
-            case ReasonOfChanges.PriceIncreased:
-                return "Билеты подорожали:";
-            case ReasonOfChanges.StartSales:
-                return "Появились в продаже билеты:";
-            case ReasonOfChanges.StopSales:
-                return "Стоп продаж:";
-            case ReasonOfChanges.WasMoved:
-                return "Перенесены на другую дату:";
-            case ReasonOfChanges.StopSale:
-                return "Закончились билеты:";
-            case ReasonOfChanges.CastWasSet:
-                return "Объявлен состав исполнителей:";
-            case ReasonOfChanges.CastWasChanged:
-                return "Состав исполнителей изменен:";
-            default:
-                return string.Empty;
-        }
-    }
-
     private Dictionary<ReasonOfChanges, string> _reasonToEmoji = new Dictionary<ReasonOfChanges, string>() 
     {
         { ReasonOfChanges.Creation, Encoding.UTF8.GetString(new byte[] { 0xF0, 0x9F, 0x86, 0x95 })},

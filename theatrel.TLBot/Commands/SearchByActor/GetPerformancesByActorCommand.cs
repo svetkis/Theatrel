@@ -1,14 +1,12 @@
 ﻿using AngleSharp.Dom;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.Common.Enums;
-using theatrel.Common.FormatHelper;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Filters;
@@ -91,12 +89,13 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
         if (commands.Contains(message))
             return true;
 
-        var userCommands = SubscriptionsHelper.ParseSubscriptionsCommandLine(chatInfo, message, DbService);
+        StringBuilder errorList = new StringBuilder();
+        var userCommands = SubscriptionsHelper.ParseSubscriptionsCommandLine(chatInfo, message, DbService, errorList);
 
         return userCommands.Any();
     }
 
-    public override async Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+    public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
     {
         IPerformanceFilter filter = _filterService.GetFilter(chatInfo);
         var filteredPerformances = _filterService.GetFilteredPerformances(filter);
@@ -113,7 +112,10 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
             ResizeKeyboard = true
         };
 
-        return new TgCommandResponse(await CreatePerformancesMessage(chatInfo, filteredPerformances, filter, chatInfo.When, chatInfo.Culture), keys) { IsEscaped = true };
+        string performancesDescription = _descriptionService.CreatePerformancesMessage(chatInfo, filteredPerformances, true);
+
+        return Task.FromResult<ITgCommandResponse>(
+            new TgCommandResponse(performancesDescription, keys) { IsEscaped = true });
     }
 
     private async Task<TgCommandResponse> AddParticularPlaybillEntrySubscription(IChatDataInfo chatInfo, string commandLine, CancellationToken cancellationToken)
@@ -144,52 +146,5 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
         }
 
         return new TgCommandResponse(sb.ToString());
-    }
-
-    private readonly string indexEmoji = "👉";
-
-    private Task<string> CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)
-    {
-        var cultureRu = CultureInfo.CreateSpecificCulture(culture);
-
-        var sb = new StringBuilder();
-
-        int i = 0;
-        StringBuilder savedInfo = new StringBuilder();
-        foreach (PlaybillEntity item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.UtcNow))
-        {
-            if (!item.Changes.Any())
-                continue;
-
-            savedInfo.Append($"{item.Id},");
-
-            var lastChange = item.Changes.OrderBy(ch => ch.LastUpdate).Last();
-            if (lastChange.ReasonOfChanges == (int)ReasonOfChanges.WasMoved)
-                continue;
-
-            int minPrice = lastChange.MinPrice;
-
-            string subscriptionIndexPart = $"{indexEmoji}Индекс для подписки {++i}";
-            sb.AppendLine(subscriptionIndexPart);
-
-            sb.Append(_descriptionService.GetPerformanceDescription(item, minPrice, cultureRu));
-
-            string cast = _descriptionService.GetCastDescription(item, null, null);
-  
-            if (!string.IsNullOrEmpty(cast.ToString()))
-                sb.Append(cast.ToString());
-
-            sb.AppendLine();
-        }
-
-        if (!performances.Any())
-            return Task.FromResult("Увы, я ничего не нашел. Можете подписаться и я пришлю Вам сообщение про новые спектакли с этим исполнителем.".EscapeMessageForMarkupV2());
-
-        sb.AppendLine("Для подписки на конкретный спектакль напишите индекс подписки, например: 5".EscapeMessageForMarkupV2());
-        sb.AppendLine("Или сразу несколько индексов: 5, 6, 10".EscapeMessageForMarkupV2());
-
-        chatInfo.Info = savedInfo.ToString();
-
-        return Task.FromResult(sb.ToString());
     }
 }

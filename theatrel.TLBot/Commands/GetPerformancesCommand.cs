@@ -162,20 +162,18 @@ internal class GetPerformancesCommand : DialogCommandBase
         return new TgCommandResponse(sb.ToString());
     }
 
-    private readonly string indexEmoji = "👉";
-
-    private Task<string> CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string culture)
+    private string CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string cultureInfo)
     {
-        var cultureRu = CultureInfo.CreateSpecificCulture(culture);
+        var culture = CultureInfo.CreateSpecificCulture(cultureInfo);
 
         var stringBuilder = new StringBuilder();
 
         string days = filter.DaysOfWeek != null
             ? filter.DaysOfWeek.Length == 1
-                ? $"день недели: {cultureRu.DateTimeFormat.GetDayName(filter.DaysOfWeek.First())}"
+                ? $"день недели: {culture.DateTimeFormat.GetDayName(filter.DaysOfWeek.First())}"
                 : "дни недели: " + string.Join(" или ", filter.DaysOfWeek
                     .OrderBy(d => (int)d, DaysOfWeekComparer.Create())
-                    .Select(d => cultureRu.DateTimeFormat.GetDayName(d)))
+                    .Select(d => culture.DateTimeFormat.GetDayName(d)))
             : string.Empty;
 
         string types = filter.PerformanceTypes == null || !filter.PerformanceTypes.Any()
@@ -200,44 +198,13 @@ internal class GetPerformancesCommand : DialogCommandBase
 
         stringBuilder.AppendLine(
             string.IsNullOrEmpty(filter.PerformanceName)
-                ? $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", cultureRu)} {days} на {types}. Площадка: {locations}.".EscapeMessageForMarkupV2()
+                ? $"Я искал для Вас билеты на {when.ToString("MMMM yyyy", culture)} {days} на {types}. Площадка: {locations}.".EscapeMessageForMarkupV2()
                 : $"Я искал для Вас билеты на \"{filter.PerformanceName}\". Площадка: {locations}.".EscapeMessageForMarkupV2());
 
         stringBuilder.AppendLine();
 
-        int i = 0;
-        StringBuilder savedInfo = new StringBuilder();
-        foreach (PlaybillEntity item in performances.OrderBy(item => item.When).Where(item => item.When > DateTime.UtcNow))
-        {
-            if (!item.Changes.Any())
-                continue;
+        stringBuilder.Append(_descriptionService.CreatePerformancesMessage(chatInfo, performances, false));
 
-            savedInfo.Append($"{item.Id},");
-
-            var lastChange = item.Changes.OrderBy(ch => ch.LastUpdate).Last();
-            if (lastChange.ReasonOfChanges == (int)ReasonOfChanges.WasMoved)
-                continue;
-
-            int minPrice = lastChange.MinPrice;
-
-            string performanceDescription = _descriptionService.GetPerformanceDescription(item, minPrice, cultureRu);
-
-            string subscriptionIndexPart = $"Индекс для подписки {++i}";
-
-            stringBuilder.AppendLine( $"{indexEmoji}{subscriptionIndexPart}");
-            stringBuilder.Append(performanceDescription);
-
-            stringBuilder.AppendLine();
-        }
-
-        if (!performances.Any())
-            return Task.FromResult("Увы, я ничего не нашел. Попробуем поискать еще?".EscapeMessageForMarkupV2());
-
-        stringBuilder.AppendLine("Для подписки на конкретный спектакль напишите индекс подписки, например: 5".EscapeMessageForMarkupV2());
-        stringBuilder.AppendLine("Или сразу несколько индексов: 5, 6, 10".EscapeMessageForMarkupV2());
-
-        chatInfo.Info = savedInfo.ToString();
-
-        return Task.FromResult(stringBuilder.ToString());
+        return stringBuilder.ToString();
     }
 }
