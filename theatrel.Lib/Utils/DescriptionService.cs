@@ -48,7 +48,7 @@ internal class DescriptionService : IDescriptionService
             ? playbillEntity.Performance.Location.Name.EscapeMessageForMarkupV2()
             : playbillEntity.Performance.Location.Description.EscapeMessageForMarkupV2();
 
-        string escapedName = playbillEntity.Performance.Name.EscapeMessageForMarkupV2();
+        string escapedName = $"\"{playbillEntity.Performance.Name}\"".EscapeMessageForMarkupV2();
 
         bool noTicketsUrl = string.IsNullOrWhiteSpace(playbillEntity.TicketsUrl) ||
                             CommonTags.TechnicalStateTags.Contains(playbillEntity.TicketsUrl);
@@ -67,15 +67,15 @@ internal class DescriptionService : IDescriptionService
 
         var sb = new StringBuilder();
 
-        sb.Append($"{escapedDate} {typeEscaped} {performanceNameString} {pricePart} ");
-
         if (reasonOfChanges.Any())
         {
-            foreach(var change in reasonOfChanges)
+            foreach (var change in reasonOfChanges)
                 sb.Append(_reasonToEmoji[change]);
 
             sb.Append(" ");
         }
+
+        sb.Append($"{escapedDate} {typeEscaped} {performanceNameString} {pricePart} ");
 
         sb.Append(location);
 
