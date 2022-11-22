@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -106,7 +105,7 @@ internal class GetPerformancesCommand : DialogCommandBase
     public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
     {
         IPerformanceFilter filter = _filterService.GetFilter(chatInfo);
-        var filteredPerformances = _filterService.GetFilteredPerformances(filter);
+        var filteredPerformances = _filterService.GetFilteredPerformances(filter).OrderBy(x => x.When);
 
         List<KeyboardButton> buttons = new List<KeyboardButton> { new KeyboardButton(NewInPlaybillSubscription) };
         if (filteredPerformances.Any())
@@ -164,7 +163,11 @@ internal class GetPerformancesCommand : DialogCommandBase
         return new TgCommandResponse(sb.ToString());
     }
 
-    private string CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when)
+    private string CreatePerformancesMessage(
+        IChatDataInfo chatInfo,
+        IEnumerable<PlaybillEntity> performances,
+        IPerformanceFilter filter,
+        DateTime when)
     {
         var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
 
@@ -205,7 +208,13 @@ internal class GetPerformancesCommand : DialogCommandBase
 
         stringBuilder.AppendLine();
 
-        stringBuilder.Append(_descriptionService.CreatePerformancesMessage(chatInfo, performances, false));
+        stringBuilder.Append(_descriptionService.GetPerformancesMessage(
+            performances,
+            culture,
+            false,
+            out string performanceIdsList));
+
+        chatInfo.Info = performanceIdsList;
 
         return stringBuilder.ToString();
     }

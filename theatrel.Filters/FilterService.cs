@@ -1,4 +1,5 @@
-﻿using theatrel.DataAccess.DbService;
+﻿using theatrel.Common.Enums;
+using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.Filters.Processors;
 using theatrel.Interfaces.Filters;
@@ -100,6 +101,22 @@ internal class FilterService : IFilterService
     {
         var processor = _filterProcessors.FirstOrDefault(x => x.IsCorrectProcessor(filter)) ?? _baseProcessors;
 
-        return processor.GetFilteredPerformances(filter);
+        return processor
+            .GetFilteredPerformances(filter)
+            .Where(item =>
+            {
+                if (item.When < DateTime.UtcNow)
+                    return false;
+
+                if (!item.Changes.Any())
+                    return false;
+
+                var lastChange = item.Changes.OrderBy(ch => ch.LastUpdate).Last();
+                if (lastChange.ReasonOfChanges == (int)ReasonOfChanges.WasMoved)
+                    return false;
+
+                return true;
+            })
+            .ToArray();
     }
 }

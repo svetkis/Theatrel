@@ -1,6 +1,7 @@
 ﻿using AngleSharp.Dom;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -98,7 +99,7 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
     public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
     {
         IPerformanceFilter filter = _filterService.GetFilter(chatInfo);
-        var filteredPerformances = _filterService.GetFilteredPerformances(filter);
+        var filteredPerformances = _filterService.GetFilteredPerformances(filter).OrderBy(x => x.When);
 
         List<KeyboardButton> buttons = new List<KeyboardButton> 
         {
@@ -111,8 +112,14 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
             OneTimeKeyboard = true,
             ResizeKeyboard = true
         };
+       
+        string performancesDescription = _descriptionService.GetPerformancesMessage(
+            filteredPerformances,
+            CultureInfo.CreateSpecificCulture(chatInfo.Culture),
+            true,
+            out string performaceIdsList);
 
-        string performancesDescription = _descriptionService.CreatePerformancesMessage(chatInfo, filteredPerformances, true);
+        chatInfo.Info = performaceIdsList;
 
         return Task.FromResult<ITgCommandResponse>(
             new TgCommandResponse(performancesDescription, keys) { IsEscaped = true });

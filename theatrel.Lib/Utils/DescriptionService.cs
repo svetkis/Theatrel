@@ -9,9 +9,7 @@ using System.Globalization;
 using System.Collections.Generic;
 using System.Text;
 using theatrel.Lib.Interfaces;
-using System.Threading.Tasks;
 using theatrel.Common.Enums;
-using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.TgBot;
 
 namespace theatrel.Lib.Utils;
@@ -64,10 +62,10 @@ internal class DescriptionService : IDescriptionService
         return sb.ToString();
     }
 
-   private bool HasUrl(string url)
-   {
+    private bool HasUrl(string url)
+    {
         return string.IsNullOrWhiteSpace(url) || CommonTags.TechnicalStateTags.Contains(url);
-   }
+    }
 
     public string GetCastDescription(PlaybillEntity playbillEntity, string castAdded, string castRemoved)
     {
@@ -108,40 +106,30 @@ internal class DescriptionService : IDescriptionService
         return sb.ToString();
     }
 
-    public string CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, bool includeCast)
+    public string GetPerformancesMessage(
+        IEnumerable<PlaybillEntity> performances,
+        CultureInfo culture,
+        bool includeCast,
+        out string performanceIdsList
+        )
     {
-        var performanceToProcess = performances
-            .Where(item =>
-            {
-                if (item.When < DateTime.UtcNow)
-                    return false;
-
-                if (!item.Changes.Any())
-                    return false;
-
-                var lastChange = item.Changes.OrderBy(ch => ch.LastUpdate).Last();
-                if (lastChange.ReasonOfChanges == (int)ReasonOfChanges.WasMoved)
-                    return false;
-
-                return true;
-            })
-            .OrderBy(item => item.When);
-
-        if (!performanceToProcess.Any())
+        if (!performances.Any())
+        {
+            performanceIdsList = null;
             return "Увы, я ничего не нашел. Можете подписаться и я пришлю Вам сообщение про новые спектакли с этим исполнителем.".EscapeMessageForMarkupV2();
+        }
 
-        chatInfo.Info = string.Join(",", performanceToProcess.Select(x => x.Id));
+        performanceIdsList = string.Join(",", performances.Select(x => x.Id));
 
         int i = 0;
-        var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
         var sb = new StringBuilder();
 
-        foreach (PlaybillEntity item in performanceToProcess)
+        foreach (PlaybillEntity item in performances)
         {
             var lastChange = item.Changes.OrderBy(ch => ch.LastUpdate).Last();
 
             sb.AppendLine($"👇Индекс для подписки {++i}");
-            sb.AppendLine(GetPerformanceDescription(item, lastChange.MinPrice, culture));
+            sb.Append(GetPerformanceDescription(item, lastChange.MinPrice, culture));
 
             if (!includeCast)
                 continue;
@@ -149,7 +137,7 @@ internal class DescriptionService : IDescriptionService
             string cast = GetCastDescription(item, null, null);
 
             if (!string.IsNullOrEmpty(cast.ToString()))
-                sb.AppendLine(cast.ToString());
+                sb.Append(cast.ToString());
         }
 
         sb.AppendLine("Для подписки на конкретный спектакль напишите индекс подписки, например: 5".EscapeMessageForMarkupV2());
