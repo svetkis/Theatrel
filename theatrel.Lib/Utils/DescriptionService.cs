@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Text;
 using theatrel.Lib.Interfaces;
 using theatrel.Common.Enums;
-using theatrel.Interfaces.TgBot;
+using Microsoft.Extensions.Primitives;
 
 namespace theatrel.Lib.Utils;
 
@@ -18,12 +18,29 @@ internal class DescriptionService : IDescriptionService
 {
     private readonly ITimeZoneService _timeZoneService;
 
+    private Dictionary<ReasonOfChanges, string> _reasonToEmoji = new Dictionary<ReasonOfChanges, string>()
+    {
+        { ReasonOfChanges.Creation, "🆕"},
+        { ReasonOfChanges.PriceDecreased, "⬇️"},
+        { ReasonOfChanges.PriceIncreased, "⬆️"},
+        { ReasonOfChanges.StartSales, "🔔"},
+        { ReasonOfChanges.StopSales, "❌"},
+        { ReasonOfChanges.WasMoved, "❗"},
+        { ReasonOfChanges.StopSale, "❌"},
+        { ReasonOfChanges.CastWasSet, "🔄"},
+        { ReasonOfChanges.CastWasChanged, "🔄"},
+    };
+
     public DescriptionService(ITimeZoneService timeZoneService)
     {
         _timeZoneService = timeZoneService;
     }
 
-    public string GetPerformanceDescription(PlaybillEntity playbillEntity, int lastMinPrice, CultureInfo culture)
+    public string GetPerformanceDescription(
+        PlaybillEntity playbillEntity,
+        int lastMinPrice,
+        CultureInfo culture,
+        ReasonOfChanges[] reasonOfChanges)
     {
         string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When).ToString("ddMMM HH:mm", culture);
 
@@ -50,11 +67,19 @@ internal class DescriptionService : IDescriptionService
 
         var sb = new StringBuilder();
 
-        sb.AppendLine($"{escapedDate} {typeEscaped} {performanceNameString} {pricePart}");
+        sb.Append($"{escapedDate} {typeEscaped} {performanceNameString} {pricePart}");
+
+        if (!reasonOfChanges.Any())
+        {
+            foreach(var change in reasonOfChanges )
+                sb.Append(_reasonToEmoji[change]);
+
+            sb.Append(" ");
+        }
 
         if (!string.IsNullOrEmpty(playbillEntity.Description))
         {
-            sb.AppendLine(playbillEntity.Description.EscapeMessageForMarkupV2());
+            sb.Append(playbillEntity.Description.EscapeMessageForMarkupV2());
         }
 
         sb.Append(location);
@@ -116,7 +141,7 @@ internal class DescriptionService : IDescriptionService
         if (!performances.Any())
         {
             performanceIdsList = null;
-            return "Увы, я ничего не нашел. Подпишитесь и я пришлю Вам сообщение про новые спектакли по этому фильтру.".EscapeMessageForMarkupV2();
+            return "К сожалению ничего не нашлось. Подпишитесь и я пришлю Вам сообщение про новые спектакли по этому фильтру.".EscapeMessageForMarkupV2();
         }
 
         performanceIdsList = string.Join(",", performances.Select(x => x.Id));
@@ -128,7 +153,13 @@ internal class DescriptionService : IDescriptionService
         {
             var lastChange = item.Changes.OrderBy(ch => ch.LastUpdate).Last();
 
-            sb.AppendLine(GetPerformanceDescription(item, lastChange.MinPrice, culture));
+            var performanceString = GetPerformanceDescription(
+                item,
+                lastChange.MinPrice,
+                culture,
+                Array.Empty<ReasonOfChanges>());
+
+            sb.AppendLine(performanceString);
 
             if (includeCast)
             {

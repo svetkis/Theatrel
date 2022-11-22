@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using theatrel.Common.Enums;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.Interfaces.Autofac;
 
@@ -14,5 +16,9 @@ public interface IDescriptionService : IDIRegistrable
         out string performanceIdsList);
 
     string GetCastDescription(PlaybillEntity playbillEntity, string castAdded, string castRemoved);
-    string GetPerformanceDescription(PlaybillEntity playbillEntity, int lastMinPrice, CultureInfo culture);
+
+    string GetPerformanceDescription(PlaybillEntity playbillEntity,
+        int lastMinPrice,
+        CultureInfo culture,
+        ReasonOfChanges[] reasonOfChanges);
 }

@@ -122,9 +122,13 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             .Last()
             .MinPrice;
 
-        string performanceDescription = _descriptionSevice.GetPerformanceDescription(playbillEntity, minPrice, cultureRu);
-        string emojiLine = string.Join(string.Empty, emojies);
-        sb.AppendLine($"{performanceDescription}{emojiLine}");
+        string performanceDescription = _descriptionSevice.GetPerformanceDescription(
+            playbillEntity,
+            minPrice,
+            cultureRu,
+            changes.Select(x => (ReasonOfChanges)x.ReasonOfChanges).Distinct().ToArray());
+
+        sb.AppendLine(performanceDescription);
 
         var lastCastUpdate = changes
             .Where(x => ReasonToShowCast.Contains((ReasonOfChanges)x.ReasonOfChanges))
