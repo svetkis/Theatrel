@@ -12,7 +12,6 @@ using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
-using theatrel.Interfaces.TimeZoneService;
 using theatrel.Lib.Interfaces;
 using theatrel.TLBot.Interfaces;
 
@@ -23,13 +22,11 @@ public class SubscriptionProcessor : ISubscriptionProcessor
     private readonly ITgBotService _telegramService;
     private readonly IDbService _dbService;
     private readonly IFilterService _filterService;
-    private readonly ITimeZoneService _timeZoneService;
     private readonly IDescriptionService _descriptionSevice;
 
     public SubscriptionProcessor(
         ITgBotService telegramService,
         IFilterService filterService,
-        ITimeZoneService timeZoneService,
         IDescriptionService descriptionService,
         IDbService dbService)
     {
@@ -37,7 +34,6 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         _dbService = dbService;
         _filterService = filterService;
         _descriptionSevice = descriptionService;
-        _timeZoneService = timeZoneService;
     }
 
     public async Task<bool> ProcessSubscriptions()

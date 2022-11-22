@@ -69,13 +69,13 @@ internal class DescriptionService : IDescriptionService
 
         sb.Append($"{escapedDate} {typeEscaped} {performanceNameString} {pricePart}");
 
-        if (!reasonOfChanges.Any())
+        if (reasonOfChanges.Any())
         {
             foreach(var change in reasonOfChanges )
                 sb.Append(_reasonToEmoji[change]);
-
-            sb.Append(" ");
         }
+
+        sb.Append(" ");
 
         if (!string.IsNullOrEmpty(playbillEntity.Description))
         {
