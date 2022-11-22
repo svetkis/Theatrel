@@ -77,13 +77,14 @@ internal class DescriptionService : IDescriptionService
             sb.Append(" ");
         }
 
+        sb.Append(location);
+
         if (!string.IsNullOrEmpty(playbillEntity.Description))
         {
+            sb.AppendLine();
             sb.Append(playbillEntity.Description.EscapeMessageForMarkupV2());
             sb.Append(" ");
         }
-
-        sb.Append(location);
 
         return sb.ToString();
     }
