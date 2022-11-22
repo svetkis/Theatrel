@@ -103,7 +103,7 @@ internal class GetPerformancesCommand : DialogCommandBase
         return userCommands.Any();
     }
 
-    public override async Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
+    public override Task<ITgCommandResponse> AscUser(IChatDataInfo chatInfo, CancellationToken cancellationToken)
     {
         IPerformanceFilter filter = _filterService.GetFilter(chatInfo);
         var filteredPerformances = _filterService.GetFilteredPerformances(filter);
@@ -123,7 +123,9 @@ internal class GetPerformancesCommand : DialogCommandBase
             ResizeKeyboard = true
         };
 
-        return new TgCommandResponse(await CreatePerformancesMessage(chatInfo, filteredPerformances, filter, chatInfo.When, chatInfo.Culture), keys) { IsEscaped = true };
+        var response = CreatePerformancesMessage(chatInfo, filteredPerformances, filter, chatInfo.When);
+
+        return Task.FromResult<ITgCommandResponse>(new TgCommandResponse(response, keys){ IsEscaped = true });
     }
 
     private async Task<TgCommandResponse> AddOnePlaybillEntrySubscription(IChatDataInfo chatInfo, string commandLine, CancellationToken cancellationToken)
@@ -162,9 +164,9 @@ internal class GetPerformancesCommand : DialogCommandBase
         return new TgCommandResponse(sb.ToString());
     }
 
-    private string CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when, string cultureInfo)
+    private string CreatePerformancesMessage(IChatDataInfo chatInfo, PlaybillEntity[] performances, IPerformanceFilter filter, DateTime when)
     {
-        var culture = CultureInfo.CreateSpecificCulture(cultureInfo);
+        var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
 
         var stringBuilder = new StringBuilder();
 
