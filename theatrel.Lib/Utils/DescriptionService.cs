@@ -138,6 +138,8 @@ internal class DescriptionService : IDescriptionService
 
             if (!string.IsNullOrEmpty(cast.ToString()))
                 sb.Append(cast.ToString());
+
+            sb.AppendLine();
         }
 
         sb.AppendLine("Для подписки на конкретный спектакль напишите индекс подписки, например: 5".EscapeMessageForMarkupV2());

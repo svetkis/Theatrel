@@ -123,7 +123,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             .MinPrice;
 
         string performanceDescription = _descriptionSevice.GetPerformanceDescription(playbillEntity, minPrice, cultureRu);
-        sb.AppendLine($"{string.Join(string.Empty, emojies)} {performanceDescription}");
+        sb.Append($"{string.Join(string.Empty, emojies)} {performanceDescription}");
 
         var lastCastUpdate = changes
             .Where(x => ReasonToShowCast.Contains((ReasonOfChanges)x.ReasonOfChanges))
@@ -135,7 +135,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             string cast = _descriptionSevice.GetCastDescription(playbillEntity, lastCastUpdate.CastAdded, lastCastUpdate.CastRemoved);
             if (!string.IsNullOrEmpty(cast))
             {
-                sb.AppendLine(cast);
+                sb.Append(cast);
             }
         }
 
