@@ -123,7 +123,8 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             .MinPrice;
 
         string performanceDescription = _descriptionSevice.GetPerformanceDescription(playbillEntity, minPrice, cultureRu);
-        sb.Append($"{string.Join(string.Empty, emojies)} {performanceDescription}");
+        string emojiLine = string.Join(string.Empty, emojies);
+        sb.AppendLine($"{performanceDescription}{emojiLine}");
 
         var lastCastUpdate = changes
             .Where(x => ReasonToShowCast.Contains((ReasonOfChanges)x.ReasonOfChanges))

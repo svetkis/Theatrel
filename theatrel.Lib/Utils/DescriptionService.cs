@@ -57,7 +57,7 @@ internal class DescriptionService : IDescriptionService
             sb.AppendLine(playbillEntity.Description.EscapeMessageForMarkupV2());
         }
 
-        sb.AppendLine(location);
+        sb.Append(location);
 
         return sb.ToString();
     }
@@ -128,7 +128,7 @@ internal class DescriptionService : IDescriptionService
         {
             var lastChange = item.Changes.OrderBy(ch => ch.LastUpdate).Last();
 
-            sb.Append(GetPerformanceDescription(item, lastChange.MinPrice, culture));
+            sb.AppendLine(GetPerformanceDescription(item, lastChange.MinPrice, culture));
 
             if (includeCast)
             {
