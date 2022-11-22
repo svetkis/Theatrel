@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using AngleSharp.Dom;
@@ -44,8 +46,19 @@ internal class MihailovskyPerformanceParser : IPerformanceParser
                 if (typeElement != null)
                 {
                     string typeDescription = typeElement.TextContent.Trim();
-                    type = PerformanceTypes.FirstOrDefault(type =>
-                        typeDescription.Contains(type, StringComparison.OrdinalIgnoreCase)) ?? "Балет" ;
+                    type = PerformanceTypes
+                        .FirstOrDefault(type =>
+                        {
+                            return typeDescription.Contains(type, StringComparison.OrdinalIgnoreCase);
+                        });
+
+                    if (string.IsNullOrEmpty(type))
+                    {
+                        if (_fixedTypes.ContainsKey(name))
+                            type = _fixedTypes[name];
+                        else
+                            type = "Концерт";
+                    };
                 }
             }
 
@@ -124,4 +137,8 @@ internal class MihailovskyPerformanceParser : IPerformanceParser
     }
 
     private static readonly string[] PerformanceTypes = {"Концерт", "Балет", "Опера"};
+    private readonly Dictionary<string, string> _fixedTypes = new Dictionary<string, string>()
+    {
+        {"Летучая мышь", "Опера"},
+    };
 }
