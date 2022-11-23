@@ -30,7 +30,7 @@ namespace theatrel.TLBot.Commands
 
             foreach (string indexString in parsedIndexes)
             {
-                if (!int.TryParse(indexString, out int index) || performanceIds.Length <= index)
+                if (!int.TryParse(indexString, out int index) || performanceIds.Length < index || index < 1)
                 {
                     sb?.AppendLine($"Ошибка парсинга {indexString}");
                     continue;
