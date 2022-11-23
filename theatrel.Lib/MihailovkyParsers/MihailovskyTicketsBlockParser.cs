@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -44,7 +45,16 @@ internal class MihailovskyTicketsBlockParser : ITicketsParser
         }
 
         var content = await _pageRequester.RequestBytes(url, false, cancellationToken);
-        return await PrivateParse2(content, cancellationToken);
+
+        try
+        {
+            return PrivateParse2(content, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceError($"ParseFromUrl error {url} {ex.Message}");
+            throw;
+        }
     }
 
     public async Task<IPerformanceTickets> Parse(byte[] data, CancellationToken cancellationToken)
@@ -57,21 +67,27 @@ internal class MihailovskyTicketsBlockParser : ITicketsParser
     private readonly byte[] _jsonTicketsBlockStart = Encoding.UTF8.GetBytes("JSON.parse('");
     private readonly byte[] _jsonTicketsBlockEnd = Encoding.UTF8.GetBytes("');");
 
-    private Task<IPerformanceTickets> PrivateParse2(byte[] data, CancellationToken cancellationToken)
+    private IPerformanceTickets PrivateParse2(byte[] data, CancellationToken cancellationToken)
     {
         if (data == null || !data.Any())
-            return Task.FromResult<IPerformanceTickets>(new PerformanceTickets { State = TicketsState.TechnicalError });
+            return new PerformanceTickets { State = TicketsState.TechnicalError };
 
         int jsonTicketsBlockStartIndex = data.AsSpan().IndexOf(_jsonTicketsBlockStart);
-        int jsonTicketsBlockEndIndex = jsonTicketsBlockStartIndex == -1
-            ? -1
-            : data.AsSpan(jsonTicketsBlockStartIndex).IndexOf(_jsonTicketsBlockEnd);
+
+        if (jsonTicketsBlockStartIndex == -1)
+            return new PerformanceTickets { State = TicketsState.TechnicalError };
+
+        int jsonTicketsBlockEndIndex = data.AsSpan(jsonTicketsBlockStartIndex).IndexOf(_jsonTicketsBlockEnd);
+
+        if (jsonTicketsBlockEndIndex == -1)
+            return new PerformanceTickets { State = TicketsState.TechnicalError };
 
         var encoding1251 = _encodingService.Get1251Encoding();
 
-        string json = jsonTicketsBlockStartIndex > 0 && jsonTicketsBlockEndIndex > 0
-            ? encoding1251.GetString(data.AsSpan(jsonTicketsBlockStartIndex + _jsonTicketsBlockStart.Length, jsonTicketsBlockEndIndex - _jsonTicketsBlockStart.Length))
-            : encoding1251.GetString(data);
+        string json = encoding1251.GetString(
+            data.AsSpan(
+                jsonTicketsBlockStartIndex + _jsonTicketsBlockStart.Length,
+                jsonTicketsBlockEndIndex - _jsonTicketsBlockStart.Length));
 
         var seats = JsonConvert.DeserializeObject<Dictionary<long, Seat>>(json);
 
@@ -88,17 +104,17 @@ internal class MihailovskyTicketsBlockParser : ITicketsParser
 
         if (!validSeats.Any())
         {
-            return Task.FromResult<IPerformanceTickets>(new PerformanceTickets { State = TicketsState.Ok });
+            return new PerformanceTickets { State = TicketsState.Ok };
         }
 
         var minPrice = validSeats.Select(x => x.PRICE).Min(x => x);
 
-        return Task.FromResult<IPerformanceTickets>(new PerformanceTickets
+        return new PerformanceTickets
         {
             State = TicketsState.Ok,
             LastUpdate = DateTime.UtcNow,
             MinTicketPrice = minPrice
-        });
+        };
     }
 
     private async Task<IPerformanceTickets> PrivateParse(byte[] data, CancellationToken cancellationToken)
