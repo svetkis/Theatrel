@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -135,6 +136,8 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
 
         using var subscriptionRepository = DbService.GetSubscriptionRepository();
 
+        var culture = CultureInfo.CreateSpecificCulture(chatInfo.Culture);
+
         foreach (var entry in entries)
         {
             int trackingChanges = (int)(ReasonOfChanges.StartSales
@@ -146,10 +149,9 @@ internal class GetPerformancesByActorCommand : DialogCommandBase
                 _filterService.GetFilter(entry.PlaybillEntryId), cancellationToken);
 
             var when = _timeZoneService.GetLocalTime(entry.When);
-
             sb.AppendLine(subscription != null
-                ? $"Успешно добавлена подписка на {when:ddMMM HH:mm} {entry.Name}"
-                : $"Не вышло добавить подписку на {when:ddMMM HH:mm} {entry.Name}");
+                ? $"Успешно добавлена подписка на {when.ToString("ddMMM HH:mm", culture)} {entry.Name}"
+                : $"Не получилось добавить подписку на {when.ToString("ddMMM HH:mm", culture)} {entry.Name}");
         }
 
         return new TgCommandResponse(sb.ToString());
