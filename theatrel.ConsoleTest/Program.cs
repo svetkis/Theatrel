@@ -44,11 +44,11 @@ internal static class Program
         //if (!await job.UpdateMariinskiPlaybill(cts.Token))
         //    return;
 
- /*       if (!await job.UpdateMichailovskyPlaybill(cts.Token))
+        if (!await job.UpdateMichailovskyPlaybill(cts.Token))
             return;
 
 
-        if (!await job.ProcessSubscriptions(cts.Token))
+ /*       if (!await job.ProcessSubscriptions(cts.Token))
             return;
 
         Trace.TraceInformation("Before SubscriptionsCleanup");

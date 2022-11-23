@@ -23,6 +23,8 @@ internal class EncodingService : IEncodingService
         _encoding1251 = Encoding.GetEncoding(Win1251);
     }
 
+    public Encoding Get1251Encoding() => _encoding1251;
+
     public byte[] ProcessBytes(byte[] bytesData)
     {
         Span<byte> span = bytesData.AsSpan();

@@ -9,6 +9,7 @@ using theatrel.Interfaces.Tickets;
 using theatrel.Lib.Enums;
 using theatrel.Lib.MariinskyParsers;
 using theatrel.Lib.MihailovkyParsers;
+using theatrel.Interfaces.EncodingService;
 
 namespace theatrel.Lib;
 
@@ -57,7 +58,7 @@ public class TheatrelLibModule : Autofac.Module
                 return type switch
                 {
                     Theatre.Mariinsky => new MariinskyTicketsBlockParser(c.Resolve<IPageRequester>()),
-                    Theatre.Mikhailovsky => new MihailovskyTicketsBlockParser(c.Resolve<IPageRequester>()),
+                    Theatre.Mikhailovsky => new MihailovskyTicketsBlockParser(c.Resolve<IPageRequester>(), c.Resolve<IEncodingService>()),
                     _ => throw new ArgumentException("Unknown theatre")
                 };
             })
