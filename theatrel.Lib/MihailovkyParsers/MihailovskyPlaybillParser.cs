@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
@@ -72,7 +71,7 @@ public class MihailovskyPlaybillParser : IPlaybillParser
 
                 parsed.Cast = string.IsNullOrEmpty(personsHtml)
                     ? new PerformanceCast()
-                    : await _castParser.Parse(Encoding.UTF8.GetBytes(personsHtml), cancellationToken);
+                    : await _castParser.ParseText(personsHtml, cancellationToken);
 
                 performances.Add(parsed);
             });

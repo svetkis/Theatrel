@@ -46,7 +46,6 @@ internal class PlayBillResolver : IPlayBillDataResolver
         var playbillParser = _playbillParserFactory((Theatre)theatre);
         var performanceParser = _performanceParserFactory((Theatre)theatre);
 
-
         DateTime[] months = filter.StartDate.GetMonthsBetween(filter.EndDate);
 
         List<IPerformanceData> performances = new List<IPerformanceData>();
@@ -65,7 +64,8 @@ internal class PlayBillResolver : IPlayBillDataResolver
         cancellationToken.ThrowIfCancellationRequested();
 
         IEnumerable<IPerformanceData> filtered = performances
-            .Where(item => item != null && CheckOnlyDate(item.DateTime, filter)).ToArray();
+            .Where(item => item != null && CheckOnlyDate(item.DateTime, filter))
+            .ToArray();
 
         return filtered.ToArray();
     }
@@ -100,7 +100,14 @@ internal class PlayBillResolver : IPlayBillDataResolver
                 new ParallelOptions { CancellationToken = cancellationToken },
                 async (performance, ctx) =>
                 {
-                    performance.Cast = await performanceCastParser.ParseFromUrl(performance.Url, performance.State == TicketsState.PerformanceWasMoved, ctx);
+                    if (performance.State == TicketsState.PerformanceWasMoved)
+                        return;
+
+                    performance.Cast = await performanceCastParser.ParseFromUrl(performance.Url, false, ctx);
+                    if (!performance.Cast.Cast.Any() && null != performance.CastFromPlaybill)
+                    {
+                        performance.Cast = await performanceCastParser.ParseText(performance.CastFromPlaybill, ctx);
+                    }
                 });
         }
     }

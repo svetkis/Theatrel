@@ -10,9 +10,8 @@ using System.Collections.Generic;
 using System.Text;
 using theatrel.Lib.Interfaces;
 using theatrel.Common.Enums;
-using Microsoft.Extensions.Primitives;
 
-namespace theatrel.Lib.Utils;
+namespace theatrel.Lib.DescriptionService;
 
 internal class DescriptionService : IDescriptionService
 {
@@ -60,7 +59,7 @@ internal class DescriptionService : IDescriptionService
         string performanceNameString = HasUrl(playbillEntity.Url)
             ? escapedName
             : $"[{escapedName}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
-        
+
         string typeEscaped = playbillEntity.Performance.Type.TypeName.EscapeMessageForMarkupV2();
 
         string escapedDate = formattedDate.EscapeMessageForMarkupV2();
@@ -96,7 +95,7 @@ internal class DescriptionService : IDescriptionService
 
     public string GetCastDescription(PlaybillEntity playbillEntity, string castAdded, string castRemoved)
     {
-        StringBuilder sb = new ();
+        StringBuilder sb = new();
         IDictionary<string, IList<ActorEntity>> actorsDictionary = new Dictionary<string, IList<ActorEntity>>();
 
         foreach (var item in playbillEntity.Cast)

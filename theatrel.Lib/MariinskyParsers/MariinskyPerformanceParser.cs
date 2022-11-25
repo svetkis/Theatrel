@@ -28,7 +28,9 @@ internal class MariinskyPerformanceParser : IPerformanceParser
             var dt = DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture)
                 .ToUniversalTime();
 
-            IHtmlCollection<IElement> specNameChildren = parsedElement.QuerySelector("div.spec_name")?.Children;
+            IHtmlCollection<IElement> specNameChildren = parsedElement
+                .QuerySelector("div.spec_name")
+                ?.Children;
 
             IElement ticketsTButton = parsedElement.QuerySelector("div.t_button");
 
@@ -49,6 +51,14 @@ internal class MariinskyPerformanceParser : IPerformanceParser
 
             string ticketsUrl = GetTicketsUrl(ticketsTButton);
 
+            IHtmlCollection<IElement> descrElements = parsedElement
+                           .QuerySelector("div.descr")
+                           ?.Children;
+
+            string descr = descrElements.Any()
+                ? descrElements.Last()?.InnerHtml
+                : null;
+
             return new PerformanceData
             {
                 DateTime = dt,
@@ -57,7 +67,8 @@ internal class MariinskyPerformanceParser : IPerformanceParser
                 TicketsUrl = ticketsUrl,
                 Type = GetType(parsedElement.ClassList.ToArray()),
                 Location = GetLocation(location),
-                Description = status
+                Description = status,
+                CastFromPlaybill = descr,
             };
         }
         catch (Exception ex)

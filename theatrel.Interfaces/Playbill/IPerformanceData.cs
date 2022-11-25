@@ -19,6 +19,8 @@ public interface IPerformanceData
 
     int MinPrice { get; set; }
 
+    string CastFromPlaybill { get; set; }
+
     IPerformanceCast Cast { get; set; }
 
     string Description { get; set; }

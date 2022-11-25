@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
@@ -45,12 +46,12 @@ internal class MihailovskyCastParser : IPerformanceCastParser
         return await PrivateParse(content, cancellationToken);
     }
 
-    public async Task<IPerformanceCast> Parse(byte[] data, CancellationToken cancellationToken)
+    public async Task<IPerformanceCast> ParseText(string data, CancellationToken cancellationToken)
     {
-        if (data == null || !data.Any())
+        if (string.IsNullOrEmpty(data))
             return new PerformanceCast { State = CastState.CastIsNotSet };
 
-        return await PrivateParse(data, cancellationToken);
+        return await PrivateParse(Encoding.UTF8.GetBytes(data), cancellationToken);
     }
 
     private async Task<IPerformanceCast> PrivateParse(byte[] data, CancellationToken cancellationToken)

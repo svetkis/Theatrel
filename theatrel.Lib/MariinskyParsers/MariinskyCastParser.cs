@@ -46,8 +46,13 @@ internal class MariinskyCastParser : IPerformanceCastParser
         return await PrivateParse(content, cancellationToken);
     }
 
-    public async Task<IPerformanceCast> Parse(byte[] data, CancellationToken cancellationToken)
-        => await PrivateParse(data, cancellationToken);
+    public async Task<IPerformanceCast> ParseText(string data, CancellationToken cancellationToken)
+    {
+        PerformanceCast performanceCast = new PerformanceCast { State = CastState.Ok, Cast = new Dictionary<string, IList<IActor>>() };
+        await ParseText(data, performanceCast, cancellationToken);
+
+        return performanceCast;
+    }
 
     private string[] technicalActorStrings = { "будет обьявлено позднее", "будет объявлено позднее" };
 
@@ -83,56 +88,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
             if (!paragraph.Children.Any())
                 return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
 
-            string text = paragraph.InnerHtml.Trim();
-
-            text = Regex.Replace(text, "<!--.*?-->", "", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-
-            var lines = text.Split(new[] { "<br/>", "<br>", "</p>", "<p>", "<br />" }, StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (string line in lines)
-            {
-                if (line.StartsWith(CommonTags.Phonogram, StringComparison.OrdinalIgnoreCase))
-                {
-                    performanceCast.Cast[CommonTags.Conductor] = new List<IActor> {new PerformanceActor{ Name = CommonTags.Phonogram, Url = CommonTags.NotDefinedTag}};
-                    continue;
-                }
-
-                string characterName = line.GetCharacterName();
-
-                if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
-                    continue;
-
-                using IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
-                var aTags = parsedLine.QuerySelectorAll("a").ToArray();
-
-                IList<IActor> actors;
-                if (aTags.Any())
-                {
-                    
-                    actors = GetCastInfo(aTags);
-                }
-                else
-                {
-                    var name = line.GetActorName();
-                    if (string.IsNullOrEmpty(name) || technicalActorStrings.Any(x => name.Contains(x, StringComparison.OrdinalIgnoreCase)))
-                        continue;
-
-                    actors = new List<IActor>() { new PerformanceActor { Name = name, Url = CommonTags.NotDefinedTag} };
-                }
-
-                if (null == actors || !actors.Any())
-                    continue;
-
-                if (performanceCast.Cast.ContainsKey(characterName))
-                {
-                    foreach (var actor in actors)
-                        performanceCast.Cast[characterName].Add(actor);
-                }
-                else
-                {
-                    performanceCast.Cast[characterName] = actors;
-                }
-            }
+            await ParseText(paragraph.InnerHtml.Trim(), performanceCast, cancellationToken);
 
             return performanceCast;
 
@@ -143,6 +99,60 @@ internal class MariinskyCastParser : IPerformanceCastParser
         }
 
         return new PerformanceCast { State = CastState.TechnicalError };
+    }
+
+    private async Task ParseText(string text, PerformanceCast performanceCast, CancellationToken cancellationToken)
+    {
+        //detete commented
+        text = Regex.Replace(text, "<!--.*?-->", "", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+        var lines = text.Split(new[] { "<br/>", "<br>", "</p>", "<p>", "<br />" }, StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (string line in lines)
+        {
+            if (line.StartsWith(CommonTags.Phonogram, StringComparison.OrdinalIgnoreCase))
+            {
+                performanceCast.Cast[CommonTags.Conductor] = new List<IActor> { new PerformanceActor { Name = CommonTags.Phonogram, Url = CommonTags.NotDefinedTag } };
+                continue;
+            }
+
+            string characterName = line.GetCharacterName();
+
+            if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
+                continue;
+
+            using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
+            using IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
+            var aTags = parsedLine.QuerySelectorAll("a").ToArray();
+
+            IList<IActor> actors;
+            if (aTags.Any())
+            {
+
+                actors = GetCastInfo(aTags);
+            }
+            else
+            {
+                var name = line.GetActorName();
+                if (string.IsNullOrEmpty(name) || technicalActorStrings.Any(x => name.Contains(x, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                actors = new List<IActor>() { new PerformanceActor { Name = name, Url = CommonTags.NotDefinedTag } };
+            }
+
+            if (null == actors || !actors.Any())
+                continue;
+
+            if (performanceCast.Cast.ContainsKey(characterName))
+            {
+                foreach (var actor in actors)
+                    performanceCast.Cast[characterName].Add(actor);
+            }
+            else
+            {
+                performanceCast.Cast[characterName] = actors;
+            }
+        }
     }
 
     private static IList<IActor> GetCastInfo(IElement[] aTags)

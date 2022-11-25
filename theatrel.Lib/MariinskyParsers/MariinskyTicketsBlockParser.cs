@@ -11,7 +11,6 @@ using theatrel.Common.Enums;
 using theatrel.Interfaces.Helpers;
 using theatrel.Interfaces.Tickets;
 using theatrel.Lib.Tickets;
-using theatrel.Lib.Utils;
 
 namespace theatrel.Lib.MariinskyParsers;
 
@@ -112,7 +111,15 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
 
         string priceString = Encoding.UTF8.GetString(data, startPricePos, endPriceTagIndex);
 
-        return Helper.ToInt(priceString);
+        return ToInt(priceString);
+    }
+
+    private static int ToInt(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return default;
+
+        return int.TryParse(value, out var ret) ? ret : default;
     }
 
     private async Task<IPerformanceTickets> PrivateParse(byte[] data, CancellationToken cancellationToken)
@@ -129,7 +136,7 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
         IElement[] pricesElements = parsedDoc.QuerySelectorAll("ticket TPRICE1:not(:empty), ticket TPRICE2:not(:empty), ticket TPRICE3:not(:empty)").ToArray();
 
         //We can see three or two prices, but we are interested only about the lowest one, because it is correct one for RF citizens
-        var prices = pricesElements.Select(e => Helper.ToInt(e.TextContent)).Where(price => price > 0).ToArray();
+        var prices = pricesElements.Select(e => ToInt(e.TextContent)).Where(price => price > 0).ToArray();
 
         performanceTickets.MinTicketPrice = prices.Any() ? prices.Min() : 0;
 

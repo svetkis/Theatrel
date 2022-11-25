@@ -18,4 +18,5 @@ internal class PerformanceData : IPerformanceData
     public int MinPrice { get; set; }
     public IPerformanceCast Cast { get; set; }
     public string Description { get; set; }
+    public string CastFromPlaybill { get; set; }
 }
