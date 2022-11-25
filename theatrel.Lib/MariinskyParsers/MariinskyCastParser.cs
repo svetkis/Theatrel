@@ -54,7 +54,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
         return performanceCast;
     }
 
-    private string[] technicalActorStrings = { "будет обьявлено позднее", "будет объявлено позднее" };
+    private string[] technicalActorStrings = { "будет обьявлено позднее", "будет объявлено позднее", "музыкальный спектакль" };
 
     private async Task<IPerformanceCast> PrivateParse(byte[] data, CancellationToken cancellationToken)
     {
