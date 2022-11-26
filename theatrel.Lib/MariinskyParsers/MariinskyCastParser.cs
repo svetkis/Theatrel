@@ -118,8 +118,11 @@ internal class MariinskyCastParser : IPerformanceCastParser
 
             string characterName = line.GetCharacterName();
 
-            if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
+            if (characterName.Length > 200 ||
+                CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
+            {
                 continue;
+            }
 
             using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
             using IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
@@ -128,14 +131,21 @@ internal class MariinskyCastParser : IPerformanceCastParser
             IList<IActor> actors;
             if (aTags.Any())
             {
-
                 actors = GetCastInfo(aTags);
+
+                if (actors.Any() && actors.First().Name.Length > 100)
+                    continue;
             }
             else
             {
                 var name = line.GetActorName();
-                if (string.IsNullOrEmpty(name) || technicalActorStrings.Any(x => name.Contains(x, StringComparison.OrdinalIgnoreCase)))
+
+                if (string.IsNullOrEmpty(name) ||
+                    name.Length > 100 ||
+                    technicalActorStrings.Any(x => name.Contains(x, StringComparison.OrdinalIgnoreCase)))
+                {
                     continue;
+                }
 
                 actors = new List<IActor>() { new PerformanceActor { Name = name, Url = CommonTags.NotDefinedTag } };
             }
