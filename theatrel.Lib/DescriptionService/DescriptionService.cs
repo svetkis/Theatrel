@@ -66,7 +66,7 @@ internal class DescriptionService : IDescriptionService
 
         var sb = new StringBuilder();
 
-        if (reasonOfChanges.Any())
+        if (reasonOfChanges != null && reasonOfChanges.Any())
         {
             foreach (var change in reasonOfChanges)
                 sb.Append(_reasonToEmoji[change]);

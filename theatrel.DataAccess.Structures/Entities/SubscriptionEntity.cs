@@ -6,6 +6,8 @@ public class SubscriptionEntity
 {
     public int Id { get; set; }
 
+    public int SubscriptionType { get; set; }
+
     public long TelegramUserId { get; set; }
 
     public TelegramUserEntity TelegramUser { get; set; }

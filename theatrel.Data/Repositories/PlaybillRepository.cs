@@ -373,7 +373,30 @@ internal class PlaybillRepository : IPlaybillRepository
     {
         try
         {
-            return _dbContext.Playbill.Where(x => x.When < DateTime.UtcNow).AsNoTracking().ToArray();
+            return _dbContext.Playbill
+                .Where(x => x.When < DateTime.UtcNow)
+                .AsNoTracking()
+                .ToArray();
+        }
+        catch (Exception ex)
+        {
+            TraceException(ex);
+        }
+
+        return Array.Empty<PlaybillEntity>();
+    }
+
+    public IEnumerable<PlaybillEntity> GetOutdatedWithAllData()
+    {
+        try
+        {
+            return _dbContext.Playbill
+                .Where(x => x.When < DateTime.UtcNow)
+                .Include(x => x.Performance)
+                .Include(x => x.Cast).ThenInclude(c => c.Actor)
+                .Include(x => x.Cast).ThenInclude(c => c.Role)
+                .AsNoTracking()
+                .ToArray();
         }
         catch (Exception ex)
         {
@@ -503,8 +526,7 @@ internal class PlaybillRepository : IPlaybillRepository
                 .Include(x => x.Performance)
                 .Include(x => x.Changes)
                 .Include(x => x.Cast).ThenInclude(c => c.Actor)
-                .Include(x => x.Cast)
-                .ThenInclude(c => c.Role)
+                .Include(x => x.Cast).ThenInclude(c => c.Role)
                 .AsNoTracking()
                 .FirstOrDefault();
         }

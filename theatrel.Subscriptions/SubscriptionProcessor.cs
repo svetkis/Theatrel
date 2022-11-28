@@ -5,7 +5,9 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
 using theatrel.Common.Enums;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
@@ -43,13 +45,57 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         using ISubscriptionsRepository subscriptionRepository = _dbService.GetSubscriptionRepository();
         var subscriptions = subscriptionRepository.GetAllWithFilter().ToArray();
 
+        if (!subscriptions.Any())
+            return true;
+
+        SubscriptionEntity[] changedBasedSubscription = subscriptions.Where(s => s.SubscriptionType == 0).ToArray();
+
+        await ProcessChangedBasedSubscriptions(changedBasedSubscription, subscriptionRepository);
+
+        SubscriptionEntity[] endedPerformanceSubscription = subscriptions.Where(s => s.SubscriptionType == 1).ToArray();
+        await ProcessEndedPerformanceSubscriptions(endedPerformanceSubscription, subscriptionRepository);
+
+        Trace.TraceInformation("Process subscription finished");
+        return true;
+    }
+
+    private async Task ProcessEndedPerformanceSubscriptions(SubscriptionEntity[] subscriptions, ISubscriptionsRepository subscriptionRepository)
+    {
+        if (!subscriptions.Any())
+            return;
+
+        using IPlaybillRepository playbillRepository = _dbService.GetPlaybillRepository();
+        var outdated = playbillRepository.GetOutdatedWithAllData();
+
+        var cultureRu = CultureInfo.CreateSpecificCulture("ru");
+
+        var descriptions = outdated
+            .Select(x => _descriptionSevice.GetPerformanceDescription(x, 0, cultureRu, null))
+            .ToArray();
+
+        foreach (SubscriptionEntity subscription in subscriptions)
+        {
+            var results = descriptions.Select(async description => await _telegramService.SendEscapedMessageAsync(
+                    subscription.TelegramUserId,
+                    description,
+                    CancellationToken.None));
+
+            await Task.WhenAll(results);
+
+            if (results.All(x => x.Result))
+                await subscriptionRepository.UpdateDate(subscription.Id);
+        }
+    }
+
+    private async Task ProcessChangedBasedSubscriptions(SubscriptionEntity[] subscriptions, ISubscriptionsRepository subscriptionRepository)
+    {
+        if (!subscriptions.Any())
+            return;
+
         using IPlaybillRepository playbillRepository =
             subscriptions.Any(s => !string.IsNullOrEmpty(s.PerformanceFilter.Actor))
             ? _dbService.GetPlaybillRepository()
             : null;
-
-        if (!subscriptions.Any())
-            return true;
 
         DateTime lastSubscriptionsUpdate = subscriptions.Min(s => s.LastUpdate).ToUniversalTime();
 
@@ -75,7 +121,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             {
                 if (!changesToUser.ContainsKey(change.PlaybillEntityId))
                 {
-                    changesToUser[change.PlaybillEntityId] = new List<PlaybillChangeEntity> {change};
+                    changesToUser[change.PlaybillEntityId] = new List<PlaybillChangeEntity> { change };
                     continue;
                 }
 
@@ -83,7 +129,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             }
         }
 
-        foreach (var userData in messagesDictionary)
+        foreach (KeyValuePair<long, Dictionary<int, List<PlaybillChangeEntity>>> userData in messagesDictionary)
         {
             var changesToProcess = userData.Value.SelectMany(d => d.Value.ToArray()).Distinct().ToArray();
             if (!await SendMessages(userData.Key, changesToProcess))
@@ -95,9 +141,6 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                 await subscriptionRepository.UpdateDate(subscription.Id);
             }
         }
-
-        Trace.TraceInformation("Process subscription finished");
-        return true;
     }
 
     private static readonly ReasonOfChanges[] ReasonToShowCast = {ReasonOfChanges.CastWasChanged, ReasonOfChanges.CastWasSet, ReasonOfChanges.Creation, ReasonOfChanges.StartSales};

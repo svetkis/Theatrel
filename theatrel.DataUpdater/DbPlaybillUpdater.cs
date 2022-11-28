@@ -147,7 +147,7 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
                     return freshData.MinPrice == 0 ? ReasonOfChanges.None : ReasonOfChanges.StartSales;
 
                 if (freshData.MinPrice == 0)
-                    return ReasonOfChanges.StopSale;
+                    return ReasonOfChanges.StopSales;
 
                 if (lastChange.MinPrice > freshData.MinPrice)
                     return ReasonOfChanges.PriceDecreased;

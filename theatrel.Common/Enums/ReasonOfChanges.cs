@@ -21,7 +21,7 @@ public enum ReasonOfChanges
     [Description("Начало продаж")]
     StartSales = 8,
 
-    [Description("Стоп продаж")]
+    [Description("Убрать этот статус")]
     StopSale = 16,
 
     [Description("Ошибка получения данных")]
