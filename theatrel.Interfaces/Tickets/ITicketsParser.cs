@@ -6,6 +6,5 @@ namespace theatrel.Interfaces.Tickets;
 
 public interface ITicketsParser : IDIRegistrable
 {
-    Task<IPerformanceTickets> Parse(byte[] data, CancellationToken cancellationToken);
     Task<IPerformanceTickets> ParseFromUrl(string url, CancellationToken cancellationToken);
 }

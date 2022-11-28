@@ -6,11 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
+using AngleSharp.Text;
 using theatrel.Common;
 using theatrel.Common.Enums;
 using theatrel.Interfaces.Helpers;
+using theatrel.Interfaces.Playbill;
 using theatrel.Interfaces.Tickets;
 using theatrel.Lib.Tickets;
+using theatrel.Lib.Utils;
 
 namespace theatrel.Lib.MariinskyParsers;
 
@@ -40,11 +43,11 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
 
         var content = await _pageRequester.RequestBytes(url, false, cancellationToken);
 
-        return PrivateParseWithoutAdditionalMemory(content);
-    }
+        if (url.Contains("kassir.ru", StringComparison.InvariantCultureIgnoreCase))
+            return await PrivateParseKassir(content, cancellationToken);
 
-    public async Task<IPerformanceTickets> Parse(byte[] data, CancellationToken cancellationToken)
-        => await PrivateParse(data, cancellationToken);
+        return PrivateParse(content);
+    }
 
     private static string priceTag = "<tprice";
     private static string closePriceTag = "</tprice";
@@ -57,7 +60,7 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
 
     private readonly byte _closeTagBytes = Encoding.UTF8.GetBytes(">").First();
 
-    private IPerformanceTickets PrivateParseWithoutAdditionalMemory(byte[] data)
+    private IPerformanceTickets PrivateParse(byte[] data)
     {
         int priceTagIndex = data.AsSpan().IndexOf(_priceTagBytes);
         if (-1 == priceTagIndex)
@@ -104,6 +107,28 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
         return performanceTickets;
     }
 
+    private async Task<IPerformanceTickets> PrivateParseKassir(byte[] data, CancellationToken cancellationToken)
+    {
+        using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
+        await using MemoryStream dataStream = new MemoryStream(data);
+        using IDocument document = await context.OpenAsync(req => req.Content(dataStream), cancellationToken);
+
+        var pricePart = document.GetBody().QuerySelector(".price");
+        if (pricePart == null)
+            return new PerformanceTickets { State = TicketsState.TechnicalError, LastUpdate = DateTime.UtcNow };
+
+        IPerformanceTickets performanceTickets = new PerformanceTickets { State = TicketsState.Ok };
+
+        var prices = pricePart.TextContent
+            .RemoveWhitespace()
+            .Trim('\n')
+            .Split('—', StringSplitOptions.RemoveEmptyEntries);
+
+        performanceTickets.MinTicketPrice = ToInt(prices.First());
+
+        return performanceTickets;
+    }
+
     private int GetPrice(byte[] data, int startPricePos, out int endPos)
     {
         int endPriceTagIndex = data.AsSpan(startPricePos, data.Length - startPricePos).IndexOf(_closePriceTagBytes);
@@ -120,31 +145,5 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
             return default;
 
         return int.TryParse(value, out var ret) ? ret : default;
-    }
-
-    private async Task<IPerformanceTickets> PrivateParse(byte[] data, CancellationToken cancellationToken)
-    {
-        if (data == null || !data.Any())
-            return new PerformanceTickets { State = TicketsState.TechnicalError, LastUpdate = DateTime.UtcNow };
-
-        using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
-        await using MemoryStream dataStream = new MemoryStream(data);
-        using IDocument parsedDoc = await context.OpenAsync(req => req.Content(dataStream), cancellationToken);
-
-        IPerformanceTickets performanceTickets = new PerformanceTickets {State = TicketsState.Ok};
-
-        IElement[] pricesElements = parsedDoc.QuerySelectorAll("ticket TPRICE1:not(:empty), ticket TPRICE2:not(:empty), ticket TPRICE3:not(:empty)").ToArray();
-
-        //We can see three or two prices, but we are interested only about the lowest one, because it is correct one for RF citizens
-        var prices = pricesElements.Select(e => ToInt(e.TextContent)).Where(price => price > 0).ToArray();
-
-        performanceTickets.MinTicketPrice = prices.Any() ? prices.Min() : 0;
-
-        if (!pricesElements.Any())
-            performanceTickets.State = TicketsState.TechnicalError;
-
-        performanceTickets.LastUpdate = DateTime.UtcNow;
-
-        return performanceTickets;
     }
 }
