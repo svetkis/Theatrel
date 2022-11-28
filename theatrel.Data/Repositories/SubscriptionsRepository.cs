@@ -77,6 +77,7 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
                 string.IsNullOrEmpty(s.PerformanceFilter.Actor) &&
                 s.PerformanceFilter.PlaybillId == -1 &&
                 null == s.PerformanceFilter.PerformanceName &&
+                s.SubscriptionType < 1 &&
                 s.PerformanceFilter.EndDate < DateTime.UtcNow)
             .Include(s => s.PerformanceFilter)
             .AsNoTracking()
