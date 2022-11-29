@@ -638,11 +638,18 @@ internal class PlaybillRepository : IPlaybillRepository
 
         _dbContext.Entry(playbillEntity).State = EntityState.Detached;
 
-        _dbContext.Entry(playbillEntity.Performance.Location).State = EntityState.Detached;
-        _dbContext.Entry(playbillEntity.Performance.Type).State = EntityState.Detached;
-        _dbContext.Entry(playbillEntity.Performance).State = EntityState.Detached;
-        foreach (var ch in playbillEntity.Changes)
-            _dbContext.Entry(ch).State = EntityState.Detached;
+        if (playbillEntity.Performance != null)
+        {
+            _dbContext.Entry(playbillEntity.Performance.Location).State = EntityState.Detached;
+            _dbContext.Entry(playbillEntity.Performance.Type).State = EntityState.Detached;
+            _dbContext.Entry(playbillEntity.Performance).State = EntityState.Detached;
+        }
+
+        if (playbillEntity.Changes != null)
+        {
+            foreach (var ch in playbillEntity.Changes)
+                _dbContext.Entry(ch).State = EntityState.Detached;
+        }
 
         if (playbillEntity.Cast != null)
         {
