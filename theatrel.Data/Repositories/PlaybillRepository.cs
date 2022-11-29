@@ -186,9 +186,12 @@ internal class PlaybillRepository : IPlaybillRepository
             }
         }
 
-        ActorInRoleEntity[] toRemoveList = checkList.Where(item => !item.Exists).Select(c => c.ActorInRole).ToArray();
-        ActorInRoleEntity[] toAddList = toAddListData.Select(data
-                => AddActorsInRole(data.Key, data.Value, playbillEntry.Performance, playbillEntry.Id))
+        ActorInRoleEntity[] toRemoveList = checkList
+            .Where(item => !item.Exists)
+            .Select(c => c.ActorInRole).ToArray();
+
+        ActorInRoleEntity[] toAddList = toAddListData
+            .Select(data => AddActorsInRole(data.Key, data.Value, playbillEntry.Performance, playbillEntry.Id))
             .SelectMany(group => group.ToArray()).ToArray();
 
         PlaybillEntity oldValue = await GetById(playbillEntry.Id);
@@ -221,17 +224,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         finally
         {
-            _dbContext.Entry(playbillEntry).State = EntityState.Detached;
-            _dbContext.Entry(playbillEntry.Performance).State = EntityState.Detached;
-            if (playbillEntry.Cast != null && playbillEntry.Cast.Any())
-            {
-                foreach (var castItem in playbillEntry.Cast)
-                {
-                    _dbContext.Entry(castItem).State = EntityState.Detached;
-                    _dbContext.Entry(castItem.Actor).State = EntityState.Detached;
-                    _dbContext.Entry(castItem.Role).State = EntityState.Detached;
-                }
-            }
+            StopTracking(playbillEntry);
         }
 
         return true;
@@ -374,7 +367,7 @@ internal class PlaybillRepository : IPlaybillRepository
         try
         {
             return _dbContext.Playbill
-                .Where(x => x.When < DateTime.UtcNow)
+                .Where(x => x.When < DateTime.UtcNow && x.IsReadyToDelete)
                 .AsNoTracking()
                 .ToArray();
         }
@@ -386,12 +379,12 @@ internal class PlaybillRepository : IPlaybillRepository
         return Array.Empty<PlaybillEntity>();
     }
 
-    public IEnumerable<PlaybillEntity> GetOutdatedWithAllData()
+    public IEnumerable<PlaybillEntity> GetOutdatedPlaybillForArchive()
     {
         try
         {
             return _dbContext.Playbill
-                .Where(x => x.When < DateTime.UtcNow)
+                .Where(x => x.When < DateTime.UtcNow && !x.IsReadyToDelete)
                 .Include(x => x.Performance).ThenInclude(x => x.Type)
                 .Include(x => x.Performance).ThenInclude(x => x.Location)
                 .Include(x => x.Cast).ThenInclude(c => c.Actor)
@@ -405,6 +398,29 @@ internal class PlaybillRepository : IPlaybillRepository
         }
 
         return Array.Empty<PlaybillEntity>();
+    }
+
+    public async Task SetPlaybillReadyToDelete(PlaybillEntity playbillEntity)
+    {
+        try
+        {
+            playbillEntity.IsReadyToDelete = true;
+
+            _dbContext.Entry(playbillEntity).State = EntityState.Modified;
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Failed to SetPlaybillReadyToDelete {ex.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            TraceException(ex);
+        }
     }
 
     public IEnumerable<PerformanceEntity> GetOutdatedPerformances()
@@ -442,7 +458,8 @@ internal class PlaybillRepository : IPlaybillRepository
                 .Include(x => x.Changes)
                 .Include(x => x.Cast)
                 .ThenInclude(x => x.Actor)
-                .AsNoTracking().ToArray();
+                .AsNoTracking()
+                .ToArray();
         }
         catch (Exception ex)
         {
@@ -557,9 +574,11 @@ internal class PlaybillRepository : IPlaybillRepository
     {
         try
         {
-            return _dbContext.Playbill.Where(x => x.Id == id)
+            return _dbContext.Playbill
+                .Where(x => x.Id == id)
                 .Include(p => p.Performance)
-                .AsNoTracking().FirstOrDefault();
+                .AsNoTracking()
+                .FirstOrDefault();
         }
         catch (Exception ex)
         {
@@ -570,7 +589,9 @@ internal class PlaybillRepository : IPlaybillRepository
     }
 
     private Task<PlaybillEntity> GetById(long id)
-        => _dbContext.Playbill.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
+        => _dbContext.Playbill
+        .AsNoTracking()
+        .SingleOrDefaultAsync(u => u.Id == id);
 
     public async Task<bool> AddChange(int playbillEntityId, PlaybillChangeEntity change)
     {
@@ -712,16 +733,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         finally
         {
-            if (playbillEntity != null)
-            {
-                _dbContext.Entry(playbillEntity.Performance.Location).State = EntityState.Detached;
-                _dbContext.Entry(playbillEntity.Performance.Type).State = EntityState.Detached;
-                _dbContext.Entry(playbillEntity.Performance).State = EntityState.Detached;
-                foreach (var change in playbillEntity.Changes)
-                    _dbContext.Entry(change).State = EntityState.Detached;
-
-                _dbContext.Entry(playbillEntity).State = EntityState.Detached;
-            }
+            StopTracking(playbillEntity);
         }
     }
 
@@ -749,16 +761,7 @@ internal class PlaybillRepository : IPlaybillRepository
         }
         finally
         {
-            if (playbillEntity != null)
-            {
-                _dbContext.Entry(playbillEntity.Performance.Location).State = EntityState.Detached;
-                _dbContext.Entry(playbillEntity.Performance.Type).State = EntityState.Detached;
-                _dbContext.Entry(playbillEntity.Performance).State = EntityState.Detached;
-                foreach (var change in playbillEntity.Changes)
-                    _dbContext.Entry(change).State = EntityState.Detached;
-
-                _dbContext.Entry(playbillEntity).State = EntityState.Detached;
-            }
+            StopTracking(playbillEntity);
         }
     }
 

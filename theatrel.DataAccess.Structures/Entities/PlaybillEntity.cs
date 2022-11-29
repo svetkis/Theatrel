@@ -21,4 +21,6 @@ public class PlaybillEntity
     public ICollection<ActorInRoleEntity> Cast { get; set; }
 
     public string Description { get; set; }
+
+    public bool IsReadyToDelete { get; set; }
 }

@@ -65,25 +65,31 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             return;
 
         using IPlaybillRepository playbillRepository = _dbService.GetPlaybillRepository();
-        var outdated = playbillRepository.GetOutdatedWithAllData();
+        var outdated = playbillRepository.GetOutdatedPlaybillForArchive();
 
         var cultureRu = CultureInfo.CreateSpecificCulture("ru");
 
         var descriptions = outdated
-            .Select(x => _descriptionSevice.GetPerformanceDescription(x, 0, cultureRu, null))
+            .Select(x => {
+                string performance = _descriptionSevice.GetPerformanceDescription(x, 0, cultureRu, null);
+                string cast = _descriptionSevice.GetCastDescription(x, null, null);
+
+                return new { Entry = x, Description = $"{performance}{Environment.NewLine}{cast}" };
+            })
             .ToArray();
 
-        foreach (SubscriptionEntity subscription in subscriptions)
+        foreach (var archiveEntry in descriptions)
         {
-            var results = descriptions.Select(async description => await _telegramService.SendEscapedMessageAsync(
-                    subscription.TelegramUserId,
-                    description,
-                    CancellationToken.None));
+            foreach (SubscriptionEntity subscription in subscriptions)
+            {
+                var sent = await _telegramService.SendEscapedMessageAsync(
+                        subscription.TelegramUserId,
+                        archiveEntry.Description,
+                        CancellationToken.None);
 
-            await Task.WhenAll(results);
+            }
 
-            if (results.All(x => x.Result))
-                await subscriptionRepository.UpdateDate(subscription.Id);
+            await playbillRepository.SetPlaybillReadyToDelete(archiveEntry.Entry);
         }
     }
 

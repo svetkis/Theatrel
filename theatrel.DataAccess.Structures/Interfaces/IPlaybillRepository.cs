@@ -44,6 +44,9 @@ public interface IPlaybillRepository : IDisposable, IDIRegistrable
     IEnumerable<TheatreEntity> GetTheatres();
 
     void EnsureCreateTheatre(int theatreId, string theatreName);
+
     ActorEntity[] GetActorsByNameFilter(string actor);
-    IEnumerable<PlaybillEntity> GetOutdatedWithAllData();
+
+    IEnumerable<PlaybillEntity> GetOutdatedPlaybillForArchive();
+    Task SetPlaybillReadyToDelete(PlaybillEntity playbillEntity);
 }
