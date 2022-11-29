@@ -392,7 +392,8 @@ internal class PlaybillRepository : IPlaybillRepository
         {
             return _dbContext.Playbill
                 .Where(x => x.When < DateTime.UtcNow)
-                .Include(x => x.Performance)
+                .Include(x => x.Performance).ThenInclude(x => x.Type)
+                .Include(x => x.Performance).ThenInclude(x => x.Location)
                 .Include(x => x.Cast).ThenInclude(c => c.Actor)
                 .Include(x => x.Cast).ThenInclude(c => c.Role)
                 .AsNoTracking()
