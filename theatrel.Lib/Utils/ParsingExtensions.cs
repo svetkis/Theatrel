@@ -40,9 +40,12 @@ internal static class ParsingExtensions
             int posStart = current.IndexOf('(');
             int posEnd = current.IndexOf(')');
 
-            return posEnd > -1
+            string actor = posEnd > -1
                 ? current.Substring(posStart + 1, posEnd - posStart - 1).Trim()
                 : current.Substring(posStart + 1);
+
+            if (!current.Substring(posEnd).Contains('('))
+                return actor;
         }
 
         return CommonTags.Actor;

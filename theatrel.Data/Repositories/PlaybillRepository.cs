@@ -640,8 +640,12 @@ internal class PlaybillRepository : IPlaybillRepository
 
         if (playbillEntity.Performance != null)
         {
-            _dbContext.Entry(playbillEntity.Performance.Location).State = EntityState.Detached;
-            _dbContext.Entry(playbillEntity.Performance.Type).State = EntityState.Detached;
+            if (playbillEntity.Performance.Location != null)
+                _dbContext.Entry(playbillEntity.Performance.Location).State = EntityState.Detached;
+
+            if (playbillEntity.Performance.Type != null)
+                _dbContext.Entry(playbillEntity.Performance.Type).State = EntityState.Detached;
+
             _dbContext.Entry(playbillEntity.Performance).State = EntityState.Detached;
         }
 
@@ -655,9 +659,16 @@ internal class PlaybillRepository : IPlaybillRepository
         {
             foreach (var castItem in playbillEntity.Cast)
             {
-                _dbContext.Entry(castItem).State = EntityState.Detached;
-                _dbContext.Entry(castItem.Actor).State = EntityState.Detached;
-                _dbContext.Entry(castItem.Role).State = EntityState.Detached;
+                if (castItem != null)
+                {
+                    _dbContext.Entry(castItem).State = EntityState.Detached;
+
+                    if (castItem.Actor != null)
+                        _dbContext.Entry(castItem.Actor).State = EntityState.Detached;
+
+                    if (castItem.Role != null)
+                        _dbContext.Entry(castItem.Role).State = EntityState.Detached;
+                }
             }
         }
     }

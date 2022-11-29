@@ -67,7 +67,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
             await using MemoryStream dataStream = new MemoryStream(data);
             using IDocument parsedDoc = await context.OpenAsync(req => req.Content(dataStream), cancellationToken);
 
-            IElement castBlock = parsedDoc.All.FirstOrDefault(m => m.ClassList.Contains("sostav") && m.ClassList.Contains("inf_block"));
+            IElement castBlock = parsedDoc.GetBody().QuerySelector("div.sostav.inf_block");
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -76,7 +76,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
 
             PerformanceCast performanceCast = new PerformanceCast { State = CastState.Ok, Cast = new Dictionary<string, IList<IActor>>() };
 
-            IElement conductor = castBlock.Children.FirstOrDefault(e => e.ClassName == "conductor");
+            IElement conductor = castBlock.QuerySelector(".conductor");
             if (conductor != null)
             {
                 var actors = GetCastInfo(conductor.QuerySelectorAll("a").ToArray());
@@ -105,8 +105,11 @@ internal class MariinskyCastParser : IPerformanceCastParser
     {
         //detete commented
         text = Regex.Replace(text, "<!--.*?-->", "", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-
-        var lines = text.Split(new[] { "<br/>", "<br>", "</p>", "<p>", "<br />" }, StringSplitOptions.RemoveEmptyEntries);
+        text = text.Replace("При участии", "");
+        
+        var lines = text
+            .Trim()
+            .Split(new[] { "<br/>", "<br>", "</p>", "<p>", "<br />" }, StringSplitOptions.RemoveEmptyEntries);
 
         foreach (string line in lines)
         {
@@ -171,7 +174,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
 
         foreach (var aTag in aTags)
         {
-            string actorName = aTag.TextContent.Replace("&nbsp;", " ").Trim();
+            string actorName = aTag.TextContent.Trim();
             if (!string.IsNullOrEmpty(actorName))
                 actors.Add(new PerformanceActor { Name = actorName, Url = ProcessUrl(aTag) });
         }
