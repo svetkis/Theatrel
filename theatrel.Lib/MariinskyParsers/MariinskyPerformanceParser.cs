@@ -42,6 +42,9 @@ internal class MariinskyPerformanceParser : IPerformanceParser
                 ? specNameChildren.Last()?.TextContent.Trim()
                 : CommonTags.NotDefinedTag;
 
+            if (name.Contains("будет объявлено", StringComparison.InvariantCultureIgnoreCase))
+                return null;
+
             var statusChildren = parsedElement.QuerySelector("div.status")?.Children;
             string status = statusChildren != null && statusChildren.Any()
                 ? statusChildren.Last().TextContent.Trim()
