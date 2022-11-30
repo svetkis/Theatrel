@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
 using theatrel.Common;
+using theatrel.Common.FormatHelper;
 using theatrel.DataAccess.DbService;
 using theatrel.DataAccess.Structures.Entities;
 using theatrel.DataAccess.Structures.Interfaces;
@@ -182,7 +183,13 @@ internal class TgBotProcessor : ITgBotProcessor
         ITgCommandResponse nextDlgQuestion = await cmd.AscUser(chatInfo, _cancellationTokenSource.Token);
         ITgCommandResponse botResponse = nextDlgQuestion;
         if (!string.IsNullOrWhiteSpace(previousCmdAcknowledgement?.Message))
-            botResponse.Message = $"{previousCmdAcknowledgement.Message}{Environment.NewLine}{nextDlgQuestion.Message}";
+        {
+            var previousCmdResponse = previousCmdAcknowledgement.IsEscaped
+                ? previousCmdAcknowledgement.Message
+                : previousCmdAcknowledgement.Message.EscapeMessageForMarkupV2();
+
+            botResponse.Message = $"{previousCmdResponse}{Environment.NewLine}{nextDlgQuestion.Message}";
+        }
 
         if (null != previousCmdAcknowledgement?.ReplyKeyboard)
         {
