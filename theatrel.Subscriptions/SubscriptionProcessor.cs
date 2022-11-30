@@ -61,11 +61,17 @@ public class SubscriptionProcessor : ISubscriptionProcessor
 
     private async Task ProcessEndedPerformanceSubscriptions(SubscriptionEntity[] subscriptions, ISubscriptionsRepository subscriptionRepository)
     {
-        if (!subscriptions.Any())
-            return;
-
         using IPlaybillRepository playbillRepository = _dbService.GetPlaybillRepository();
         var outdated = playbillRepository.GetOutdatedPlaybillForArchive();
+
+        if (!subscriptions.Any())
+        {
+            foreach (var outdatedEntry in outdated)
+            {
+                await playbillRepository.SetPlaybillReadyToDelete(outdatedEntry);
+            }
+            return;
+        }
 
         var cultureRu = CultureInfo.CreateSpecificCulture("ru");
 
