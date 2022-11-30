@@ -184,7 +184,7 @@ internal class TgBotProcessor : ITgBotProcessor
         ITgCommandResponse botResponse = nextDlgQuestion;
         if (!string.IsNullOrWhiteSpace(previousCmdAcknowledgement?.Message))
         {
-            string previousCmdResponse = nextDlgQuestion.IsEscaped
+            string previousCmdResponse = previousCmdAcknowledgement.IsEscaped
                 ? previousCmdAcknowledgement.Message
                 : previousCmdAcknowledgement.Message.EscapeMessageForMarkupV2();
 
