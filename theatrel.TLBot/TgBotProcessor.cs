@@ -184,11 +184,17 @@ internal class TgBotProcessor : ITgBotProcessor
         ITgCommandResponse botResponse = nextDlgQuestion;
         if (!string.IsNullOrWhiteSpace(previousCmdAcknowledgement?.Message))
         {
-            var previousCmdResponse = previousCmdAcknowledgement.IsEscaped
+            string previousCmdResponse = nextDlgQuestion.IsEscaped
                 ? previousCmdAcknowledgement.Message
-                : previousCmdAcknowledgement.Message;
+                : previousCmdAcknowledgement.Message.EscapeMessageForMarkupV2();
 
-            botResponse.Message = $"{previousCmdResponse}{Environment.NewLine}{nextDlgQuestion.Message}";
+            string question = nextDlgQuestion.IsEscaped
+                ? nextDlgQuestion.Message
+                : nextDlgQuestion.Message.EscapeMessageForMarkupV2();
+
+            botResponse.Message = $"{previousCmdResponse}{Environment.NewLine}{question}";
+
+            botResponse.IsEscaped = true ;
         }
 
         if (null != previousCmdAcknowledgement?.ReplyKeyboard)
