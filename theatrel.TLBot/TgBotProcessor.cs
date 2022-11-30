@@ -186,7 +186,7 @@ internal class TgBotProcessor : ITgBotProcessor
         {
             var previousCmdResponse = previousCmdAcknowledgement.IsEscaped
                 ? previousCmdAcknowledgement.Message
-                : previousCmdAcknowledgement.Message.EscapeMessageForMarkupV2();
+                : previousCmdAcknowledgement.Message;
 
             botResponse.Message = $"{previousCmdResponse}{Environment.NewLine}{nextDlgQuestion.Message}";
         }
