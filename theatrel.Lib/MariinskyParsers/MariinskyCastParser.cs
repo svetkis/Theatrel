@@ -81,8 +81,6 @@ internal class MariinskyCastParser : IPerformanceCastParser
                 Cast = new Dictionary<string, IList<IActor>>()
             };
 
-            await ParseText(castFromPlaybill, performanceCast, cancellationToken);
-
             using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
             await using MemoryStream dataStream = new MemoryStream(data);
             using IDocument parsedDoc = await context.OpenAsync(req => req.Content(dataStream), cancellationToken);
@@ -106,7 +104,9 @@ internal class MariinskyCastParser : IPerformanceCastParser
             if (!paragraph.Children.Any())
                 return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
 
-            await ParseText(paragraph.InnerHtml.Trim(), performanceCast, cancellationToken);
+            await ParseText(paragraph.InnerHtml.Trim(), performanceCast, false, cancellationToken);
+
+            await ParseText(castFromPlaybill, performanceCast, true, cancellationToken);
 
             performanceCast.State = performanceCast.Cast.Any() ? CastState.Ok : CastState.CastIsNotSet;
 
@@ -121,7 +121,11 @@ internal class MariinskyCastParser : IPerformanceCastParser
         return new PerformanceCast { State = CastState.TechnicalError };
     }
 
-    private async Task ParseText(string text, PerformanceCast performanceCast, CancellationToken cancellationToken)
+    private async Task ParseText(
+        string text,
+        PerformanceCast performanceCast,
+        bool additionalInfo,
+        CancellationToken cancellationToken)
     {
         //detete commented
         text = Regex.Replace(text, "<!--.*?-->", "", RegexOptions.Singleline | RegexOptions.IgnoreCase);
@@ -140,6 +144,9 @@ internal class MariinskyCastParser : IPerformanceCastParser
             }
 
             string characterName = line.GetCharacterName();
+
+            if (characterName.StartsWith("В главных", StringComparison.OrdinalIgnoreCase))
+                characterName = CommonTags.Actor;
 
             if (characterName.Length > 100 ||
                 CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag, StringComparison.InvariantCultureIgnoreCase)))
@@ -180,7 +187,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
 
             foreach (var actor in actors)
             {
-                if (!performanceCast.Cast.Any(x => x.Value.Any(y => string.Equals(y.Name, actor.Name, StringComparison.InvariantCultureIgnoreCase))))
+                if (!additionalInfo || !performanceCast.Cast.Any(x => x.Value.Any(y => string.Equals(y.Name, actor.Name, StringComparison.InvariantCultureIgnoreCase))))
                     newActors.Add(actor);
             }
 

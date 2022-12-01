@@ -211,7 +211,7 @@ internal class GetPerformancesCommand : DialogCommandBase
         stringBuilder.Append(_descriptionService.GetPerformancesMessage(
             performances,
             culture,
-            false,
+            true,
             out string performanceIdsList));
 
         chatInfo.Info = performanceIdsList;
