@@ -81,7 +81,7 @@ internal class MihailovskyCastParser : IPerformanceCastParser
             {
                 string characterName = line.GetCharacterName();
 
-                if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
+                if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag, StringComparison.InvariantCultureIgnoreCase)))
                     continue;
 
                 var actors = await GetCastInfo(line, cancellationToken);

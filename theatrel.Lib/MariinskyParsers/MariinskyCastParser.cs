@@ -142,7 +142,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
             string characterName = line.GetCharacterName();
 
             if (characterName.Length > 100 ||
-                CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
+                CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag, StringComparison.InvariantCultureIgnoreCase)))
             {
                 continue;
             }
@@ -176,20 +176,24 @@ internal class MariinskyCastParser : IPerformanceCastParser
             if (null == actors || !actors.Any())
                 continue;
 
-            if (performanceCast.Cast.ContainsKey(characterName))
+            var newActors = new List<IActor>();
+
+            foreach (var actor in actors)
             {
-                foreach (var actor in actors)
-                {
-                    if (!performanceCast.Cast[characterName]
-                        .Any(x => string.Equals(x.Name, actor.Name, StringComparison.InvariantCultureIgnoreCase)))
-                     {
-                        performanceCast.Cast[characterName].Add(actor);
-                     }
-                }
+                if (!performanceCast.Cast.Any(x => x.Value.Any(y => string.Equals(y.Name, actor.Name, StringComparison.InvariantCultureIgnoreCase))))
+                    newActors.Add(actor);
+            }
+
+            if (!newActors.Any())
+                continue;
+
+            if (!performanceCast.Cast.ContainsKey(characterName))
+            {
+                performanceCast.Cast[characterName] = newActors;
             }
             else
             {
-                performanceCast.Cast[characterName] = actors;
+                (performanceCast.Cast[characterName] as List<IActor>).AddRange(newActors);
             }
         }
     }
