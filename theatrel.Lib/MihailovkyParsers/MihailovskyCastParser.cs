@@ -88,19 +88,28 @@ internal class MihailovskyCastParser : IPerformanceCastParser
                 if (null == actors || !actors.Any())
                     continue;
 
-                if (performanceCast.Cast.ContainsKey(characterName))
+                var newActors = new List<IActor>();
+
+                foreach (var actor in actors)
                 {
-                    foreach (var actor in actors)
-                        performanceCast.Cast[characterName].Add(actor);
+                    if (!performanceCast.Cast.Any(x => x.Value.Any(y => string.Equals(y.Name, actor.Name, StringComparison.InvariantCultureIgnoreCase ))))
+                        newActors.Add(actor);
+                }
+
+                if (!newActors.Any())
+                    continue;
+
+                if (!performanceCast.Cast.ContainsKey(characterName))
+                {
+                    performanceCast.Cast[characterName] = newActors;
                 }
                 else
                 {
-                    performanceCast.Cast[characterName] = actors;
+                    (performanceCast.Cast[characterName] as List<IActor>).AddRange(newActors);
                 }
             }
 
             return performanceCast;
-
         }
         catch (Exception ex)
         {
