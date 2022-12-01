@@ -15,7 +15,7 @@ namespace theatrel.Lib.Tests
             var factory = DIContainerHolder.Resolve<Func<Theatre, IPerformanceCastParser>>();
             var parser = factory(Theatre.Mariinsky);
 
-            await parser.ParseFromUrl(url, false, CancellationToken.None);
+            await parser.ParseFromUrl(url, "", false, CancellationToken.None);
         }
 
         [Theory]
@@ -25,7 +25,7 @@ namespace theatrel.Lib.Tests
             var factory = DIContainerHolder.Resolve<Func<Theatre, IPerformanceCastParser>>();
             var parser = factory(Theatre.Mariinsky);
 
-            await parser.ParseText(text, CancellationToken.None);
+            await parser.ParseText(text, "", CancellationToken.None);
         }
     }
 }

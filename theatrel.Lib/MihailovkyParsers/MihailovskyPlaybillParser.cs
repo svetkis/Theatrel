@@ -71,7 +71,7 @@ public class MihailovskyPlaybillParser : IPlaybillParser
 
                 parsed.Cast = string.IsNullOrEmpty(personsHtml)
                     ? new PerformanceCast()
-                    : await _castParser.ParseText(personsHtml, cancellationToken);
+                    : await _castParser.ParseText(personsHtml, string.Empty, cancellationToken);
 
                 performances.Add(parsed);
             });

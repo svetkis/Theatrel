@@ -26,7 +26,7 @@ internal class MihailovskyCastParser : IPerformanceCastParser
         _pageRequester = pageRequester;
     }
 
-    public async Task<IPerformanceCast> ParseFromUrl(string url, bool wasMoved, CancellationToken cancellationToken)
+    public async Task<IPerformanceCast> ParseFromUrl(string url, string additionalInfo, bool wasMoved, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(url) || wasMoved)
             return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
@@ -43,18 +43,18 @@ internal class MihailovskyCastParser : IPerformanceCastParser
         if (null == content)
             return new PerformanceCast { State = CastState.TechnicalError };
 
-        return await PrivateParse(content, cancellationToken);
+        return await PrivateParse(content, string.Empty, cancellationToken);
     }
 
-    public async Task<IPerformanceCast> ParseText(string data, CancellationToken cancellationToken)
+    public async Task<IPerformanceCast> ParseText(string data, string additionalData, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(data))
             return new PerformanceCast { State = CastState.CastIsNotSet };
 
-        return await PrivateParse(Encoding.UTF8.GetBytes(data), cancellationToken);
+        return await PrivateParse(Encoding.UTF8.GetBytes(data), additionalData, cancellationToken);
     }
 
-    private async Task<IPerformanceCast> PrivateParse(byte[] data, CancellationToken cancellationToken)
+    private async Task<IPerformanceCast> PrivateParse(byte[] data, string castFromPlaybill, CancellationToken cancellationToken)
     {
         if (data == null || !data.Any())
             return new PerformanceCast { State = CastState.TechnicalError };

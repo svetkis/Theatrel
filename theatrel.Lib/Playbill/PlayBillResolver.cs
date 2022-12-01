@@ -103,11 +103,11 @@ internal class PlayBillResolver : IPlayBillDataResolver
                     if (performance.State == TicketsState.PerformanceWasMoved)
                         return;
 
-                    performance.Cast = await performanceCastParser.ParseFromUrl(performance.Url, false, ctx);
-                    if (!performance.Cast.Cast.Any() && null != performance.CastFromPlaybill)
-                    {
-                        performance.Cast = await performanceCastParser.ParseText(performance.CastFromPlaybill, ctx);
-                    }
+                    performance.Cast = await performanceCastParser.ParseFromUrl(
+                        performance.Url,
+                        performance.CastFromPlaybill,
+                        false,
+                        ctx);
                 });
         }
     }
