@@ -121,7 +121,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
 
             string characterName = line.GetCharacterName();
 
-            if (characterName.Length > 200 ||
+            if (characterName.Length > 100 ||
                 CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag)))
             {
                 continue;
