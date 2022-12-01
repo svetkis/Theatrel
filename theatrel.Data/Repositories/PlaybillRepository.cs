@@ -450,14 +450,11 @@ internal class PlaybillRepository : IPlaybillRepository
         {
             return _dbContext.Playbill
                 .Where(x => x.When <= to && x.When >= from)
-                .Include(x => x.Performance)
-                .ThenInclude(x => x.Location)
-                .ThenInclude(x => x.Theatre)
-                .Include(x => x.Performance)
-                .ThenInclude(x => x.Type)
+                .Include(x => x.Performance).ThenInclude(x => x.Location).ThenInclude(x => x.Theatre)
+                .Include(x => x.Performance).ThenInclude(x => x.Type)
                 .Include(x => x.Changes)
-                .Include(x => x.Cast)
-                .ThenInclude(x => x.Actor)
+                .Include(x => x.Cast).ThenInclude(x => x.Actor)
+                .Include(x => x.Cast).ThenInclude(x => x.Role)
                 .AsNoTracking()
                 .ToArray();
         }
@@ -476,12 +473,11 @@ internal class PlaybillRepository : IPlaybillRepository
             string lowerName = name.ToLower();
             return _dbContext.Playbill
                 .Where(x => EF.Functions.Like(x.Performance.Name.ToLower(), $"%{lowerName}%"))
-                .Include(x => x.Performance)
-                .ThenInclude(x => x.Location)
-                .ThenInclude(x => x.Theatre)
-                .Include(x => x.Performance)
-                .ThenInclude(x => x.Type)
+                .Include(x => x.Performance).ThenInclude(x => x.Location).ThenInclude(x => x.Theatre)
+                .Include(x => x.Performance).ThenInclude(x => x.Type)
                 .Include(x => x.Changes)
+                .Include(x => x.Cast).ThenInclude(x => x.Actor)
+                .Include(x => x.Cast).ThenInclude(x => x.Role)
                 .AsNoTracking()
                 .ToArray();
         }
@@ -513,13 +509,12 @@ internal class PlaybillRepository : IPlaybillRepository
             var actorIds = GetActorsByNameFilter(actor).Select(a => a.Id).ToArray();
 
             return _dbContext.Playbill
-                .Include(x => x.Cast)
+                .Where(x => x.Cast.Any(a => actorIds.Contains(a.ActorId)))
                 .Include(x => x.Cast).ThenInclude(x => x.Actor)
                 .Include(x => x.Cast).ThenInclude(x => x.Role)
                 .Include(x => x.Performance).ThenInclude(x => x.Location)
                 .Include(x => x.Performance).ThenInclude(x => x.Type)
                 .Include(x => x.Changes)
-                .Where(x => x.Cast.Any(a => actorIds.Contains(a.ActorId)))
                 .AsNoTracking()
                 .ToArray();
         }
