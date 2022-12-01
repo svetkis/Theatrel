@@ -26,7 +26,11 @@ internal class MariinskyCastParser : IPerformanceCastParser
         _pageRequester = pageRequester;
     }
 
-    public async Task<IPerformanceCast> ParseFromUrl(string url, bool wasMoved, CancellationToken cancellationToken)
+    public async Task<IPerformanceCast> ParseFromUrl(
+        string url,
+        string castFromPlaybill,
+        bool wasMoved,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(url) || wasMoved)
             return new PerformanceCast {State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>()};
@@ -43,26 +47,22 @@ internal class MariinskyCastParser : IPerformanceCastParser
         if (null == content)
             return new PerformanceCast {State = CastState.TechnicalError};
 
-        return await PrivateParse(content, cancellationToken);
-    }
-
-    public async Task<IPerformanceCast> ParseText(string data, CancellationToken cancellationToken)
-    {
-        PerformanceCast performanceCast = new PerformanceCast { State = CastState.Ok, Cast = new Dictionary<string, IList<IActor>>() };
-        await ParseText(data, performanceCast, cancellationToken);
-
-        return performanceCast;
+        return await PrivateParse(content, castFromPlaybill, cancellationToken);
     }
 
     private string[] technicalActorStrings = { "будет обьявлено позднее", "будет объявлено позднее", "музыкальный спектакль" };
 
-    private async Task<IPerformanceCast> PrivateParse(byte[] data, CancellationToken cancellationToken)
+    private async Task<IPerformanceCast> PrivateParse(byte[] data, string castFromPlaybill, CancellationToken cancellationToken)
     {
         if (data == null || !data.Any())
             return new PerformanceCast { State = CastState.TechnicalError };
 
         try
         {
+            PerformanceCast performanceCast = new PerformanceCast { Cast = new Dictionary<string, IList<IActor>>() };
+
+            ParseText(castFromPlaybill, performanceCast, cancellationToken);
+
             using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
             await using MemoryStream dataStream = new MemoryStream(data);
             using IDocument parsedDoc = await context.OpenAsync(req => req.Content(dataStream), cancellationToken);
@@ -72,9 +72,8 @@ internal class MariinskyCastParser : IPerformanceCastParser
             cancellationToken.ThrowIfCancellationRequested();
 
             if (castBlock == null)
-                return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>()};
+                return performanceCast;
 
-            PerformanceCast performanceCast = new PerformanceCast { State = CastState.Ok, Cast = new Dictionary<string, IList<IActor>>() };
 
             IElement conductor = castBlock.QuerySelector(".conductor");
             if (conductor != null)
@@ -89,6 +88,8 @@ internal class MariinskyCastParser : IPerformanceCastParser
                 return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
 
             await ParseText(paragraph.InnerHtml.Trim(), performanceCast, cancellationToken);
+
+
 
             return performanceCast;
 
@@ -159,7 +160,10 @@ internal class MariinskyCastParser : IPerformanceCastParser
             if (performanceCast.Cast.ContainsKey(characterName))
             {
                 foreach (var actor in actors)
-                    performanceCast.Cast[characterName].Add(actor);
+                {
+                    if (!performanceCast.Cast[characterName].Any(x => string.Equals(x.Name, actor.Name, StringComparison.InvariantCultureIgnoreCase))
+                        performanceCast.Cast[characterName].Add(actor);
+                }
             }
             else
             {

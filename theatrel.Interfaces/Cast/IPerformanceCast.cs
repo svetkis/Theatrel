@@ -5,7 +5,7 @@ namespace theatrel.Interfaces.Cast;
 
 public interface IPerformanceCast
 {
-    CastState State { get; set; }
+    CastState State { get; }
 
     IDictionary<string, IList<IActor>> Cast { get; set; }
 }
