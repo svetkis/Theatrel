@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -187,7 +188,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
 
             foreach (var actor in actors)
             {
-                if (!additionalInfo || !performanceCast.Cast.Any(x => x.Value.Any(y => string.Equals(y.Name, actor.Name, StringComparison.InvariantCultureIgnoreCase))))
+                if (!additionalInfo || !performanceCast.Cast.Any(x => x.Value.Any(y => IsActorsEqual(y, actor))))
                     newActors.Add(actor);
             }
 
@@ -203,6 +204,14 @@ internal class MariinskyCastParser : IPerformanceCastParser
                 (performanceCast.Cast[characterName] as List<IActor>).AddRange(newActors);
             }
         }
+    }
+
+    private bool IsActorsEqual(IActor actor1, IActor actor2)
+    {
+        if (string.Equals(actor1.Url, actor2.Url, StringComparison.InvariantCultureIgnoreCase))
+            return true;
+
+        return string.Equals(actor1.Name, actor2.Name, StringComparison.InvariantCultureIgnoreCase);
     }
 
     private static IList<IActor> GetCastInfo(IElement[] aTags)
