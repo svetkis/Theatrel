@@ -103,7 +103,10 @@ internal class MariinskyCastParser : IPerformanceCastParser
 
             IElement paragraph = castBlock.Children.Last();
             if (!paragraph.Children.Any())
-                return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
+            {
+                performanceCast.State = performanceCast.Cast.Any() ? CastState.Ok : CastState.CastIsNotSet;
+                return performanceCast;
+            }
 
             await ParseText(paragraph.InnerHtml.Trim(), performanceCast, false, cancellationToken);
 
