@@ -67,6 +67,11 @@ internal class MihailovskyCastParser : IPerformanceCastParser
 
             IElement[] castBlock = parsedDoc.QuerySelectorAll("p.f-ap").ToArray();
 
+            if (!castBlock.Any())
+            {
+                castBlock = new IElement[] { parsedDoc.QuerySelectorAll("dl").First().Children.Last() };
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             if (!castBlock.Any())
