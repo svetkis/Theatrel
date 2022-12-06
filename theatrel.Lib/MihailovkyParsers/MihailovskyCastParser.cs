@@ -69,7 +69,11 @@ internal class MihailovskyCastParser : IPerformanceCastParser
 
             if (!castBlock.Any())
             {
-                castBlock = new IElement[] { parsedDoc.QuerySelectorAll("dl").First().Children.Last() };
+                var dlBlock = parsedDoc.QuerySelectorAll("dl");
+                if (dlBlock.Any() && dlBlock.First().Children.Any())
+                {
+                    castBlock = new IElement[] { dlBlock.First().Children.Last() };
+                }
             }
 
             cancellationToken.ThrowIfCancellationRequested();

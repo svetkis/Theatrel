@@ -67,11 +67,9 @@ public class MihailovskyPlaybillParser : IPlaybillParser
                 if (null == parsed)
                     return;
 
-                string personsHtml = performanceDiv.GetChildByPropPath(e => e.ClassName, _personsPath)?.InnerHtml;
+                string personsHtml = performanceDiv.QuerySelector("div.persons")?.InnerHtml;
 
-                parsed.Cast = string.IsNullOrEmpty(personsHtml)
-                    ? new PerformanceCast()
-                    : await _castParser.ParseText(personsHtml, string.Empty, cancellationToken);
+                parsed.Cast = await _castParser.ParseFromUrl(parsed.Url, personsHtml, false, ctx);
 
                 performances.Add(parsed);
             });
