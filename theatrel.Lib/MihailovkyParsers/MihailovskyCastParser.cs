@@ -26,7 +26,7 @@ internal class MihailovskyCastParser : IPerformanceCastParser
         _pageRequester = pageRequester;
     }
 
-    public async Task<IPerformanceCast> ParseFromUrl(string url, string additionalInfo, bool wasMoved, CancellationToken cancellationToken)
+    public async Task<IPerformanceCast> ParseFromUrl(string url, string castFromPlaybill, bool wasMoved, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(url) || wasMoved)
             return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
@@ -43,83 +43,31 @@ internal class MihailovskyCastParser : IPerformanceCastParser
         if (null == content)
             return new PerformanceCast { State = CastState.TechnicalError };
 
-        return await PrivateParse(content, string.Empty, cancellationToken);
+        return await PrivateParse(content, castFromPlaybill, cancellationToken);
     }
 
-    public async Task<IPerformanceCast> ParseText(string data, string additionalData, CancellationToken cancellationToken)
+    private async Task<IPerformanceCast> PrivateParse(byte[] data, string playbillCast, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(data))
-            return new PerformanceCast { State = CastState.CastIsNotSet };
-
-        return await PrivateParse(Encoding.UTF8.GetBytes(data), additionalData, cancellationToken);
-    }
-
-    private async Task<IPerformanceCast> PrivateParse(byte[] data, string castFromPlaybill, CancellationToken cancellationToken)
-    {
-        if (data == null || !data.Any())
-            return new PerformanceCast { State = CastState.TechnicalError };
-
         try
         {
-            using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
-            await using var stream = new MemoryStream(data);
-            using IDocument parsedDoc = await context.OpenAsync(req => req.Content(stream), cancellationToken);
-
-            IElement[] castBlock = parsedDoc.QuerySelectorAll("p.f-ap").ToArray();
-
-            if (!castBlock.Any())
-            {
-                var dlBlock = parsedDoc.QuerySelectorAll("dl");
-                if (dlBlock.Any())
-                {
-                    var dtBlock = dlBlock.First().Children.FirstOrDefault();
-                    
-                    if (string.Equals(dtBlock?.TextContent, "исполнители", StringComparison.InvariantCultureIgnoreCase))
-                        castBlock = new IElement[] { dlBlock.First().Children.Last() };
-                }
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!castBlock.Any())
-                return new PerformanceCast { State = CastState.CastIsNotSet, Cast = new Dictionary<string, IList<IActor>>() };
+            var castBlocks = await GetCastBlocks(data, cancellationToken);
 
-            PerformanceCast performanceCast = new PerformanceCast { State = CastState.Ok, Cast = new Dictionary<string, IList<IActor>>() };
+            PerformanceCast performanceCast = new();
 
-            IEnumerable<string> lines = castBlock.SelectMany(c =>
-                c.InnerHtml.Split(new[] {"<br/>", "<br>", "</p>", "<p>"}, StringSplitOptions.RemoveEmptyEntries));
-
-            foreach (var line in lines)
+            foreach (var block in castBlocks)
             {
-                string characterName = line.GetCharacterName();
-
-                if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag, StringComparison.InvariantCultureIgnoreCase)))
-                    continue;
-
-                var actors = await GetCastInfo(line, cancellationToken);
-                if (null == actors || !actors.Any())
-                    continue;
-
-                var newActors = new List<IActor>();
-
-                foreach (var actor in actors)
-                {
-                    if (!performanceCast.Cast.Any(x => x.Value.Any(y => string.Equals(y.Name, actor.Name, StringComparison.InvariantCultureIgnoreCase ))))
-                        newActors.Add(actor);
-                }
-
-                if (!newActors.Any())
-                    continue;
-
-                if (!performanceCast.Cast.ContainsKey(characterName))
-                {
-                    performanceCast.Cast[characterName] = newActors;
-                }
-                else
-                {
-                    (performanceCast.Cast[characterName] as List<IActor>).AddRange(newActors);
-                }
+                await ParseBlock(block, performanceCast, false, cancellationToken);
             }
+
+            if (playbillCast != null)
+            {
+                var additionalBlock = await GetCastBlock(playbillCast, cancellationToken);
+                await ParseBlock(additionalBlock, performanceCast, true, cancellationToken);
+            }
+
+            performanceCast.State = performanceCast.Cast.Any() ? CastState.Ok : CastState.CastIsNotSet;
 
             return performanceCast;
         }
@@ -129,6 +77,93 @@ internal class MihailovskyCastParser : IPerformanceCastParser
         }
 
         return new PerformanceCast { State = CastState.TechnicalError };
+    }
+
+    private async Task ParseBlock(
+        IElement castBlock,
+        PerformanceCast performanceCast,
+        bool additionalInfo,
+        CancellationToken cancellationToken)
+    {
+        IEnumerable<string> lines = castBlock.InnerHtml
+            .Split(new[] { "<br/>", "<br>", "</p>", "<p>" }, StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var line in lines)
+        {
+            string characterName = line.GetCharacterName();
+
+            if (CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag, StringComparison.InvariantCultureIgnoreCase)))
+                continue;
+
+            var actors = await GetCastInfo(line, cancellationToken);
+
+            MergeCast(performanceCast, characterName, actors, additionalInfo);
+        }
+    }
+
+    private void MergeCast(PerformanceCast cast, string characterName, IList<IActor> actors, bool additionalInfo)
+    {
+        if (null == actors || !actors.Any())
+            return;
+
+        var newActors = new List<IActor>();
+
+        foreach (var actor in actors)
+        {
+            if (!additionalInfo || !cast.Cast.Any(x => x.Value.Any(y => IsActorsEqual(y, actor))))
+                newActors.Add(actor);
+        }
+
+        if (!newActors.Any())
+            return;
+
+        if (!cast.Cast.ContainsKey(characterName))
+        {
+            cast.Cast[characterName] = newActors;
+        }
+        else
+        {
+            (cast.Cast[characterName] as List<IActor>).AddRange(newActors);
+        }
+    }
+
+    private bool IsActorsEqual(IActor actor1, IActor actor2)
+    {
+        if (string.Equals(actor1.Url, actor2.Url, StringComparison.InvariantCultureIgnoreCase))
+            return true;
+
+        return string.Equals(actor1.Name, actor2.Name, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    private async Task<IElement[]> GetCastBlocks(byte[] data, CancellationToken cancellationToken)
+    {
+        using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
+        await using var stream = new MemoryStream(data);
+        using IDocument parsedDoc = await context.OpenAsync(req => req.Content(stream), cancellationToken);
+
+        return parsedDoc.QuerySelectorAll("p.f-ap").ToArray();
+    }
+
+
+    private async Task<IElement> GetCastBlock(string castFromPlaybill, CancellationToken cancellationToken)
+    {
+        using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
+        using IDocument document = await context.OpenAsync(req => req.Content(castFromPlaybill), cancellationToken);
+
+        var dlBlock = document.QuerySelectorAll("dl").FirstOrDefault(x =>
+        {
+            var dtBlocks = x.QuerySelectorAll("dt");
+
+            return dtBlocks.Any() &&
+                string.Equals(dtBlocks.First().TextContent, "исполнители", StringComparison.InvariantCultureIgnoreCase);
+        });
+
+        if (dlBlock != null)
+        {
+            return dlBlock.Children.Last();
+        }
+
+        return null;
     }
 
     private static async Task<IList<IActor>> GetCastInfo(string line, CancellationToken cancellationToken)
