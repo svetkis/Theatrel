@@ -98,7 +98,9 @@ internal class DescriptionService : IDescriptionService
         StringBuilder sb = new();
         IDictionary<string, IList<ActorEntity>> actorsDictionary = new Dictionary<string, IList<ActorEntity>>();
 
-        foreach (var item in playbillEntity.Cast)
+        var sortedCast = playbillEntity.Cast.OrderBy(x => x, new ActorComparer());
+
+        foreach (var item in sortedCast)
         {
             if (!actorsDictionary.ContainsKey(item.Role.CharacterName))
                 actorsDictionary[item.Role.CharacterName] = new List<ActorEntity>();
@@ -136,8 +138,7 @@ internal class DescriptionService : IDescriptionService
         IEnumerable<PlaybillEntity> performances,
         CultureInfo culture,
         bool includeCast,
-        out string performanceIdsList
-        )
+        out string performanceIdsList)
     {
         if (!performances.Any())
         {

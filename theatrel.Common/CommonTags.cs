@@ -23,7 +23,7 @@ public static class CommonTags
     public const string Afisha = "В программе";
     public const string EmTag = "<em>";
 
-    public static readonly string[] TechnicalTagsInCastList = { PerformanceDuration, GapsPhraseStart, MusicPerformanceStart, Afisha, EmTag };
+    public static readonly string[] TechnicalTagsInCastList = { PerformanceDuration, GapsPhraseStart, MusicPerformanceStart, EmTag };
     public static readonly string[] TechnicalStateTags = {NotDefinedTag, WasMovedTag, NoTicketsTag};
 
     public const string JavascriptVoid = "javascript:void(0)";

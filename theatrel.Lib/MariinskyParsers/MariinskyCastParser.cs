@@ -87,7 +87,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
         }
         catch (Exception ex)
         {
-            Trace.TraceInformation($"Performance cast exception {ex.Message} {ex.StackTrace}");
+            Trace.TraceInformation($"Cast PrivateParse exception {ex.Message} {ex.StackTrace}");
         }
 
         return new PerformanceCast { State = CastState.TechnicalError };
@@ -119,7 +119,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
         bool additionalInfo,
         CancellationToken cancellationToken)
     {
-        //detete commented
+        //detete comments
         text = Regex.Replace(text, "<!--.*?-->", "", RegexOptions.Singleline | RegexOptions.IgnoreCase);
         text = text.Replace("При участии", "");
 
