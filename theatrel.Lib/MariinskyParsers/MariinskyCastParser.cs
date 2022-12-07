@@ -10,8 +10,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using theatrel.Common;
 using theatrel.Common.Enums;
+using theatrel.DataAccess.Migrations;
 using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Helpers;
 using theatrel.Lib.Cast;
@@ -57,62 +59,31 @@ internal class MariinskyCastParser : IPerformanceCastParser
         return await PrivateParse(content, castFromPlaybill, cancellationToken);
     }
 
-    public async Task<IPerformanceCast> ParseText(string data, string additionalData, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(data))
-            return new PerformanceCast { State = CastState.CastIsNotSet };
-
-        return await PrivateParse(Encoding.UTF8.GetBytes(data), additionalData, cancellationToken);
-    }
-
     private string[] technicalActorStrings = { "будет обьявлено позднее", "будет объявлено позднее", "музыкальный спектакль" };
 
     private async Task<IPerformanceCast> PrivateParse(byte[] data, string castFromPlaybill, CancellationToken cancellationToken)
     {
-        if (data == null || !data.Any())
-            return new PerformanceCast()
-            {
-                State = CastState.CastIsNotSet
-            };
-
         try
         {
-            PerformanceCast performanceCast = new PerformanceCast
-            {
-                Cast = new Dictionary<string, IList<IActor>>()
-            };
-
-            using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
-            await using MemoryStream dataStream = new MemoryStream(data);
-            using IDocument parsedDoc = await context.OpenAsync(req => req.Content(dataStream), cancellationToken);
-
-            IElement castBlock = parsedDoc.GetBody().QuerySelector("div.sostav.inf_block");
+            IElement castBlock = await GetCastBlock(data, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (castBlock == null)
-                return performanceCast;
-
-            IElement conductor = castBlock.QuerySelector(".conductor");
-            if (conductor != null)
+            PerformanceCast performanceCast = new();
+            if (castBlock != null)
             {
-                var actors = GetCastInfo(conductor.QuerySelectorAll("a").ToArray());
-                if (null != actors && actors.Any())
-                    performanceCast.Cast[CommonTags.Conductor] = actors;
+                foreach(var block in castBlock.Children)
+                {
+                    await ParseText(block.InnerHtml.Trim(), performanceCast, false, cancellationToken);
+                }
             }
-
-            IElement paragraph = castBlock.Children.Last();
-            if (paragraph.Children.Any())
-            {
-                await ParseText(paragraph.InnerHtml.Trim(), performanceCast, false, cancellationToken);
-            }
-
-            await ParseText(castFromPlaybill, performanceCast, true, cancellationToken);
+            
+            if (!string.IsNullOrEmpty(castFromPlaybill))
+                await ParseText(castFromPlaybill, performanceCast, true, cancellationToken);
 
             performanceCast.State = performanceCast.Cast.Any() ? CastState.Ok : CastState.CastIsNotSet;
 
             return performanceCast;
-
         }
         catch (Exception ex)
         {
@@ -121,6 +92,26 @@ internal class MariinskyCastParser : IPerformanceCastParser
 
         return new PerformanceCast { State = CastState.TechnicalError };
     }
+
+    private async Task<IElement> GetCastBlock(byte[] data, CancellationToken cancellationToken)
+    {
+        using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
+        await using MemoryStream dataStream = new MemoryStream(data);
+        using IDocument parsedDoc = await context.OpenAsync(req => req.Content(dataStream), cancellationToken);
+
+        return parsedDoc.GetBody().QuerySelector("div.sostav.inf_block");
+    }
+
+    /* private void ParseConductor(IElement castBlock, PerformanceCast performanceCast)
+     {
+         IElement conductor = castBlock.QuerySelector(".conductor");
+         if (conductor != null)
+         {
+             var actors = GetCastInfo(conductor.QuerySelectorAll("a").ToArray());
+             if (null != actors && actors.Any())
+                 performanceCast.Cast[CommonTags.Conductor] = actors;
+         }
+     }*/
 
     private async Task ParseText(
         string text,
@@ -131,7 +122,7 @@ internal class MariinskyCastParser : IPerformanceCastParser
         //detete commented
         text = Regex.Replace(text, "<!--.*?-->", "", RegexOptions.Singleline | RegexOptions.IgnoreCase);
         text = text.Replace("При участии", "");
-        
+
         var lines = text
             .Trim()
             .Split(new[] { "<br/>", "<br>", "</p>", "<p>", "<br />" }, StringSplitOptions.RemoveEmptyEntries);
@@ -146,63 +137,73 @@ internal class MariinskyCastParser : IPerformanceCastParser
 
             string characterName = line.GetCharacterName();
 
+            if (characterName.Length > 100 || CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                continue;
+            }
+
             if (characterName.StartsWith("В главных", StringComparison.OrdinalIgnoreCase))
                 characterName = CommonTags.Actor;
 
-            if (characterName.Length > 100 ||
-                CommonTags.TechnicalTagsInCastList.Any(tag => characterName.StartsWith(tag, StringComparison.InvariantCultureIgnoreCase)))
-            {
-                continue;
-            }
+            IList<IActor> actors = await ParseActorsFromLine(line, cancellationToken);
 
-            using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
-            using IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
-            var aTags = parsedLine.QuerySelectorAll("a").ToArray();
+            MergeCast(performanceCast, characterName, actors, additionalInfo);
+        }
+    }
 
-            IList<IActor> actors;
-            if (aTags.Any())
-            {
-                actors = GetCastInfo(aTags);
+    private async Task<IList<IActor>> ParseActorsFromLine(string line, CancellationToken cancellationToken)
+    {
+        using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
+        using IDocument parsedLine = await context.OpenAsync(req => req.Content(line), cancellationToken);
+        IElement[] aTags = parsedLine.QuerySelectorAll("a").ToArray();
 
-                if (actors.Any() && actors.First().Name.Length > 100)
-                    continue;
-            }
+        if (aTags.Any())
+        {
+            IList<IActor> actors = GetCastInfo(aTags);
+
+            if (actors.Any() && actors.First().Name.Length > 100)
+                return null;
             else
+                return actors;
+        }
+        else
+        {
+            var name = line.GetActorName();
+
+            if (string.IsNullOrEmpty(name) ||
+                name.Length > 100 ||
+                technicalActorStrings.Any(x => name.Contains(x, StringComparison.OrdinalIgnoreCase)))
             {
-                var name = line.GetActorName();
-
-                if (string.IsNullOrEmpty(name) ||
-                    name.Length > 100 ||
-                    technicalActorStrings.Any(x => name.Contains(x, StringComparison.OrdinalIgnoreCase)))
-                {
-                    continue;
-                }
-
-                actors = new List<IActor>() { new PerformanceActor { Name = name, Url = CommonTags.NotDefinedTag } };
+                return null;
             }
 
-            if (null == actors || !actors.Any())
-                continue;
+            return new List<IActor>() { new PerformanceActor { Name = name, Url = CommonTags.NotDefinedTag } };
+        }
+    }
 
-            var newActors = new List<IActor>();
+    private void MergeCast(PerformanceCast cast, string characterName, IList<IActor> actors, bool additionalInfo)
+    {
+        if (null == actors || !actors.Any())
+            return;
 
-            foreach (var actor in actors)
-            {
-                if (!additionalInfo || !performanceCast.Cast.Any(x => x.Value.Any(y => IsActorsEqual(y, actor))))
-                    newActors.Add(actor);
-            }
+        var newActors = new List<IActor>();
 
-            if (!newActors.Any())
-                continue;
+        foreach (var actor in actors)
+        {
+            if (!additionalInfo || !cast.Cast.Any(x => x.Value.Any(y => IsActorsEqual(y, actor))))
+                newActors.Add(actor);
+        }
 
-            if (!performanceCast.Cast.ContainsKey(characterName))
-            {
-                performanceCast.Cast[characterName] = newActors;
-            }
-            else
-            {
-                (performanceCast.Cast[characterName] as List<IActor>).AddRange(newActors);
-            }
+        if (!newActors.Any())
+            return;
+
+        if (!cast.Cast.ContainsKey(characterName))
+        {
+            cast.Cast[characterName] = newActors;
+        }
+        else
+        {
+            (cast.Cast[characterName] as List<IActor>).AddRange(newActors);
         }
     }
 
