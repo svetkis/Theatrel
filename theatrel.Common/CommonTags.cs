@@ -14,6 +14,7 @@ public static class CommonTags
     public const string WillDeclaredLater = "будет объявлено позднее";
 
     public const string Conductor = "Дирижер";
+    public const string Conductor1 = "Дирижёр";
     public const string Actor = "Исполнитель";
     public const string Phonogram = "Исполняется под фонограмму";
 
