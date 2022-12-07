@@ -28,8 +28,11 @@ internal class ActorComparer : IComparer<ActorInRoleEntity>
         if (isAfishaY)
             return isAscending ? -1 : 1;
 
-        bool isConductorX = string.Equals(x.Role.CharacterName, CommonTags.Conductor, StringComparison.InvariantCultureIgnoreCase);
-        bool isConductorY = string.Equals(y.Role.CharacterName, CommonTags.Conductor, StringComparison.InvariantCultureIgnoreCase);
+        bool isConductorX = string.Equals(x.Role.CharacterName, CommonTags.Conductor, StringComparison.InvariantCultureIgnoreCase)
+            || string.Equals(x.Role.CharacterName, CommonTags.Conductor1, StringComparison.InvariantCultureIgnoreCase);
+
+        bool isConductorY = string.Equals(y.Role.CharacterName, CommonTags.Conductor, StringComparison.InvariantCultureIgnoreCase)
+            || string.Equals(y.Role.CharacterName, CommonTags.Conductor1, StringComparison.InvariantCultureIgnoreCase);
 
         if (isConductorX && isConductorY)
             return 0;
