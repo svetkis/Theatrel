@@ -63,8 +63,11 @@ internal class MihailovskyCastParser : IPerformanceCastParser
 
             if (playbillCast != null)
             {
-                var additionalBlock = await GetCastBlock(playbillCast, cancellationToken);
-                await ParseBlock(additionalBlock, performanceCast, true, cancellationToken);
+                var additionalBlocks = await GetCastBlocks(playbillCast, cancellationToken);
+                foreach (var block in additionalBlocks)
+                {
+                    await ParseBlock(block, performanceCast, true, cancellationToken);
+                }
             }
 
             performanceCast.State = performanceCast.Cast.Any() ? CastState.Ok : CastState.CastIsNotSet;
@@ -141,15 +144,19 @@ internal class MihailovskyCastParser : IPerformanceCastParser
         await using var stream = new MemoryStream(data);
         using IDocument parsedDoc = await context.OpenAsync(req => req.Content(stream), cancellationToken);
 
-        return parsedDoc.QuerySelectorAll("p.f-ap").ToArray();
+        return GetElements(parsedDoc);
     }
 
-
-    private async Task<IElement> GetCastBlock(string castFromPlaybill, CancellationToken cancellationToken)
+    private async Task<IElement[]> GetCastBlocks(string castFromPlaybill, CancellationToken cancellationToken)
     {
         using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
         using IDocument document = await context.OpenAsync(req => req.Content(castFromPlaybill), cancellationToken);
 
+        return GetElements(document);
+    }
+
+    private IElement[] GetElements(IDocument document)
+    {
         var dlBlock = document.QuerySelectorAll("dl").FirstOrDefault(x =>
         {
             var dtBlocks = x.QuerySelectorAll("dt");
@@ -160,10 +167,10 @@ internal class MihailovskyCastParser : IPerformanceCastParser
 
         if (dlBlock != null)
         {
-            return dlBlock.Children.Last();
+            return new IElement[] { dlBlock.Children.Last() };
         }
 
-        return null;
+        return document.QuerySelectorAll("p.f-ap").ToArray();
     }
 
     private static async Task<IList<IActor>> GetCastInfo(string line, CancellationToken cancellationToken)
