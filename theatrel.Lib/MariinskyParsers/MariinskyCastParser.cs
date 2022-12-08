@@ -103,12 +103,11 @@ internal class MariinskyCastParser : IPerformanceCastParser
         return parsedDoc.GetBody().QuerySelector("div.sostav.inf_block");
     }
 
-    private bool ParseConductor(IElement castBlock, PerformanceCast performanceCast)
+    private bool ParseConductor(IElement block, PerformanceCast performanceCast)
     {
-        IElement conductor = castBlock.QuerySelector(".conductor");
-        if (conductor != null)
+        if (block.ClassList.Contains("conductor"))
         {
-            var actors = GetCastInfo(conductor.QuerySelectorAll("a").ToArray());
+            var actors = GetCastInfo(block.QuerySelectorAll("a").ToArray());
             if (null != actors && actors.Any())
             {
                 performanceCast.Cast[CommonTags.Conductor] = actors;

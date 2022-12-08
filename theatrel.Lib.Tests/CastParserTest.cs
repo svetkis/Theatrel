@@ -3,15 +3,13 @@ using System.Threading;
 using theatrel.Interfaces.Cast;
 using theatrel.Lib.Enums;
 using Xunit;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace theatrel.Lib.Tests
 {
     public class CastParserTest
     {
         [Theory]
-        [InlineData(
-            "https://www.mariinsky.ru/playbill/playbill/2022/12/11/3_1930/",
+        [InlineData("https://www.mariinsky.ru/playbill/playbill/2022/12/8/2_1900/",
             "")]
         public async void Test(string url, string text)
         {
