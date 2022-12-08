@@ -11,8 +11,8 @@ namespace theatrel.Lib.Tests
     {
         [Theory]
         [InlineData(
-            "https://www.mariinsky.ru/playbill/playbill/2022/12/13/2_1900/",
-            "<p>Дирижер &ndash; <a href=\"/company/conductors/gergiev/\">Валерий&nbsp;Гергиев</a></p>")]
+            "https://www.mariinsky.ru/playbill/playbill/2022/12/11/3_1930/",
+            "")]
         public async void Test(string url, string text)
         {
             var factory = DIContainerHolder.Resolve<Func<Theatre, IPerformanceCastParser>>();

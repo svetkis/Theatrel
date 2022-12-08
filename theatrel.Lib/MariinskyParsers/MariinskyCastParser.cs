@@ -74,7 +74,8 @@ internal class MariinskyCastParser : IPerformanceCastParser
             {
                 foreach(var block in castBlock.Children)
                 {
-                    await ParseText(block.InnerHtml.Trim(), performanceCast, false, cancellationToken);
+                    if (!ParseConductor(block, performanceCast))
+                        await ParseText(block.InnerHtml.Trim(), performanceCast, false, cancellationToken);
                 }
             }
             
@@ -102,16 +103,21 @@ internal class MariinskyCastParser : IPerformanceCastParser
         return parsedDoc.GetBody().QuerySelector("div.sostav.inf_block");
     }
 
-    /* private void ParseConductor(IElement castBlock, PerformanceCast performanceCast)
-     {
-         IElement conductor = castBlock.QuerySelector(".conductor");
-         if (conductor != null)
-         {
-             var actors = GetCastInfo(conductor.QuerySelectorAll("a").ToArray());
-             if (null != actors && actors.Any())
-                 performanceCast.Cast[CommonTags.Conductor] = actors;
-         }
-     }*/
+    private bool ParseConductor(IElement castBlock, PerformanceCast performanceCast)
+    {
+        IElement conductor = castBlock.QuerySelector(".conductor");
+        if (conductor != null)
+        {
+            var actors = GetCastInfo(conductor.QuerySelectorAll("a").ToArray());
+            if (null != actors && actors.Any())
+            {
+                performanceCast.Cast[CommonTags.Conductor] = actors;
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private async Task ParseText(
         string text,
