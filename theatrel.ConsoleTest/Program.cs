@@ -41,8 +41,8 @@ internal static class Program
         if (!await job.ProcessSubscriptions(cts.Token))
             return;
 
-        //if (!await job.UpdateMariinskiPlaybill(cts.Token))
-        //    return;
+        if (!await job.UpdateMariinskiPlaybill(cts.Token))
+            return;
 
         if (!await job.UpdateMichailovskyPlaybill(cts.Token))
            return;

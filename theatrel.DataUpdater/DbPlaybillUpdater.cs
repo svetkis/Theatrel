@@ -173,6 +173,11 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
         added = Array.Empty<string>();
         removed = Array.Empty<string>();
 
+        if (freshData.State == TicketsState.PerformanceWasMoved)
+        {
+            return ReasonOfChanges.WasMoved;
+        }
+
         switch (freshData.Cast.State)
         {
             case CastState.TechnicalError:
