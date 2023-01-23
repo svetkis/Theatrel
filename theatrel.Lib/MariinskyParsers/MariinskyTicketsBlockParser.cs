@@ -107,6 +107,11 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
 
     private async Task<IPerformanceTickets> PrivateParseKassir(byte[] data, CancellationToken cancellationToken)
     {
+        if (null == data)
+        {
+            return new PerformanceTickets { State = TicketsState.TechnicalError, LastUpdate = DateTime.UtcNow };
+        }
+
         using IBrowsingContext context = BrowsingContext.New(Configuration.Default);
         await using MemoryStream dataStream = new MemoryStream(data);
         using IDocument document = await context.OpenAsync(req => req.Content(dataStream), cancellationToken);
