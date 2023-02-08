@@ -41,7 +41,7 @@ internal class DescriptionService : IDescriptionService
         CultureInfo culture,
         ReasonOfChanges[] reasonOfChanges)
     {
-        string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When).ToString("ddMMM HH:mm", culture);
+        string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When).ToString("ddMMMYY HH:mm", culture);
 
         string location = string.IsNullOrEmpty(playbillEntity.Performance.Location.Description)
             ? playbillEntity.Performance.Location.Name.EscapeMessageForMarkupV2()
