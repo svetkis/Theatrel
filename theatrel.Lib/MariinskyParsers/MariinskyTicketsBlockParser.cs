@@ -97,7 +97,6 @@ internal class MariinskyTicketsBlockParser : ITicketsParser
                 current += 2;
             }
 
-           
             priceTagIndex = data.AsSpan(current, data.Length - current).IndexOf(_priceTagBytes);
             current += priceTagIndex + _priceTagBytesLength + 1;
         }

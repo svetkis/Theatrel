@@ -3,16 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
 using AngleSharp.Dom;
 using theatrel.Common;
-using theatrel.Common.Enums;
-using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
-using theatrel.Lib.Cast;
 
 namespace theatrel.Lib.MariinskyParsers;
 
@@ -130,7 +124,7 @@ internal class MariinskyPerformanceParser : IPerformanceParser
             {"c_opera", "Опера"},
             {"c_concert", "Концерт" },
             {"c_ballet", "Балет" },
-            {"c_", "Балет" } //to do read it from description
+            {"c_", string.Empty } //to do read it from description
         }, true);
 
     private static readonly Lazy<IDictionary<string, string>> PerformanceLocations
@@ -144,7 +138,7 @@ internal class MariinskyPerformanceParser : IPerformanceParser
     private static string GetType(string[] types)
     {
         var type = types.FirstOrDefault(x => PerformanceTypes.Value.ContainsKey(x));
-        return type != null ? PerformanceTypes.Value[type] : types.Reverse().Skip(1).First();
+        return type != null ? PerformanceTypes.Value[type] : PerformanceTypes.Value["c_"];
     }
 
     private static string GetLocation(string location)

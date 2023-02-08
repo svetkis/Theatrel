@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace theatrel.Lib;
+namespace theatrel.Lib.Utils;
 
 public static class DateHelper
 {

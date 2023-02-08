@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using theatrel.Lib;
 
 namespace theatrel.Worker;
 
@@ -14,6 +15,7 @@ public class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureServices((hostContext, services) =>
             {
+                services.AddTheatrelLib();
                 services.AddHostedService<Worker>();
             });
 }

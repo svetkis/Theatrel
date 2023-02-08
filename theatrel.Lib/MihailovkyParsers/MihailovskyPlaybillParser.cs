@@ -9,7 +9,6 @@ using theatrel.Interfaces.Cast;
 using theatrel.Interfaces.Helpers;
 using theatrel.Interfaces.Parsers;
 using theatrel.Interfaces.Playbill;
-using theatrel.Lib.Cast;
 using theatrel.Lib.Utils;
 
 namespace theatrel.Lib.MihailovkyParsers;
@@ -20,7 +19,6 @@ public class MihailovskyPlaybillParser : IPlaybillParser
 
     private readonly string[] _afishaContentPath = { "afisha_performance_list", "afisha_performance_list_container", "list" };
     private readonly string[] _dayPath = { "date", "day f-ap" };
-    private readonly string[] _personsPath = { "detail", "info", "persons" };
     private readonly string[] _afishaPath = { "inner", "layoutWrapper", "inside", "i-wrapper", "afisha" };
 
     public MihailovskyPlaybillParser(IPageRequester pageRequester)

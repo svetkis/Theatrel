@@ -10,9 +10,9 @@ using theatrel.Lib.Enums;
 using theatrel.Lib.MariinskyParsers;
 using theatrel.Lib.MihailovkyParsers;
 using theatrel.Interfaces.EncodingService;
+using System.Linq;
 
 namespace theatrel.Lib;
-
 public class TheatrelLibModule : Autofac.Module
 {
     protected override void Load(ContainerBuilder builder)
@@ -64,9 +64,9 @@ public class TheatrelLibModule : Autofac.Module
             })
             .As<ITicketsParser>();
 
-        builder.Register<IPlaybillParser>((c, p) =>
+        _ = builder.Register<IPlaybillParser>((c, p) =>
             {
-                var type = p.TypedAs<Theatre>();
+                Theatre type = p.TypedAs<Theatre>();
                 return type switch
                 {
                     Theatre.Mariinsky => new MariinskyPlaybillParser(),
