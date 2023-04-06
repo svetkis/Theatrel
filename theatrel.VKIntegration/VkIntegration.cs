@@ -45,7 +45,7 @@ public class VkIntegration : IVkIntegration
         return true;
     }
 
-    private const int MaxMessageSize = 1500;
+    private const int MaxMessageSize = 1024;
     private static string[] SplitMessage(string message)
     {
         string splitterString = $"{Environment.NewLine}{Environment.NewLine}";
