@@ -97,6 +97,17 @@ internal class FilterService : IFilterService
             .ToArray();
     }
 
+    public PlaybillChangeEntity[] GetVkFilteredChanges(PlaybillChangeEntity[] changes, VkSubscriptionEntity subscription)
+    {
+        var filter = subscription.PerformanceFilter;
+        var processor = _filterProcessors.FirstOrDefault(x => x.IsCorrectProcessor(filter)) ?? _baseProcessors;
+
+        return changes
+            .Where(x => x.LastUpdate > subscription.LastUpdate && (subscription.TrackingChanges & x.ReasonOfChanges) != 0)
+            .Where(change => processor.IsChangeSuitable(change, filter))
+            .ToArray();
+    }
+
     public PlaybillEntity[] GetFilteredPerformances(IPerformanceFilter filter)
     {
         var processor = _filterProcessors.FirstOrDefault(x => x.IsCorrectProcessor(filter)) ?? _baseProcessors;

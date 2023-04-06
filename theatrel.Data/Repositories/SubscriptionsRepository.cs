@@ -50,6 +50,23 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
         return Array.Empty<SubscriptionEntity>();
     }
 
+    public IEnumerable<VkSubscriptionEntity> GetAllWithFilterVk()
+    {
+        try
+        {
+            return _dbContext.VkSubscription
+                .Include(s => s.PerformanceFilter)
+                .AsNoTracking()
+                .ToArray();
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceInformation($"GetList vk subscription with filter DbException {ex.Message}");
+        }
+
+        return Array.Empty<VkSubscriptionEntity>();
+    }
+
     private Task<SubscriptionEntity> GetById(int id)
         => _dbContext.Subscriptions
         .AsNoTracking()

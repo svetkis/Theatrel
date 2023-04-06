@@ -17,7 +17,6 @@ public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
     private ITgBotProcessor _tLBotProcessor;
-    private GarbageCollectorEventListener _listener;
 
     public Worker(ILogger<Worker> logger)
     {
@@ -30,8 +29,6 @@ public class Worker : BackgroundService
         await base.StartAsync(cancellationToken);
 
         Trace.Listeners.Add(new Trace2StdoutLogger());
-
-        _listener = new GarbageCollectorEventListener();
 
         Trace.TraceInformation("Worker.StartAsync");
 

@@ -14,9 +14,16 @@ public interface IDescriptionService : IDIRegistrable
         bool includeCast,
         out string performanceIdsList);
 
-    string GetCastDescription(PlaybillEntity playbillEntity, string castAdded, string castRemoved);
+    string GetTgCastDescription(PlaybillEntity playbillEntity, string castAdded, string castRemoved);
 
-    string GetPerformanceDescription(PlaybillEntity playbillEntity,
+    string GetTgPerformanceDescription(PlaybillEntity playbillEntity,
+        int lastMinPrice,
+        CultureInfo culture,
+        ReasonOfChanges[] reasonOfChanges);
+
+    string GetVkCastDescription(PlaybillEntity playbillEntity, string castAdded, string castRemoved);
+
+    string GetVkPerformanceDescription(PlaybillEntity playbillEntity,
         int lastMinPrice,
         CultureInfo culture,
         ReasonOfChanges[] reasonOfChanges);

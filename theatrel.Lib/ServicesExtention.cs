@@ -15,7 +15,7 @@ public static class ServicesExtention
 {
     public static IServiceCollection AddTheatrelLib(this IServiceCollection services)
     {
-        services.AddTransient<IDescriptionService, DescriptionService.DescriptionService>();
+        services.AddTransient<IDescriptionService, DescriptionService.TgDescriptionService>();
         services.AddTransient<IEncodingService, EncodingServices.EncodingService>();
 
         services.AddTransient<IPlayBillDataResolver, PlayBillResolver>();

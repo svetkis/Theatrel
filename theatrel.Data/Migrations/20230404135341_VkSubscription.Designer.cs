@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using theatrel.DataAccess;
@@ -11,9 +12,11 @@ using theatrel.DataAccess;
 namespace theatrel.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230404135341_VkSubscription")]
+    partial class VkSubscription
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -376,7 +379,7 @@ namespace theatrel.DataAccess.Migrations
                     b.ToTable("Theatre");
                 });
 
-            modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.VkSubscriptionEntity", b =>
+            modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.VKSubscriptionEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -393,15 +396,17 @@ namespace theatrel.DataAccess.Migrations
                     b.Property<int>("SubscriptionType")
                         .HasColumnType("integer");
 
+                    b.Property<long>("TelegramUserId")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("TrackingChanges")
                         .HasColumnType("integer");
-
-                    b.Property<long>("VkId")
-                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PerformanceFilterId");
+
+                    b.HasIndex("TelegramUserId");
 
                     b.ToTable("VkSubscription");
                 });
@@ -513,7 +518,7 @@ namespace theatrel.DataAccess.Migrations
                     b.Navigation("TelegramUser");
                 });
 
-            modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.VkSubscriptionEntity", b =>
+            modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.VKSubscriptionEntity", b =>
                 {
                     b.HasOne("theatrel.DataAccess.Structures.Entities.PerformanceFilterEntity", "PerformanceFilter")
                         .WithMany()
@@ -521,7 +526,15 @@ namespace theatrel.DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("theatrel.DataAccess.Structures.Entities.TelegramUserEntity", "TelegramUser")
+                        .WithMany()
+                        .HasForeignKey("TelegramUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("PerformanceFilter");
+
+                    b.Navigation("TelegramUser");
                 });
 
             modelBuilder.Entity("theatrel.DataAccess.Structures.Entities.ActorEntity", b =>

@@ -10,7 +10,6 @@ using theatrel.Lib.Enums;
 using theatrel.Lib.MariinskyParsers;
 using theatrel.Lib.MihailovkyParsers;
 using theatrel.Interfaces.EncodingService;
-using System.Linq;
 
 namespace theatrel.Lib;
 public class TheatrelLibModule : Autofac.Module

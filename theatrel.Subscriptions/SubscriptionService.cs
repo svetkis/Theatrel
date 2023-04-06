@@ -38,12 +38,10 @@ public class SubscriptionService : ISubscriptionService
                 continue;
 
             DateTime startDate;
-            DateTime endDate;
 
             if (newFilter.PlaybillId == -1)
             {
                 startDate = newFilter.StartDate;
-                endDate = newFilter.EndDate;
             }
             else
             {
@@ -55,7 +53,6 @@ public class SubscriptionService : ISubscriptionService
                 int year = playbillEntry.When.Year;
                 int month = playbillEntry.When.Month;
                 startDate = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
-                endDate = startDate.AddMonths(1);
             }
 
             MergeFilters(mergedFilters, _filterService.GetOneMonthFilter(startDate));

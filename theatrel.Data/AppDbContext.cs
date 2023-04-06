@@ -23,6 +23,8 @@ public class AppDbContext : DbContext
 
     public DbSet<TheatreEntity> Theatre { get; set; } = null!;
 
+    public DbSet<VkSubscriptionEntity> VkSubscription { get; set; } = null!;
+
     public AppDbContext(DbContextOptions options) : base(options)
     {
     }

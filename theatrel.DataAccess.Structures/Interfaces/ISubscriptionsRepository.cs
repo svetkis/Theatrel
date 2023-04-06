@@ -12,6 +12,7 @@ public interface ISubscriptionsRepository : IDIRegistrable, IDisposable
 {
     Task<SubscriptionEntity> Get(int id);
     IEnumerable<SubscriptionEntity> GetAllWithFilter();
+    IEnumerable<VkSubscriptionEntity> GetAllWithFilterVk();
 
     SubscriptionEntity[] GetUserSubscriptions(long userId);
 

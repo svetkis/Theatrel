@@ -12,4 +12,6 @@ public interface IFilterService : IDIRegistrable
 
     public PlaybillEntity[] GetFilteredPerformances(IPerformanceFilter filter);
     PlaybillChangeEntity[] GetFilteredChanges(PlaybillChangeEntity[] changes, SubscriptionEntity subscription);
+
+    PlaybillChangeEntity[] GetVkFilteredChanges(PlaybillChangeEntity[] changes, VkSubscriptionEntity subscription);
 }

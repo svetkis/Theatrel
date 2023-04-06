@@ -65,9 +65,6 @@ internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
                     ReasonOfChanges.PriceDecreased | ReasonOfChanges.CastWasChanged |
                     ReasonOfChanges.CastWasSet | ReasonOfChanges.WasMoved);
 
-        int currMonth = DateTime.Now.Month;
-        int currYear = DateTime.Now.Year;
-
         foreach (string user in prolongFor)
         {
             long userId = long.Parse(user);
@@ -88,10 +85,10 @@ internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
                 if (null != existSubscription)
                     continue;
 
-                SubscriptionEntity subscription = await subscriptionRepository.Create(
-                        userId,
-                        trackIt,
-                        _filterService.GetOneMonthFilter(startDate), cancellationToken);
+                await subscriptionRepository.Create(
+                    userId,
+                    trackIt,
+                    _filterService.GetOneMonthFilter(startDate), cancellationToken);
             }
         }
 
