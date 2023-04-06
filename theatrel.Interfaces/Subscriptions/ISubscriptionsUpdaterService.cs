@@ -8,4 +8,5 @@ public interface ISubscriptionsUpdaterService : IDIRegistrable
 {
     Task<bool> CleanUpOutDatedSubscriptions();
     Task<bool> ProlongSubscriptions(CancellationToken cancellationToken);
+    Task<bool> ProlongSubscriptionsVk(CancellationToken cancellationToken);
 }

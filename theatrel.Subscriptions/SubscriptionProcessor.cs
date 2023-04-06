@@ -57,6 +57,17 @@ public class SubscriptionProcessor : ISubscriptionProcessor
         SubscriptionEntity[] endedPerformanceSubscription = subscriptions.Where(s => s.SubscriptionType == 1).ToArray();
         await ProcessEndedPerformanceSubscriptions(endedPerformanceSubscription, subscriptionRepository);
 
+        var subscriptionsVk = subscriptionRepository.GetAllWithFilterVk().ToArray();
+
+        if (!subscriptions.Any())
+            return true;
+
+        var changedBasedSubscriptionVk = subscriptionsVk
+            .Where(s => s.SubscriptionType == 0)
+            .ToArray();
+
+        await ProcessChangedBasedSubscriptionsVk(changedBasedSubscriptionVk, subscriptionRepository);
+        
         Trace.TraceInformation("Process subscription finished");
         return true;
     }

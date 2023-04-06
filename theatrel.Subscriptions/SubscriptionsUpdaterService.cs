@@ -35,6 +35,13 @@ internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
                 result = false;
         }
 
+        IEnumerable<VkSubscriptionEntity> oldVkEntities = repo.GetOutdatedListVk().Distinct().ToArray();
+        foreach (VkSubscriptionEntity entity in oldVkEntities)
+        {
+            if (!await repo.DeleteVk(entity))
+                result = false;
+        }
+
         return result;
     }
 
@@ -86,6 +93,63 @@ internal class SubscriptionsUpdaterService : ISubscriptionsUpdaterService
                     continue;
 
                 await subscriptionRepository.Create(
+                    userId,
+                    trackIt,
+                    _filterService.GetOneMonthFilter(startDate), cancellationToken);
+            }
+        }
+
+        return true;
+    }
+
+    public async Task<bool> ProlongSubscriptionsVk(CancellationToken cancellationToken)
+    {
+        string[] prolongFor;
+        string prolongMonthsString;
+
+        try
+        {
+            string prolongForString = Environment.GetEnvironmentVariable("AutoProlongFullSubscriptionsUsersVk");
+            prolongFor = prolongForString.Split(";", StringSplitOptions.RemoveEmptyEntries).ToArray();
+            prolongMonthsString = Environment.GetEnvironmentVariable("AutoProlongFullSubscriptionsMonths");
+
+            if (!prolongFor.Any())
+                return true;
+        }
+        catch (Exception)
+        {
+            return true;
+        }
+
+        using ISubscriptionsRepository subscriptionRepository = _dbService.GetSubscriptionRepository();
+
+        int prolongMonths = int.TryParse(prolongMonthsString, out int outInt) ? outInt : 1;
+
+        int trackIt = (int)(ReasonOfChanges.StartSales | ReasonOfChanges.Creation |
+                    ReasonOfChanges.PriceDecreased | ReasonOfChanges.CastWasChanged |
+                    ReasonOfChanges.CastWasSet | ReasonOfChanges.WasMoved);
+
+        foreach (string user in prolongFor)
+        {
+            long userId = long.Parse(user);
+
+            var existSubscriptions = subscriptionRepository.GetUserSubscriptionsVk(userId);
+            for (int addMonth = 0; addMonth < prolongMonths; ++addMonth)
+            {
+                var currDt = DateTime.Now.AddMonths(addMonth);
+                DateTime startDate = new DateTime(currDt.Year, currDt.Month, 1);
+
+                var existSubscription = existSubscriptions.FirstOrDefault(x =>
+                {
+                    return x.TrackingChanges == trackIt &&
+                            x.PerformanceFilter.StartDate.Month == startDate.Month &&
+                            x.PerformanceFilter.StartDate.Year == startDate.Year;
+                });
+
+                if (null != existSubscription)
+                    continue;
+
+                await subscriptionRepository.CreateVk(
                     userId,
                     trackIt,
                     _filterService.GetOneMonthFilter(startDate), cancellationToken);

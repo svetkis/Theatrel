@@ -46,6 +46,8 @@ public class ProlongSubscriptionJob : IJob
 
             await subscriptionsUpdaterService.ProlongSubscriptions(cToken);
 
+            await subscriptionsUpdaterService.ProlongSubscriptionsVk(cToken);
+
             return true;
         }
         catch (Exception ex)
@@ -202,6 +204,8 @@ public abstract class UpdateJobBase : IJob
             ISubscriptionsUpdaterService subscriptionsUpdaterService = scope.Resolve<ISubscriptionsUpdaterService>();
 
             await subscriptionsUpdaterService.ProlongSubscriptions(cToken);
+
+            await subscriptionsUpdaterService.ProlongSubscriptionsVk(cToken);
 
             return true;
         }
