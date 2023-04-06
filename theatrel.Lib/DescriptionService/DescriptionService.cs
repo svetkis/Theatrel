@@ -215,7 +215,7 @@ internal class DescriptionService : IDescriptionService
             sb.AppendLine($"{character}{actors}{addedPart}");
         }
 
-        if (!string.IsNullOrEmpty(castRemoved))
+        if (!string.IsNullOrEmpty(castRemoved) && castRemoved.Length < 150)
             sb.AppendLine($"Были удалены: {castRemoved.Replace(",", ", ")}");
 
         return sb.ToString();
