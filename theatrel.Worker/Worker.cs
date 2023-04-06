@@ -171,6 +171,6 @@ public class Worker : BackgroundService
 
         await scheduler.ScheduleJob(job, trigger, cancellationToken);
 
-        _logger.LogInformation($"Update job once was scheduled");
+        _logger.LogInformation("Update job once was scheduled");
     }
 }

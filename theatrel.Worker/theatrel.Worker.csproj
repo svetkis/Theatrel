@@ -25,5 +25,6 @@
     <ProjectReference Include="..\theatrel.Lib\theatrel.Lib.csproj" />
     <ProjectReference Include="..\theatrel.Subscriptions\theatrel.Subscriptions.csproj" />
     <ProjectReference Include="..\theatrel.TLBot\theatrel.TLBot.csproj" />
+    <ProjectReference Include="..\theatrel.VKIntegration\theatrel.VKIntegration.csproj" />
   </ItemGroup>
 </Project>

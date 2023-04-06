@@ -6,6 +6,7 @@ using theatrel.DataUpdater;
 using theatrel.Lib;
 using theatrel.Subscriptions;
 using theatrel.TLBot;
+using theatrel.VKIntegration;
 
 namespace theatrel.Worker;
 
@@ -25,6 +26,7 @@ public static class Bootstrapper
         builder.RegisterModule<TlBotModule>();
         builder.RegisterModule<TheatrelDataAccessModule>();
         builder.RegisterModule<DataUpdaterModule>();
+        builder.RegisterModule<VkIntegrationModule>();
         builder.RegisterModule<SubscriptionModule>();
 
         RootScope = builder.Build();

@@ -106,15 +106,12 @@ public abstract class UpdateJobBase : IJob
             var culture = CultureInfo.CreateSpecificCulture("ru");
             foreach (var filter in AddFiltersForNearestMonths(filters, 6))
             {
-                await using (var scope = Bootstrapper.BeginLifetimeScope())
-                {
-                    IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
+                await using var scope = Bootstrapper.BeginLifetimeScope();
 
-                    Trace.TraceInformation($"Update playbill for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
-                    await updater.Update(TheatreId, filter.StartDate, filter.EndDate, cToken);
-                }
+                IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
-                MemoryHelper.Collect(true);
+                Trace.TraceInformation($"Update playbill for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
+                await updater.Update(TheatreId, filter.StartDate, filter.EndDate, cToken);
             }
 
             return true;
