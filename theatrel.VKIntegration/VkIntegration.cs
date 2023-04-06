@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using theatrel.Interfaces.VkIntegration;
 using VkNet;
 using VkNet.Model;
@@ -23,12 +24,17 @@ public class VkIntegration : IVkIntegration
     {
         try
         {
-            var res = await _api.Wall.PostAsync(new WallPostParams
+            foreach (var msgPart in SplitMessage(message))
             {
-                OwnerId = vkId,
-                Message = message,
-                FromGroup = true
-            });
+                var res = await _api.Wall.PostAsync(new WallPostParams
+                {
+                    OwnerId = vkId,
+                    Message = msgPart,
+                    FromGroup = true
+                });
+
+                await Task.Delay(400);
+            }
         }
         catch (Exception e)
         {
@@ -37,5 +43,32 @@ public class VkIntegration : IVkIntegration
         }
         
         return true;
+    }
+
+    private const int MaxMessageSize = 1500;
+    private static string[] SplitMessage(string message)
+    {
+        string splitterString = $"{Environment.NewLine}{Environment.NewLine}";
+        int lengthOfSplitter = splitterString.Length;
+
+        if (message.Length < MaxMessageSize || string.IsNullOrEmpty(message))
+            return new[] { message };
+
+        string[] lines = message.Split(splitterString);
+        List<StringBuilder> messages = new List<StringBuilder> { new (lines.First()) };
+
+        foreach (var line in lines.Skip(1))
+        {
+            if (messages.Last().Length + line.Length >= MaxMessageSize - lengthOfSplitter)
+            {
+                messages.Add(new StringBuilder(line));
+                continue;
+            }
+
+            messages.Last().Append(splitterString);
+            messages.Last().Append(line);
+        }
+
+        return messages.Select(sb => sb.ToString()).ToArray();
     }
 }

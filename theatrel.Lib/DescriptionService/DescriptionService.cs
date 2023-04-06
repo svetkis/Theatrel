@@ -12,7 +12,7 @@ using theatrel.Common.Enums;
 
 namespace theatrel.Lib.DescriptionService;
 
-internal class TgDescriptionService : IDescriptionService
+internal class DescriptionService : IDescriptionService
 {
     private readonly ITimeZoneService _timeZoneService;
 
@@ -29,7 +29,7 @@ internal class TgDescriptionService : IDescriptionService
         { ReasonOfChanges.CastWasChanged, "🔄"},
     };
 
-    public TgDescriptionService(ITimeZoneService timeZoneService)
+    public DescriptionService(ITimeZoneService timeZoneService)
     {
         _timeZoneService = timeZoneService;
     }
@@ -55,7 +55,7 @@ internal class TgDescriptionService : IDescriptionService
             ? string.Empty
             : $"от [{lastMinPrice}]({playbillEntity.TicketsUrl.EscapeMessageForMarkupV2()})";
 
-        string performanceNameString = HasUrl(playbillEntity.Url)
+        string performanceNameString = IsEmptyUrl(playbillEntity.Url)
             ? escapedName
             : $"[{escapedName}]({playbillEntity.Url.EscapeMessageForMarkupV2()})";
 
@@ -99,20 +99,13 @@ internal class TgDescriptionService : IDescriptionService
             ? playbillEntity.Performance.Location.Name
             : playbillEntity.Performance.Location.Description;
 
-        bool noTicketsUrl = string.IsNullOrWhiteSpace(playbillEntity.TicketsUrl) ||
-                            CommonTags.TechnicalStateTags.Contains(playbillEntity.TicketsUrl);
-
-        string pricePart = lastMinPrice == 0 || noTicketsUrl
+        string pricePart = lastMinPrice == 0
             ? string.Empty
-            : $"от [{lastMinPrice}]({playbillEntity.TicketsUrl})";
+            : $"от {lastMinPrice}";
 
-        string performanceNameString = HasUrl(playbillEntity.Url)
-            ? playbillEntity.Performance.Name
-            : $"[{playbillEntity.Performance.Name}]({playbillEntity.Url})";
+        string performanceNameString = playbillEntity.Performance.Name;
 
-        string typeEscaped = playbillEntity.Performance.Type.TypeName;
-
-        string escapedDate = formattedDate;
+        string type = playbillEntity.Performance.Type.TypeName;
 
         var sb = new StringBuilder();
 
@@ -124,7 +117,7 @@ internal class TgDescriptionService : IDescriptionService
             sb.Append(" ");
         }
 
-        sb.Append($"{escapedDate} {typeEscaped} {performanceNameString} {pricePart} ");
+        sb.Append($"{formattedDate} {type} {performanceNameString} {pricePart} ");
 
         sb.Append(location);
 
@@ -135,10 +128,16 @@ internal class TgDescriptionService : IDescriptionService
             sb.Append(" ");
         }
 
+        if (!IsEmptyUrl(playbillEntity.Url))
+        {
+            sb.AppendLine();
+            sb.Append(playbillEntity.Url);
+        }
+
         return sb.ToString();
     }
 
-    private bool HasUrl(string url)
+    private bool IsEmptyUrl(string url)
     {
         return string.IsNullOrWhiteSpace(url) || CommonTags.TechnicalStateTags.Contains(url);
     }
@@ -201,10 +200,7 @@ internal class TgDescriptionService : IDescriptionService
 
         foreach (var group in actorsDictionary.OrderBy(kp => kp.Key, CharactersComparer.Create()))
         {
-            string actors = string.Join(", ", group.Value.Select(item =>
-                item.Url == CommonTags.NotDefinedTag || string.IsNullOrEmpty(item.Url)
-                    ? item.Name
-                    : $"[{item.Name}]({item.Url})"));
+            string actors = string.Join(", ", group.Value.Select(item => item.Name));
 
             bool wasAdded = group.Value.Any(item => castAdded?.Contains(item.Name) ?? false);
 
