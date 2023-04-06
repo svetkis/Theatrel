@@ -31,6 +31,7 @@ public interface ISubscriptionsRepository : IDIRegistrable, IDisposable
     public Task<bool> DeleteFilter(PerformanceFilterEntity entity);
     Task<bool> DeleteRange(IEnumerable<SubscriptionEntity> entities);
     Task<bool> UpdateDate(int id);
+    Task<bool> UpdateDateVk(int id);
 
     PlaybillChangeEntity[] GetFreshChanges(DateTime lastUpdate);
 }

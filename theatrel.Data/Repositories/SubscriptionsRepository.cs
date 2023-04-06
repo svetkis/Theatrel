@@ -71,6 +71,10 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
         => _dbContext.Subscriptions
         .AsNoTracking()
         .SingleOrDefaultAsync(u => u.Id == id);
+    private Task<VkSubscriptionEntity> GetByIdVk(int id)
+        => _dbContext.VkSubscription
+            .AsNoTracking()
+            .SingleOrDefaultAsync(u => u.Id == id);
 
     public SubscriptionEntity[] GetUserSubscriptions(long userId)
     {
@@ -362,6 +366,29 @@ internal class SubscriptionsRepository : ISubscriptionsRepository
     public async Task<bool> UpdateDate(int id)
     {
         SubscriptionEntity subscription = await GetById(id);
+
+        if (subscription == null)
+            return false;
+
+        subscription.LastUpdate = DateTime.Now;
+
+        _dbContext.Entry(subscription).State = EntityState.Modified;
+
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceError($"Failed to update subscription {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateDateVk(int id)
+    {
+        VkSubscriptionEntity subscription = await GetByIdVk(id);
 
         if (subscription == null)
             return false;

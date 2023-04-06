@@ -149,7 +149,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             //if message was sent we should update LastUpdate for users subscriptions
             foreach (var subscription in subscriptions.Where(s => s.VkId == userUpdates.Key))
             {
-                await subscriptionRepository.UpdateDate(subscription.Id);
+                await subscriptionRepository.UpdateDateVk(subscription.Id);
             }
         }
     }
