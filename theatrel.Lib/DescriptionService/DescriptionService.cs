@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Text;
 using theatrel.Lib.Interfaces;
 using theatrel.Common.Enums;
+using Microsoft.Extensions.Primitives;
 
 namespace theatrel.Lib.DescriptionService;
 
@@ -101,7 +102,7 @@ internal class DescriptionService : IDescriptionService
 
         string pricePart = lastMinPrice == 0
             ? string.Empty
-            : $"от {lastMinPrice}";
+            : $"от {lastMinPrice} ₽";
 
         string performanceNameString = playbillEntity.Performance.Name;
 
@@ -117,21 +118,18 @@ internal class DescriptionService : IDescriptionService
             sb.Append(" ");
         }
 
-        sb.Append($"{formattedDate} {type} {performanceNameString} {pricePart} ");
+        sb.AppendLine($"{formattedDate}{performanceNameString} {pricePart}");
 
-        sb.Append(location);
+        sb.AppendLine($"{type}. {location}.");
 
         if (!string.IsNullOrEmpty(playbillEntity.Description))
         {
-            sb.AppendLine();
-            sb.Append(playbillEntity.Description);
-            sb.Append(" ");
+            sb.AppendLine(playbillEntity.Description);
         }
 
         if (!IsEmptyUrl(playbillEntity.Url))
         {
-            sb.AppendLine();
-            sb.Append(playbillEntity.Url);
+            sb.AppendLine(playbillEntity.Url);
         }
 
         return sb.ToString();

@@ -315,7 +315,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                 .Distinct()
                 .ToArray());
 
-        sb.AppendLine(performanceDescription);
+        sb.Append(performanceDescription);
 
         var lastCastUpdate = changes
             .Where(x => ReasonToShowCast.Contains((ReasonOfChanges)x.ReasonOfChanges))
