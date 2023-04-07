@@ -118,7 +118,7 @@ internal class DescriptionService : IDescriptionService
             sb.Append(" ");
         }
 
-        sb.AppendLine($"{formattedDate}{performanceNameString} {pricePart}");
+        sb.AppendLine($"{formattedDate} {performanceNameString} {pricePart}");
 
         sb.AppendLine($"{type}. {location}.");
 
