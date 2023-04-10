@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Text;
 using theatrel.Lib.Interfaces;
 using theatrel.Common.Enums;
-using Microsoft.Extensions.Primitives;
 
 namespace theatrel.Lib.DescriptionService;
 
@@ -41,7 +40,7 @@ internal class DescriptionService : IDescriptionService
         CultureInfo culture,
         ReasonOfChanges[] reasonOfChanges)
     {
-        string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When).ToString("ddMMMyy HH:mm", culture);
+        string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When).ToString("dMMMyy HH:mm", culture);
 
         string location = string.IsNullOrEmpty(playbillEntity.Performance.Location.Description)
             ? playbillEntity.Performance.Location.Name.EscapeMessageForMarkupV2()
@@ -94,7 +93,8 @@ internal class DescriptionService : IDescriptionService
         CultureInfo culture,
         ReasonOfChanges[] reasonOfChanges)
     {
-        string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When).ToString("ddMMMyy HH:mm", culture);
+        string formattedDate = _timeZoneService.GetLocalTime(playbillEntity.When)
+            .ToString("d MMMM yyyy HH:mm", culture);
 
         string location = string.IsNullOrEmpty(playbillEntity.Performance.Location.Description)
             ? playbillEntity.Performance.Location.Name
