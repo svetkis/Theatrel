@@ -13,9 +13,16 @@ public class VkIntegration : IVkIntegration
 
     public VkIntegration()
     {
+        var userId = VkSettings.VkUserId;
+        if (userId == null)
+        {
+            Trace.TraceError("VkIntegration failed");
+            return;
+        }
+
         _api.Authorize(new ApiAuthParams
         {
-            UserId = VkSettings.VkUserId,
+            UserId = userId.Value,
             AccessToken = VkSettings.VkToken
         });
     }
