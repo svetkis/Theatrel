@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using JetBrains.Profiler.Api;
 using theatrel.Common;
 using theatrel.Interfaces.DataUpdater;
-using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
 using theatrel.TLBot.Interfaces;
 
@@ -43,9 +42,6 @@ public class UpdateJob : IJob
     {
         try
         {
-            ISubscriptionService subscriptionServices = Bootstrapper.Resolve<ISubscriptionService>();
-            IPerformanceFilter[] filters = subscriptionServices.GetUpdateFilters();
-
             var culture = CultureInfo.CreateSpecificCulture("ru");
             foreach (var range in GetDateRanges(6))
             {
@@ -75,9 +71,6 @@ public class UpdateJob : IJob
     {
         try
         {
-            ISubscriptionService subscriptionServices = Bootstrapper.Resolve<ISubscriptionService>();
-            IPerformanceFilter[] filters = subscriptionServices.GetUpdateFilters();
-
             var culture = CultureInfo.CreateSpecificCulture("ru");
             foreach (var range in GetDateRanges(6))
             {
