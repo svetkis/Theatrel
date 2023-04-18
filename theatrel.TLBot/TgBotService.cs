@@ -15,6 +15,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using Telegram.Bot.Exceptions;
 
 namespace theatrel.TLBot;
 
@@ -111,7 +112,8 @@ internal class TgBotService : ITgBotService
             {
                 await Policy
                     .Handle<HttpRequestException>()
-                    .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+                    .Or<ApiRequestException>()
+                    .WaitAndRetryAsync(10, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
                     .ExecuteAsync(async () =>
                     {
                         await _botClient.SendChatActionAsync(chatId, ChatAction.Typing, cancellationToken: cancellationToken);
@@ -128,7 +130,7 @@ internal class TgBotService : ITgBotService
                 return true;
             }
 
-            Trace.TraceInformation($"SendMessage: {chatId} {message} failed. Exception {exception.Message}{Environment.NewLine}{exception.StackTrace}");
+            Trace.TraceInformation($"SendMessage {chatId} failed. Exception:{Environment.NewLine}{exception}");
             return false;
         }
 
