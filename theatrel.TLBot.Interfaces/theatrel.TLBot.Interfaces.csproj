@@ -8,7 +8,7 @@
     <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Telegram.Bot" Version="18.0.0" />
+    <PackageReference Include="Telegram.Bot" Version="19.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\theatrel.Interfaces\theatrel.Interfaces.csproj" />
