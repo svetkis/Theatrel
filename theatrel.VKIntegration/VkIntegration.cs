@@ -3,7 +3,6 @@ using System.Text;
 using theatrel.Interfaces.VkIntegration;
 using VkNet;
 using VkNet.Model;
-using VkNet.Model.RequestParams;
 
 namespace theatrel.VKIntegration;
 
