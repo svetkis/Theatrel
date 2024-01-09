@@ -29,23 +29,24 @@ internal class DbPlaybillUpdater : IDbPlaybillUpdater
 
     public async Task<bool> Update(int theaterId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken)
     {
-        Trace.TraceInformation($"PlaybillUpdater started. {theaterId}");
-
         using var dbRepository = _dbService.GetPlaybillRepository();
+
+        string theatreName = theaterId == 1 ? "Мариинский театр" : "Михайловский театр";
+        dbRepository.EnsureCreateTheatre(theaterId, theatreName);
 
         var dateFilter = _filterService.GetOneMonthFilter(startDate);
 
         IPerformanceData[] performances = await _dataResolver.RequestProcess(theaterId, dateFilter, cancellationToken);
 
+        Trace.TraceInformation($"Update {theatreName}: {startDate} to {endDate} got {performances.Count()} records.");
+
         await _dataResolver.AdditionalProcess(theaterId, performances, cancellationToken);
 
-        dbRepository.EnsureCreateTheatre(theaterId, theaterId == 1 ? "Мариинский театр" : "Михайловский театр");
         foreach (var freshPerformanceData in performances)
         {
             await ProcessDataInternal(freshPerformanceData, dbRepository);
         }        
 
-        Trace.TraceInformation("PlaybillUpdater finished.");
         return true;
     }
 
