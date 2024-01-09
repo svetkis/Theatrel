@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using RestSharp;
@@ -42,8 +43,6 @@ internal class PlayBillResolver : IPlayBillDataResolver
 
     public async Task<IPerformanceData[]> RequestProcess(int theatre, IPerformanceFilter filter, CancellationToken cancellationToken)
     {
-        Trace.TraceInformation("PlayBillResolver.RequestProcess started");
-
         var playbillParser = _playbillParserFactory((Theatre)theatre);
         var performanceParser = _performanceParserFactory((Theatre)theatre);
 

@@ -167,8 +167,6 @@ public class UpdateJob : IJob
     {
         try
         {
-            Trace.TraceInformation("ProcessSubscriptions");
-
             await using var scope = Bootstrapper.RootScope.BeginLifetimeScope();
 
             ISubscriptionProcessor subscriptionProcessor = scope.Resolve<ISubscriptionProcessor>();

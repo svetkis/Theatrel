@@ -58,7 +58,6 @@ public class SubscriptionService : ISubscriptionService
             MergeFilters(mergedFilters, _filterService.GetOneMonthFilter(startDate));
         }
 
-        Trace.TraceInformation("Get updated filter finished");
         return mergedFilters.ToArray();
     }
 

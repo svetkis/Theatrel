@@ -29,8 +29,6 @@ public class ProlongSubscriptionJob : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
-        Trace.TraceInformation("ProlongSubscription was started");
-
         if (!await ProlongSubscriptions(context.CancellationToken))
             return;
     }
@@ -39,8 +37,6 @@ public class ProlongSubscriptionJob : IJob
     {
         try
         {
-            Trace.TraceInformation("ProlongSubscriptions");
-
             await using var scope = Bootstrapper.BeginLifetimeScope();
             ISubscriptionsUpdaterService subscriptionsUpdaterService = scope.Resolve<ISubscriptionsUpdaterService>();
 
@@ -110,7 +106,6 @@ public abstract class UpdateJobBase : IJob
 
                 IDbPlaybillUpdater updater = scope.Resolve<IDbPlaybillUpdater>();
 
-                Trace.TraceInformation($"Update playbill for interval {filter.StartDate.ToString("d", culture)} {filter.EndDate.ToString("d", culture)}");
                 await updater.Update(TheatreId, filter.StartDate, filter.EndDate, cToken);
             }
 
@@ -218,8 +213,6 @@ public abstract class UpdateJobBase : IJob
     {
         try
         {
-            Trace.TraceInformation("ProcessSubscriptions");
-
             await using var scope = Bootstrapper.BeginLifetimeScope();
 
             ISubscriptionProcessor subscriptionProcessor = scope.Resolve<ISubscriptionProcessor>();

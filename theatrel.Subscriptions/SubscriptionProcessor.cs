@@ -42,37 +42,34 @@ public class SubscriptionProcessor : ISubscriptionProcessor
 
     public async Task<bool> ProcessSubscriptions()
     {
-        Trace.TraceInformation("Process subscriptions started");
-
         using ISubscriptionsRepository subscriptionRepository = _dbService.GetSubscriptionRepository();
         var subscriptions = subscriptionRepository.GetAllWithFilter().ToArray();
 
-        if (!subscriptions.Any())
-            return true;
+        if (subscriptions.Any())
+        {
+            SubscriptionEntity[] changedBasedSubscription = subscriptions.Where(s => s.SubscriptionType == 0).ToArray();
 
-        SubscriptionEntity[] changedBasedSubscription = subscriptions.Where(s => s.SubscriptionType == 0).ToArray();
+            await ProcessChangedBasedSubscriptions(changedBasedSubscription, subscriptionRepository);
 
-        await ProcessChangedBasedSubscriptions(changedBasedSubscription, subscriptionRepository);
-
-        SubscriptionEntity[] endedPerformanceSubscription = subscriptions.Where(s => s.SubscriptionType == 1).ToArray();
-        await ProcessEndedPerformanceSubscriptions(endedPerformanceSubscription, subscriptionRepository);
+            SubscriptionEntity[] endedPerformanceSubscription = subscriptions.Where(s => s.SubscriptionType == 1).ToArray();
+            await ProcessEndedPerformanceSubscriptions(endedPerformanceSubscription);
+        }
 
         var subscriptionsVk = subscriptionRepository.GetAllWithFilterVk().ToArray();
 
-        if (!subscriptions.Any())
-            return true;
+        if (subscriptionsVk.Any())
+        {
+            var changedBasedSubscriptionVk = subscriptionsVk
+                   .Where(s => s.SubscriptionType == 0)
+                   .ToArray();
 
-        var changedBasedSubscriptionVk = subscriptionsVk
-            .Where(s => s.SubscriptionType == 0)
-            .ToArray();
+            await ProcessChangedBasedSubscriptionsVk(changedBasedSubscriptionVk, subscriptionRepository);
+        }
 
-        await ProcessChangedBasedSubscriptionsVk(changedBasedSubscriptionVk, subscriptionRepository);
-        
-        Trace.TraceInformation("Process subscription finished");
         return true;
     }
 
-    private async Task ProcessEndedPerformanceSubscriptions(SubscriptionEntity[] subscriptions, ISubscriptionsRepository subscriptionRepository)
+    private async Task ProcessEndedPerformanceSubscriptions(SubscriptionEntity[] subscriptions)
     {
         using IPlaybillRepository playbillRepository = _dbService.GetPlaybillRepository();
         var outdated = playbillRepository.GetOutdatedPlaybillForArchive();
@@ -83,6 +80,7 @@ public class SubscriptionProcessor : ISubscriptionProcessor
             {
                 await playbillRepository.SetPlaybillReadyToDelete(outdatedEntry);
             }
+
             return;
         }
 
@@ -105,7 +103,6 @@ public class SubscriptionProcessor : ISubscriptionProcessor
                         subscription.TelegramUserId,
                         archiveEntry.Description,
                         CancellationToken.None);
-
             }
 
             await playbillRepository.SetPlaybillReadyToDelete(archiveEntry.Entry);
