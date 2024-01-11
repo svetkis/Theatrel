@@ -54,6 +54,8 @@ internal class PlayBillResolver : IPlayBillDataResolver
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            await Task.Delay(5000);
+
             var content = await Request((Theatre)theatre, dateTime, cancellationToken);
             if (content == null || !content.Any())
                 continue;
@@ -85,19 +87,21 @@ internal class PlayBillResolver : IPlayBillDataResolver
 
         await Parallel.ForEachAsync(
             performances,
-            new ParallelOptions { CancellationToken = cancellationToken },
+            new ParallelOptions { CancellationToken = cancellationToken, MaxDegreeOfParallelism  = 1},
             async (performance, ctx) =>
             {
                 var tickets = await ticketsParser.ParseFromUrl(performance.TicketsUrl, ctx);
                 performance.State = tickets.State;
                 performance.MinPrice = tickets.MinTicketPrice;
+
+                await Task.Delay(5000);
             });
 
         if (theatre == (int)Theatre.Mariinsky)
         {
             await Parallel.ForEachAsync(
                 performances,
-                new ParallelOptions { CancellationToken = cancellationToken },
+                new ParallelOptions { CancellationToken = cancellationToken, MaxDegreeOfParallelism = 1 },
                 async (performance, ctx) =>
                 {
                     if (performance.State == TicketsState.PerformanceWasMoved)
@@ -108,6 +112,8 @@ internal class PlayBillResolver : IPlayBillDataResolver
                         performance.CastFromPlaybill,
                         false,
                         ctx);
+
+                    await Task.Delay(5000);
                 });
         }
     }

@@ -72,8 +72,6 @@ public abstract class UpdateJobBase : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        Trace.TraceInformation("UpdateJob was started");
-
         if (!await ProlongSubscriptions(context.CancellationToken))
             return;
 
@@ -88,8 +86,6 @@ public abstract class UpdateJobBase : IJob
 
         if (!await SubscriptionsCleanup(context.CancellationToken))
             return;
-
-        Trace.TraceInformation("UpdateJob was finished");
     }
 
     public async Task<bool> UpdatePlaybill(CancellationToken cToken)
