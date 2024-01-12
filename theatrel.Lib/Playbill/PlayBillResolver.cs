@@ -85,6 +85,8 @@ internal class PlayBillResolver : IPlayBillDataResolver
         var performanceCastParser = _castParserFactory((Theatre)theatre);
         ITicketsParser ticketsParser = _ticketsParserFactory((Theatre)theatre);
 
+        int delay = theatre == (int)Theatre.Mariinsky ? 30000 : 1000;
+
         await Parallel.ForEachAsync(
             performances,
             new ParallelOptions { CancellationToken = cancellationToken, MaxDegreeOfParallelism  = 1},
@@ -94,7 +96,7 @@ internal class PlayBillResolver : IPlayBillDataResolver
                 performance.State = tickets.State;
                 performance.MinPrice = tickets.MinTicketPrice;
 
-                await Task.Delay(5000);
+                await Task.Delay(delay);
             });
 
         if (theatre == (int)Theatre.Mariinsky)
@@ -113,7 +115,7 @@ internal class PlayBillResolver : IPlayBillDataResolver
                         false,
                         ctx);
 
-                    await Task.Delay(5000);
+                    await Task.Delay(delay);
                 });
         }
     }
