@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using theatrel.Common;
 using theatrel.Interfaces.DataUpdater;
 using theatrel.Interfaces.Filters;
 using theatrel.Interfaces.Subscriptions;
@@ -15,11 +14,13 @@ using theatrel.TLBot.Interfaces;
 
 namespace theatrel.Worker;
 
+[DisallowConcurrentExecution]
 public class UpdateMariinskyJob : UpdateJobBase
 {
     protected override int TheatreId => 1;
 }
 
+[DisallowConcurrentExecution]
 public class UpdateMichailovskyJob : UpdateJobBase
 {
     protected override int TheatreId => 2;
