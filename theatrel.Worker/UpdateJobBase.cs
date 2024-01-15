@@ -146,8 +146,6 @@ public abstract class UpdateJobBase : IJob
     {
         try
         {
-            Trace.TraceInformation("PlaybillCleanup started");
-
             await using var scope = Bootstrapper.BeginLifetimeScope();
             IPlaybillCleanUpService cleanUpService = scope.Resolve<IPlaybillCleanUpService>();
             await cleanUpService.CleanUp();
@@ -166,8 +164,6 @@ public abstract class UpdateJobBase : IJob
     {
         try
         {
-            Trace.TraceInformation("SubscriptionsCleanup started");
-
             await using var scope = Bootstrapper.BeginLifetimeScope();
             ISubscriptionsUpdaterService cleanUpService = scope.Resolve<ISubscriptionsUpdaterService>();
             await cleanUpService.CleanUpOutDatedSubscriptions();
@@ -186,8 +182,6 @@ public abstract class UpdateJobBase : IJob
     {
         try
         {
-            Trace.TraceInformation("ProlongSubscriptions");
-
             await using var scope = Bootstrapper.BeginLifetimeScope();
             ISubscriptionsUpdaterService subscriptionsUpdaterService = scope.Resolve<ISubscriptionsUpdaterService>();
 
