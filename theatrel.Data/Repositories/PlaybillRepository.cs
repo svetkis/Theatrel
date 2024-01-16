@@ -274,7 +274,7 @@ internal class PlaybillRepository : IPlaybillRepository
                 if (checkItem == null)
                 {
                     addedActors.Add(actorFresh.Name);
-                    Trace.TraceInformation($"Added actor to {playbillEntry.Id}. {character} - {actorFresh.Name} {actorFresh.Url}"); 
+                    //Trace.TraceInformation($"Added actor to {playbillEntry.Id}. {character} - {actorFresh.Name} {actorFresh.Url}"); 
                 }
                 else
                 {

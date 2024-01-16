@@ -98,7 +98,7 @@ internal class TgBotService : ITgBotService
             return true;
 
         char[] toLog = message.Message?.Take(100).ToArray();
-        Trace.TraceInformation($"SendMessage id: {chatId} msg: {new string(toLog)}...");
+        //Trace.TraceInformation($"SendMessage id: {chatId} msg: {new string(toLog)}...");
 
         try
         {
