@@ -123,10 +123,13 @@ internal class MariinskyCastParser : IPerformanceCastParser
         //detete comments
         text = Regex.Replace(text, "<!--.*?-->", "", RegexOptions.Singleline | RegexOptions.IgnoreCase);
         text = text.Replace("При участии", "");
+        text = text.Replace(" />", "/>");
+        text = text.Replace("target=\"_blank\"", "");
+        text = text.Replace("target=\"blank\"", "");
 
         var lines = text
             .Trim()
-            .Split(new[] { "<br/>", "<br>", "</p>", "<p>", "<br />" }, StringSplitOptions.RemoveEmptyEntries);
+            .Split(new[] { "<br/>", "<br>", "</p>", "<p>" }, StringSplitOptions.RemoveEmptyEntries);
 
         foreach (string line in lines)
         {

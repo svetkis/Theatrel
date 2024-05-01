@@ -30,7 +30,7 @@ internal static class ParsingExtensions
     {
         string current = actorLine.Replace("&ndash;", "-").Replace("&nbsp;", " ");
 
-        if (Splitters.Any(splitter => current.Contains(splitter)))
+        if (Splitters.Any(current.Contains))
         {
             return current.Split(Splitters).First().Trim();
         }
@@ -55,7 +55,7 @@ internal static class ParsingExtensions
     {
         string current = actorLine.Replace("&nbsp;", " ");
 
-        if (Splitters.Any(splitter => current.Contains(splitter)))
+        if (Splitters.Any(current.Contains))
         {
             return current.Split(Splitters).Last().Trim();
         }
