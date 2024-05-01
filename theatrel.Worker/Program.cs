@@ -17,5 +17,16 @@ public class Program
             {
                 services.AddTheatrelLib();
                 services.AddHostedService<Worker>();
+
+             /*   services.AddQuartz(q =>
+                {
+                    // Use a Scoped container to create jobs. I'll touch on this later
+                    q.UseMicrosoftDependencyInjectionScopedJobFactory();
+                });
+
+                services.AddQuartzHostedService(
+                        q => q.WaitForJobsToComplete = true);*/
+
+
             });
 }
